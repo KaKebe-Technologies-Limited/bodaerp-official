@@ -1,0 +1,221 @@
+/* ============================================================
+   BodaERP - Reusable Components
+   ============================================================ */
+
+/* ----- Search Bar ----- */
+.search-bar {
+    position: relative;
+    max-width: 400px;
+}
+
+.search-bar .form-control {
+    padding-left: 44px;
+    border-radius: var(--radius-full);
+    border: 2px solid var(--light-gray);
+    background: var(--off-white);
+    transition: all var(--transition-normal);
+}
+
+.search-bar .form-control:focus {
+    background: var(--pure-white);
+    border-color: var(--primary-blue);
+    box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.08);
+}
+
+.search-bar .search-icon {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+}
+
+/* ----- Pagination ----- */
+.pagination .page-link {
+    border: none;
+    border-radius: var(--radius-sm);
+    margin: 0 3px;
+    color: var(--text-dark);
+    font-weight: 500;
+    transition: all var(--transition-fast);
+}
+
+.pagination .page-link:hover {
+    background: var(--primary-blue-light);
+    color: var(--primary-blue);
+}
+
+.pagination .page-item.active .page-link {
+    background: var(--primary-blue-gradient);
+    color: var(--pure-white);
+    box-shadow: var(--shadow-sm);
+}
+
+/* ----- Tabs ----- */
+.nav-tabs {
+    border-bottom: 2px solid var(--light-gray);
+}
+
+.nav-tabs .nav-link {
+    border: none;
+    color: var(--text-muted);
+    font-weight: 600;
+    padding: 12px 20px;
+    margin-right: 4px;
+    border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+    transition: all var(--transition-normal);
+    position: relative;
+}
+
+.nav-tabs .nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--primary-blue);
+    border-radius: var(--radius-full) var(--radius-full) 0 0;
+    transform: scaleX(0);
+    transition: all var(--transition-normal);
+}
+
+.nav-tabs .nav-link:hover {
+    color: var(--primary-blue);
+    background: var(--primary-blue-light);
+}
+
+.nav-tabs .nav-link.active {
+    color: var(--primary-blue);
+    background: transparent;
+}
+
+.nav-tabs .nav-link.active::after {
+    transform: scaleX(1);
+}
+
+/* ----- Modal ----- */
+.modal-content {
+    border: none;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-xl);
+}
+
+.modal-header {
+    border-bottom: 1px solid var(--light-gray);
+    padding: 20px 24px;
+}
+
+.modal-header .modal-title {
+    font-weight: 700;
+}
+
+.modal-footer {
+    border-top: 1px solid var(--light-gray);
+    padding: 16px 24px;
+}
+
+/* ----- Toast Notifications ----- */
+.toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+}
+
+.toast {
+    border: none;
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-lg);
+    min-width: 300px;
+    animation: slideInRight 0.4s ease forwards;
+}
+
+.toast-success {
+    background: var(--primary-blue-gradient);
+    color: white;
+}
+
+.toast-error {
+    background: var(--secondary-red-gradient);
+    color: white;
+}
+
+.toast-dark {
+    background: var(--dark-black-gradient);
+    color: white;
+}
+
+/* ----- Skeleton Loading ----- */
+.skeleton {
+    background: var(--light-gray);
+    border-radius: var(--radius-sm);
+    animation: shimmer 1.5s ease-in-out infinite;
+    background: linear-gradient(90deg, var(--light-gray) 25%, var(--off-white) 50%, var(--light-gray) 75%);
+    background-size: 200% 100%;
+}
+
+/* ----- Empty State ----- */
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+}
+
+.empty-state i {
+    font-size: 4rem;
+    color: var(--light-gray);
+    margin-bottom: 16px;
+}
+
+.empty-state h5 {
+    font-weight: 700;
+    color: var(--text-dark);
+}
+
+.empty-state p {
+    color: var(--text-muted);
+    max-width: 400px;
+    margin: 8px auto 0;
+}
+
+/* ----- Divider ----- */
+.divider {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    margin: 24px 0;
+}
+
+.divider::before,
+.divider::after {
+    content: '';
+    flex: 1;
+    border-bottom: 2px solid var(--light-gray);
+}
+
+.divider span {
+    padding: 0 16px;
+    color: var(--text-muted);
+    font-weight: 500;
+    font-size: 0.85rem;
+}
+
+/* ----- Status Indicators ----- */
+.status-dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 6px;
+}
+
+.status-dot.active { background: #198754; }
+.status-dot.pending { background: #ffc107; }
+.status-dot.expired { background: var(--secondary-red); }
+.status-dot.inactive { background: var(--text-muted); }
+
+/* ----- Animations for Components ----- */
+@keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
