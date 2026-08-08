@@ -1,0 +1,29 @@
+# ============================================================
+# BodaERP — Git Ignore Rules
+# ============================================================
+
+# ----- Sensitive config (tracked once, then ignored) -----
+# After the first commit of database.php with live credentials,
+# run: git update-index --assume-unchanged config/database.php
+# This keeps the file on the server without overwriting it on pull.
+config/database.php
+
+# ----- Uploads (user-generated content, not source code) -----
+uploads/
+
+# ----- PHP / OS junk -----
+.DS_Store
+Thumbs.db
+*.log
+*.bak
+*.swp
+*.tmp
+
+# ----- IDE / editor files -----
+.vscode/settings.json
+.idea/
+*.sublime-workspace
+
+# ----- Environment files -----
+.env
+.env.*
