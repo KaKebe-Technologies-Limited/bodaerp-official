@@ -237,8 +237,8 @@ INSERT INTO platform_settings (id, support_email, support_phone) VALUES (1, 'sup
 SET FOREIGN_KEY_CHECKS = 1;
 
 -- ── views: computed stats (avoid drift vs. storing counters) ─
-DROP VIEW IF EXISTS v_stage_stats;
-CREATE VIEW v_stage_stats AS
+-- Using CREATE OR REPLACE so this works on shared hosting (no SUPER/SET USER needed)
+CREATE OR REPLACE VIEW v_stage_stats AS
 SELECT
   s.id AS stage_id,
   s.city_id,
@@ -253,8 +253,7 @@ FROM stages s
 LEFT JOIN riders r ON r.stage_id = s.id AND r.deleted_at IS NULL
 GROUP BY s.id, s.city_id, s.code, s.name;
 
-DROP VIEW IF EXISTS v_city_stats;
-CREATE VIEW v_city_stats AS
+CREATE OR REPLACE VIEW v_city_stats AS
 SELECT
   c.id AS city_id,
   c.name,
