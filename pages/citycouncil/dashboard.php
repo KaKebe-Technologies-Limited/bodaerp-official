@@ -5,9 +5,9 @@ $active = 'dashboard';
 $cityId = $_SESSION['city_id'];
 
 $city = fetchOne("SELECT * FROM cities WHERE id = ?", [$cityId]);
-$totalRiders = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE city_id = ?", [$cityId]);
-$activeRiders = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE city_id = ? AND status = 'active'", [$cityId]);
-$defaulters = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE city_id = ? AND status = 'expired'", [$cityId]);
+$totalRiders = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE city_id = ? AND deleted_at IS NULL", [$cityId]);
+$activeRiders = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE city_id = ? AND status = 'active' AND deleted_at IS NULL", [$cityId]);
+$defaulters = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE city_id = ? AND status = 'expired' AND deleted_at IS NULL", [$cityId]);
 $totalRevenue = (float) fetchValue("SELECT COALESCE(SUM(amount),0) FROM payments WHERE city_id = ? AND status = 'Confirmed'", [$cityId]);
 $complianceRate = $totalRiders ? round(100 * $activeRiders / $totalRiders) : 0;
 

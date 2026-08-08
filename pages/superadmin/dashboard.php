@@ -6,13 +6,13 @@ $pageTitle = 'Platform Overview';
 $active = 'dashboard';
 
 $totalCities = (int) fetchValue("SELECT COUNT(*) FROM cities WHERE status = 'active'");
-$totalRiders = (int) fetchValue("SELECT COUNT(*) FROM riders");
+$totalRiders = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE deleted_at IS NULL");
 $totalStages = (int) fetchValue("SELECT COUNT(*) FROM stages");
 $totalUsers  = (int) fetchValue("SELECT COUNT(*) FROM users WHERE deleted_at IS NULL");
 
 $cities = fetchAll("SELECT c.*,
     (SELECT COUNT(*) FROM stages s WHERE s.city_id = c.id) AS stage_count,
-    (SELECT COUNT(*) FROM riders r WHERE r.city_id = c.id) AS rider_count
+    (SELECT COUNT(*) FROM riders r WHERE r.city_id = c.id AND r.deleted_at IS NULL) AS rider_count
     FROM cities c ORDER BY c.created_at");
 
 $recentUsers = fetchAll("SELECT * FROM users WHERE deleted_at IS NULL ORDER BY id DESC LIMIT 5");

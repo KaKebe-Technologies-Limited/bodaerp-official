@@ -8,8 +8,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     csrf_verify();
     $riderId = (int) ($_POST['id'] ?? 0);
     if (($_POST['action'] ?? '') === 'delete') {
-        runQuery("DELETE FROM riders WHERE id = ? AND city_id = ?", [$riderId, $cityId]);
-        audit_log('DELETE', 'rider', (string) $riderId, 'Rider deleted');
+        runQuery("UPDATE riders SET deleted_at = NOW() WHERE id = ? AND city_id = ?", [$riderId, $cityId]);
+        audit_log('DELETE', 'rider', (string) $riderId, 'Rider soft-deleted');
     } else {
         $status = $_POST['status'] ?? 'pending';
         $stageId = (int) ($_POST['stage_id'] ?? 0);
@@ -29,7 +29,7 @@ $sort = $_GET['sort'] ?? 'name';
 $page = max(1, (int) ($_GET['page'] ?? 1));
 $perPage = 25;
 
-$where = "WHERE r.city_id = :city"; $params = ['city' => $cityId];
+$where = "WHERE r.city_id = :city AND r.deleted_at IS NULL"; $params = ['city' => $cityId];
 if ($search !== '') { $where .= " AND (r.full_name LIKE :q1 OR r.bike_plate LIKE :q2 OR r.phone LIKE :q3 OR r.id_number LIKE :q4)"; $params['q1'] = $params['q2'] = $params['q3'] = $params['q4'] = "%$search%"; }
 if ($stageFilter) { $where .= " AND r.stage_id = :stage"; $params['stage'] = $stageFilter; }
 if ($statusFilter) { $where .= " AND r.status = :status"; $params['status'] = $statusFilter; }
@@ -71,9 +71,9 @@ $offset = ($page - 1) * $perPage;
 $riders = fetchAll("SELECT r.*, s.name AS stage_name FROM riders r LEFT JOIN stages s ON s.id = r.stage_id $where ORDER BY $orderBy LIMIT $perPage OFFSET $offset", $params);
 $stages = fetchAll("SELECT id, name FROM stages WHERE city_id = ? ORDER BY name", [$cityId]);
 
-$totalRiders = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE city_id = ?", [$cityId]);
-$activeRiders = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE city_id = ? AND status='active'", [$cityId]);
-$expiredRiders = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE city_id = ? AND status='expired'", [$cityId]);
+$totalRiders = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE city_id = ? AND deleted_at IS NULL", [$cityId]);
+$activeRiders = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE city_id = ? AND status='active' AND deleted_at IS NULL", [$cityId]);
+$expiredRiders = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE city_id = ? AND status='expired' AND deleted_at IS NULL", [$cityId]);
 $stageCount = count($stages);
 $ridersById = array_column($riders, null, 'id');
 

@@ -8,9 +8,9 @@ $city = fetchOne("SELECT * FROM cities WHERE id = ?", [$cityId]);
 $stages = fetchAll("SELECT s.*, v.rider_count, v.active_count, v.expired_count, v.pending_count, v.compliance_pct
     FROM stages s LEFT JOIN v_stage_stats v ON v.stage_id = s.id WHERE s.city_id = ? ORDER BY v.compliance_pct DESC", [$cityId]);
 
-$totalRiders = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE city_id = ?", [$cityId]);
-$activeRiders = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE city_id = ? AND status='active'", [$cityId]);
-$defaulters = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE city_id = ? AND status='expired'", [$cityId]);
+$totalRiders = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE city_id = ? AND deleted_at IS NULL", [$cityId]);
+$activeRiders = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE city_id = ? AND status='active' AND deleted_at IS NULL", [$cityId]);
+$defaulters = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE city_id = ? AND status='expired' AND deleted_at IS NULL", [$cityId]);
 $overallRate = $totalRiders ? round(100 * $activeRiders / $totalRiders) : 0;
 ?>
 <!DOCTYPE html>

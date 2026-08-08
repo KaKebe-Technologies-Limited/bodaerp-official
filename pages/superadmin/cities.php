@@ -74,7 +74,7 @@ if ($statusFilter !== '') { $where .= " AND c.status = :status"; $qparams['statu
 
 $cities = fetchAll("SELECT c.*,
     (SELECT COUNT(*) FROM stages s WHERE s.city_id = c.id) AS stage_count,
-    (SELECT COUNT(*) FROM riders r WHERE r.city_id = c.id) AS rider_count
+    (SELECT COUNT(*) FROM riders r WHERE r.city_id = c.id AND r.deleted_at IS NULL) AS rider_count
     FROM cities c $where ORDER BY c.created_at", $qparams);
 $citiesById = [];
 foreach ($cities as $c) { $citiesById[$c['id']] = $c; }

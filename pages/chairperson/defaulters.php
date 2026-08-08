@@ -21,7 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $defaulters = fetchAll(
     "SELECT r.*, (SELECT MAX(paid_at) FROM payments p WHERE p.rider_id=r.id AND p.status='Confirmed') AS last_payment,
      DATEDIFF(CURDATE(), r.expiry_date) AS overdue_days
-     FROM riders r WHERE r.stage_id = ? AND r.status = 'expired' ORDER BY overdue_days DESC", [$stageId]
+     FROM riders r WHERE r.stage_id = ? AND r.status = 'expired' AND r.deleted_at IS NULL ORDER BY overdue_days DESC", [$stageId]
 );
 $critical = count(array_filter($defaulters, fn($d) => $d['overdue_days'] > 90));
 $amountOwed = array_sum(array_column($defaulters, 'annual_tax'));

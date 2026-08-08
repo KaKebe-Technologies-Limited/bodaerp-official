@@ -7,8 +7,8 @@ $stageId = $_SESSION['stage_id'];
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'delete') {
     csrf_verify();
     $id = (int) ($_POST['id'] ?? 0);
-    runQuery("DELETE FROM riders WHERE id = ? AND stage_id = ?", [$id, $stageId]);
-    audit_log('DELETE', 'rider', (string) $id, 'Rider deleted');
+    runQuery("UPDATE riders SET deleted_at = NOW() WHERE id = ? AND stage_id = ?", [$id, $stageId]);
+    audit_log('DELETE', 'rider', (string) $id, 'Rider soft-deleted');
     redirect('/pages/chairperson/my-riders.php');
 }
 
@@ -16,17 +16,17 @@ $search = trim($_GET['q'] ?? '');
 $statusFilter = $_GET['status'] ?? '';
 $sort = $_GET['sort'] ?? 'name';
 
-$where = "WHERE stage_id = :stage"; $params = ['stage' => $stageId];
+$where = "WHERE stage_id = :stage AND deleted_at IS NULL"; $params = ['stage' => $stageId];
 if ($search !== '') { $where .= " AND (full_name LIKE :q1 OR bike_plate LIKE :q2 OR nin LIKE :q3 OR id_number LIKE :q4)"; $params['q1'] = $params['q2'] = $params['q3'] = $params['q4'] = "%$search%"; }
 if ($statusFilter) { $where .= " AND status = :status"; $params['status'] = $statusFilter; }
 $orderBy = match ($sort) { 'name-desc' => 'full_name DESC', 'latest' => 'id DESC', 'oldest' => 'id ASC', default => 'full_name ASC' };
 
 $riders = fetchAll("SELECT * FROM riders $where ORDER BY $orderBy", $params);
 
-$totalRiders = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE stage_id = ?", [$stageId]);
-$activeRiders = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE stage_id = ? AND status='active'", [$stageId]);
-$defaulters = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE stage_id = ? AND status='expired'", [$stageId]);
-$expiringSoon = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE stage_id = ? AND status='active' AND expiry_date <= DATE_ADD(CURDATE(), INTERVAL 30 DAY)", [$stageId]);
+$totalRiders = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE stage_id = ? AND deleted_at IS NULL", [$stageId]);
+$activeRiders = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE stage_id = ? AND status='active' AND deleted_at IS NULL", [$stageId]);
+$defaulters = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE stage_id = ? AND status='expired' AND deleted_at IS NULL", [$stageId]);
+$expiringSoon = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE stage_id = ? AND status='active' AND expiry_date <= DATE_ADD(CURDATE(), INTERVAL 30 DAY) AND deleted_at IS NULL", [$stageId]);
 ?>
 <!DOCTYPE html>
 <html lang="en">

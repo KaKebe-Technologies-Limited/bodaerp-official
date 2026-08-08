@@ -19,7 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $stageFilter = (int) ($_GET['stage'] ?? 0);
-$where = "WHERE r.city_id = :city AND r.status = 'expired'"; $params = ['city' => $cityId];
+$where = "WHERE r.city_id = :city AND r.status = 'expired' AND r.deleted_at IS NULL"; $params = ['city' => $cityId];
 if ($stageFilter) { $where .= " AND r.stage_id = :stage"; $params['stage'] = $stageFilter; }
 
 $defaulters = fetchAll(

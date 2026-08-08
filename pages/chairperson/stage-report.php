@@ -5,10 +5,10 @@ $active = 'stage-report';
 $stageId = $_SESSION['stage_id'];
 $stage = fetchOne("SELECT * FROM stages WHERE id = ?", [$stageId]);
 
-$totalRiders = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE stage_id=?", [$stageId]);
-$active_ = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE stage_id=? AND status='active'", [$stageId]);
-$expired = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE stage_id=? AND status='expired'", [$stageId]);
-$pending = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE stage_id=? AND status='pending'", [$stageId]);
+$totalRiders = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE stage_id=? AND deleted_at IS NULL", [$stageId]);
+$active_ = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE stage_id=? AND status='active' AND deleted_at IS NULL", [$stageId]);
+$expired = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE stage_id=? AND status='expired' AND deleted_at IS NULL", [$stageId]);
+$pending = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE stage_id=? AND status='pending' AND deleted_at IS NULL", [$stageId]);
 $compliance = $totalRiders ? round(100 * $active_ / $totalRiders) : 0;
 
 $monthlyRows = fetchAll("SELECT DATE_FORMAT(p.paid_at,'%Y-%m') ym, SUM(p.amount) total FROM payments p

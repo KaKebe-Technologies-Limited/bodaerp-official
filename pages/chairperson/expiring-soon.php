@@ -4,9 +4,9 @@ require_role(['chairperson']);
 $active = 'expiry-alerts';
 $stageId = $_SESSION['stage_id'];
 
-$within7 = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE stage_id=? AND status='active' AND expiry_date <= DATE_ADD(CURDATE(), INTERVAL 7 DAY)", [$stageId]);
-$within14 = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE stage_id=? AND status='active' AND expiry_date <= DATE_ADD(CURDATE(), INTERVAL 14 DAY)", [$stageId]);
-$within30 = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE stage_id=? AND status='active' AND expiry_date <= DATE_ADD(CURDATE(), INTERVAL 30 DAY)", [$stageId]);
+$within7 = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE stage_id=? AND status='active' AND deleted_at IS NULL AND expiry_date <= DATE_ADD(CURDATE(), INTERVAL 7 DAY)", [$stageId]);
+$within14 = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE stage_id=? AND status='active' AND deleted_at IS NULL AND expiry_date <= DATE_ADD(CURDATE(), INTERVAL 14 DAY)", [$stageId]);
+$within30 = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE stage_id=? AND status='active' AND deleted_at IS NULL AND expiry_date <= DATE_ADD(CURDATE(), INTERVAL 30 DAY)", [$stageId]);
 
 $riders = fetchAll(
     "SELECT *, DATEDIFF(expiry_date, CURDATE()) AS days_left FROM riders

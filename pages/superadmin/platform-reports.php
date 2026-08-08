@@ -8,7 +8,7 @@ $where = "WHERE 1=1"; $qparams = [];
 if ($statusFilter !== '') { $where .= " AND c.status = :status"; $qparams['status'] = $statusFilter; }
 
 $rows = fetchAll("SELECT c.*,
-    (SELECT COUNT(*) FROM riders r WHERE r.city_id = c.id) AS rider_count,
+    (SELECT COUNT(*) FROM riders r WHERE r.city_id = c.id AND r.deleted_at IS NULL) AS rider_count,
     (SELECT COUNT(*) FROM stages s WHERE s.city_id = c.id) AS stage_count,
     (SELECT COALESCE(SUM(p.amount),0) FROM payments p WHERE p.city_id = c.id AND p.status = 'Confirmed') AS revenue_collected
     FROM cities c $where ORDER BY c.name", $qparams);

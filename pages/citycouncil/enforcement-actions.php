@@ -57,7 +57,7 @@ if ($stageFilter) { $where .= " AND e.stage_id = :stage"; $params['stage'] = $st
 $actions = fetchAll("SELECT e.*, r.full_name, s.name AS stage_name FROM enforcement_actions e
     LEFT JOIN riders r ON r.id = e.rider_id LEFT JOIN stages s ON s.id = e.stage_id
     $where ORDER BY e.action_date DESC, e.id DESC", $params);
-$riders = fetchAll("SELECT id, full_name, bike_plate FROM riders WHERE city_id = ? ORDER BY full_name LIMIT 500", [$cityId]);
+$riders = fetchAll("SELECT id, full_name, bike_plate FROM riders WHERE city_id = ? AND deleted_at IS NULL ORDER BY full_name LIMIT 500", [$cityId]);
 $stagesList = fetchAll("SELECT id, name FROM stages WHERE city_id = ? ORDER BY name", [$cityId]);
 
 $total = count($actions);

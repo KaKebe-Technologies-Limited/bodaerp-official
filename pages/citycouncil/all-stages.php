@@ -17,7 +17,7 @@ $stages = fetchAll("SELECT s.*, v.rider_count, v.active_count, v.compliance_pct,
 
 $totalStages = count($stages);
 $activeStages = count(array_filter($stages, fn($s) => $s['status'] === 'active'));
-$totalRiders = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE city_id = ?", [$cityId]);
+$totalRiders = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE city_id = ? AND deleted_at IS NULL", [$cityId]);
 ?>
 <!DOCTYPE html>
 <html lang="en">

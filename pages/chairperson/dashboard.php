@@ -5,12 +5,12 @@ $active = 'dashboard';
 $stageId = $_SESSION['stage_id'];
 
 $stage = fetchOne("SELECT * FROM stages WHERE id = ?", [$stageId]);
-$totalRiders = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE stage_id = ?", [$stageId]);
-$activeRiders = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE stage_id = ? AND status='active'", [$stageId]);
-$defaulters = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE stage_id = ? AND status='expired'", [$stageId]);
+$totalRiders = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE stage_id = ? AND deleted_at IS NULL", [$stageId]);
+$activeRiders = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE stage_id = ? AND status='active' AND deleted_at IS NULL", [$stageId]);
+$defaulters = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE stage_id = ? AND status='expired' AND deleted_at IS NULL", [$stageId]);
 $revenue = (float) fetchValue("SELECT COALESCE(SUM(p.amount),0) FROM payments p WHERE p.status='Confirmed' AND p.rider_id IN (SELECT id FROM riders WHERE stage_id=?)", [$stageId]);
 
-$recentRiders = fetchAll("SELECT * FROM riders WHERE stage_id = ? ORDER BY id DESC LIMIT 8", [$stageId]);
+$recentRiders = fetchAll("SELECT * FROM riders WHERE stage_id = ? AND deleted_at IS NULL ORDER BY id DESC LIMIT 8", [$stageId]);
 ?>
 <!DOCTYPE html>
 <html lang="en">

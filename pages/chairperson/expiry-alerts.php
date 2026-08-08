@@ -18,7 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 $riders = fetchAll(
     "SELECT *, DATEDIFF(expiry_date, CURDATE()) AS days_left FROM riders
-     WHERE stage_id = ? AND status = 'active' AND expiry_date <= DATE_ADD(CURDATE(), INTERVAL 30 DAY)
+     WHERE stage_id = ? AND status = 'active' AND deleted_at IS NULL AND expiry_date <= DATE_ADD(CURDATE(), INTERVAL 30 DAY)
      ORDER BY expiry_date ASC", [$stageId]
 );
 ?>
