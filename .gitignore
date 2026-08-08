@@ -8,6 +8,10 @@
 # This keeps the file on the server without overwriting it on pull.
 config/database.php
 
+# ----- Diagnostic / debug files (never commit these) -----
+diag.php
+dbcheck.php
+
 # ----- Uploads (user-generated content, not source code) -----
 uploads/
 
