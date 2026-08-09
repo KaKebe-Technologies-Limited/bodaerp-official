@@ -69,13 +69,16 @@ CREATE TABLE users (
   stage_id       INT NULL,
   avatar_path    VARCHAR(255),
   status         ENUM('active','suspended') NOT NULL DEFAULT 'active',
+  reset_token    VARCHAR(64) NULL,
+  reset_expires  DATETIME NULL,
   deleted_at     DATETIME NULL,
   created_at     DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at     DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   FOREIGN KEY (city_id)  REFERENCES cities(id)  ON DELETE RESTRICT,
   FOREIGN KEY (stage_id) REFERENCES stages(id) ON DELETE SET NULL,
   INDEX idx_users_role (role),
-  INDEX idx_users_city (city_id)
+  INDEX idx_users_city (city_id),
+  INDEX idx_users_reset_token (reset_token)
 ) ENGINE=InnoDB;
 
 ALTER TABLE cities

@@ -28,6 +28,7 @@ $totalRiders = array_sum(array_column($rows, 'rider_count'));
                 <button class="btn btn-light d-lg-none" id="toggleSidebar"><i class="fas fa-bars"></i></button>
                 <h5 class="mb-0 fw-bold"><span class="text-gradient-blue">Revenue Report</span></h5>
             </div>
+            <a href="<?= BASE_URL ?>/pages/citycouncil/revenue-analytics.php" class="btn btn-outline-secondary btn-sm no-print"><i class="fas fa-chart-line me-1"></i>Back to Analytics</a>
         </div>
     </header>
 

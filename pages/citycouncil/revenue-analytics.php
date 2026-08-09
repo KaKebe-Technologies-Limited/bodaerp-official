@@ -52,6 +52,7 @@ $transactions = fetchAll("SELECT p.*, r.full_name, s.name AS stage_name FROM pay
                 <button class="btn btn-light d-lg-none" id="toggleSidebar"><i class="fas fa-bars"></i></button>
                 <h5 class="mb-0 fw-bold"><span class="text-gradient-blue">Revenue Analytics</span></h5>
             </div>
+            <a href="<?= BASE_URL ?>/pages/citycouncil/revenue-report.php" class="btn btn-outline-primary btn-sm no-print"><i class="fas fa-file-alt me-1"></i>Annual Report</a>
         </div>
     </header>
 

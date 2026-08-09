@@ -21,6 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 $timeout = isset($_GET['timeout']);
+$resetDone = isset($_GET['reset']);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -112,6 +113,9 @@ $timeout = isset($_GET['timeout']);
                 <?php if ($timeout): ?>
                     <div class="alert alert-warning py-2 small">Your session timed out. Please sign in again.</div>
                 <?php endif; ?>
+                <?php if ($resetDone): ?>
+                    <div class="alert alert-success py-2 small">Your password has been reset. Sign in with your new password.</div>
+                <?php endif; ?>
                 <?php if ($error): ?>
                     <div class="alert alert-danger py-2 small"><?= h($error) ?></div>
                 <?php endif; ?>
@@ -154,7 +158,7 @@ $timeout = isset($_GET['timeout']);
                             <input type="checkbox" class="form-check-input" id="rememberMe">
                             <label class="form-check-label small" for="rememberMe">Remember me</label>
                         </div>
-                        <a href="#">Forgot Password?</a>
+                        <a href="<?= BASE_URL ?>/forgot-password.php">Forgot Password?</a>
                     </div>
                     <button type="submit" class="btn btn-login" id="loginBtn">
                         <i class="fas fa-sign-in-alt me-2"></i>Sign In
@@ -178,7 +182,7 @@ $timeout = isset($_GET['timeout']);
                     <div class="demo-row"><span><span class="role-name rider">● Rider (Mbarara)</span></span><code>kyomuhendo@bodaerp.com / rider123</code></div>
                 </div>
 
-                <div class="login-footer">&copy; 2026 <a href="#">Kakebe Technologies Limited</a>. All rights reserved.</div>
+                <div class="login-footer">&copy; 2026 <a href="<?= BASE_URL ?>/index.php">Kakebe Technologies Limited</a>. All rights reserved.</div>
 
             </div>
         </div>

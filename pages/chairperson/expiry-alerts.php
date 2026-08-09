@@ -35,7 +35,10 @@ $riders = fetchAll(
     <?php $pageTitle = 'Expiry Alerts'; require __DIR__ . '/../../includes/partials/topheader.php'; ?>
 
     <div class="content-area">
-        <div class="alert alert-warning"><i class="fas fa-bell me-2"></i>Riders whose permits expire within the next 30 days.</div>
+        <div class="alert alert-warning d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <span><i class="fas fa-bell me-2"></i>Riders whose permits expire within the next 30 days.</span>
+            <a href="<?= BASE_URL ?>/pages/chairperson/expiring-soon.php" class="btn btn-sm btn-outline-dark no-print"><i class="fas fa-chart-bar me-1"></i>View Breakdown</a>
+        </div>
         <div class="d-flex justify-content-end mb-2 no-print">
             <?php $exportTableId='expiryTable'; $exportFilename='expiry_alerts'; $exportTitle='Expiry Alerts'; require __DIR__ . '/../../includes/partials/export-toolbar.php'; ?>
         </div>

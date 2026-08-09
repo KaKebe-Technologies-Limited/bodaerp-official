@@ -91,8 +91,6 @@ $revenueDisplay = $totalRevenue >= 1000000 ? 'UGX ' . round($totalRevenue / 1000
         .footer p { font-size: 0.85rem; }
         .footer .footer-links a { color: rgba(255, 255, 255, 0.5); text-decoration: none; transition: all 0.3s ease; font-size: 0.85rem; }
         .footer .footer-links a:hover { color: white; }
-        .footer .social-links a { color: rgba(255, 255, 255, 0.4); font-size: 1.2rem; transition: all 0.3s ease; }
-        .footer .social-links a:hover { color: white; transform: translateY(-2px); }
         @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-12px); } }
         @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
@@ -108,7 +106,7 @@ $revenueDisplay = $totalRevenue >= 1000000 ? 'UGX ' . round($totalRevenue / 1000
     <nav class="navbar-custom" id="navbar">
         <div class="container">
             <div class="d-flex justify-content-between align-items-center">
-                <a href="#" class="brand">
+                <a href="<?= BASE_URL ?>/index.php" class="brand">
                     <img src="<?= BASE_URL ?>/assets/images/logo.png" alt="BodaERP" width="32" height="32" class="me-2 rounded">
                     <span class="blue">Boda</span><span class="red">ERP</span>
                     <small>Enterprise Boda Management</small>
@@ -197,7 +195,7 @@ $revenueDisplay = $totalRevenue >= 1000000 ? 'UGX ' . round($totalRevenue / 1000
             <p class="mb-4" style="max-width: 500px; margin: 0 auto 30px;">Join the city councils already digitizing boda operations for better revenue collection and compliance.</p>
             <div class="d-flex flex-wrap gap-3 justify-content-center">
                 <a href="<?= BASE_URL ?>/login.php" class="btn-cta"><i class="fas fa-rocket"></i> Get Started Now</a>
-                <a href="#" class="btn-cta-outline"><i class="fas fa-phone"></i> Contact Us</a>
+                <a href="#contact" class="btn-cta-outline"><i class="fas fa-phone"></i> Contact Us</a>
             </div>
         </div>
     </section>
@@ -206,15 +204,12 @@ $revenueDisplay = $totalRevenue >= 1000000 ? 'UGX ' . round($totalRevenue / 1000
         <div class="container">
             <div class="row g-4">
                 <div class="col-md-4">
-                    <a href="#" class="brand"><img src="<?= BASE_URL ?>/assets/images/logo.png" alt="BodaERP" width="24" height="24" class="me-2"><span class="blue">Boda</span><span class="red">ERP</span></a>
+                    <a href="<?= BASE_URL ?>/index.php" class="brand"><img src="<?= BASE_URL ?>/assets/images/logo.png" alt="BodaERP" width="24" height="24" class="me-2"><span class="blue">Boda</span><span class="red">ERP</span></a>
                     <p class="mt-2" style="max-width: 300px;">Enterprise Boda Boda Management System for city councils across Uganda. Digitizing operations for better revenue collection and compliance.</p>
-                    <div class="social-links d-flex gap-3 mt-3">
-                        <a href="#"><i class="fab fa-facebook"></i></a><a href="#"><i class="fab fa-twitter"></i></a><a href="#"><i class="fab fa-linkedin-in"></i></a><a href="#"><i class="fab fa-youtube"></i></a>
-                    </div>
                 </div>
-                <div class="col-md-2"><h6 class="text-white fw-bold">Product</h6><div class="footer-links d-flex flex-column gap-2"><a href="#">Features</a><a href="#">Pricing</a><a href="#">Documentation</a><a href="#">Support</a></div></div>
-                <div class="col-md-2"><h6 class="text-white fw-bold">Company</h6><div class="footer-links d-flex flex-column gap-2"><a href="#">About</a><a href="#">Contact</a><a href="#">Careers</a><a href="#">Blog</a></div></div>
-                <div class="col-md-4">
+                <div class="col-md-2"><h6 class="text-white fw-bold">Product</h6><div class="footer-links d-flex flex-column gap-2"><a href="#features">Features</a><a href="#contact">Support</a></div></div>
+                <div class="col-md-2"><h6 class="text-white fw-bold">Company</h6><div class="footer-links d-flex flex-column gap-2"><a href="#contact">Contact</a></div></div>
+                <div class="col-md-4" id="contact">
                     <h6 class="text-white fw-bold">Contact Us</h6>
                     <p class="mb-1"><i class="fas fa-map-marker-alt me-2"></i> Kampala, Uganda</p>
                     <p class="mb-1"><i class="fas fa-phone me-2"></i> +256 700 123 456</p>

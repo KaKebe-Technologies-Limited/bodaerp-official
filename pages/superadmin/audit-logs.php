@@ -3,11 +3,13 @@ require_once __DIR__ . '/../../includes/auth.php';
 require_role(['super_admin']);
 $active = 'audit-logs';
 
+$search       = trim($_GET['q'] ?? '');
 $filterAction = $_GET['action'] ?? '';
 $filterCity   = $_GET['city'] ?? '';
 
 $sql = "SELECT a.*, c.name AS city_name FROM audit_logs a LEFT JOIN cities c ON c.id = a.city_id WHERE 1=1";
 $params = [];
+if ($search !== '')      { $sql .= " AND (a.user_name_snapshot LIKE ? OR a.details LIKE ? OR a.entity_type LIKE ?)"; $params[] = "%$search%"; $params[] = "%$search%"; $params[] = "%$search%"; }
 if ($filterAction !== '') { $sql .= " AND a.action = ?"; $params[] = $filterAction; }
 if ($filterCity !== '')   { $sql .= " AND a.city_id = ?"; $params[] = $filterCity; }
 $sql .= " ORDER BY a.created_at DESC LIMIT 200";
@@ -45,6 +47,7 @@ $roleColors   = ['super_admin'=>'primary','city_admin'=>'success','chairperson'=
                 <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
                     <h6 class="fw-bold mb-0"><i class="fas fa-history text-primary me-2"></i>System Audit Trail</h6>
                     <form class="d-flex gap-2 flex-wrap" method="get">
+                        <input type="text" class="form-control form-control-sm" name="q" value="<?= h($search) ?>" placeholder="Search user, details..." style="width:200px;">
                         <select class="form-select form-select-sm" style="width:auto;" name="action" onchange="this.form.submit()">
                             <option value="">All Actions</option>
                             <?php foreach (['LOGIN','LOGOUT','LOGIN_FAILED','CREATE','UPDATE','DELETE'] as $a): ?>

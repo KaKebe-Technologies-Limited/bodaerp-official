@@ -58,11 +58,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $active = 'users';
+$search = trim($_GET['q'] ?? '');
 $filterCity = $_GET['city'] ?? '';
 $filterRole = $_GET['role'] ?? '';
 
 $sql = "SELECT u.*, c.name AS city_name, c.logo_path AS city_logo FROM users u LEFT JOIN cities c ON c.id = u.city_id WHERE u.deleted_at IS NULL";
 $params = [];
+if ($search !== '') { $sql .= " AND (u.name LIKE ? OR u.email LIKE ? OR u.phone LIKE ?)"; $params[] = "%$search%"; $params[] = "%$search%"; $params[] = "%$search%"; }
 if ($filterCity !== '') { $sql .= " AND u.city_id = ?"; $params[] = $filterCity; }
 if ($filterRole !== '') { $sql .= " AND u.role = ?"; $params[] = $filterRole; }
 $sql .= " ORDER BY u.id DESC";
@@ -87,6 +89,7 @@ $roleColors = ['super_admin' => 'primary', 'city_admin' => 'success', 'chairpers
                 <h5 class="mb-0 fw-bold"><span class="text-gradient-blue">All Platform Users</span></h5>
             </div>
             <form class="d-flex gap-2 flex-wrap" method="get">
+                <input type="text" class="form-control form-control-sm" name="q" value="<?= h($search) ?>" placeholder="Search name, email, phone..." style="width:200px;">
                 <select class="form-select form-select-sm" name="city" style="width:auto;" onchange="this.form.submit()">
                     <option value="">All Cities</option>
                     <?php foreach ($cities as $c): ?>
@@ -100,6 +103,7 @@ $roleColors = ['super_admin' => 'primary', 'city_admin' => 'success', 'chairpers
                     <option value="chairperson" <?= $filterRole === 'chairperson' ? 'selected' : '' ?>>Chairperson</option>
                     <option value="rider" <?= $filterRole === 'rider' ? 'selected' : '' ?>>Rider</option>
                 </select>
+                <button type="submit" class="btn btn-outline-secondary btn-sm"><i class="fas fa-search"></i></button>
                 <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#userModal" onclick="openAddUser()"><i class="fas fa-user-plus me-1"></i>Add User</button>
             </form>
         </div>

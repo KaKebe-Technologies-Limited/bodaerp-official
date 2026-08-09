@@ -37,25 +37,26 @@ $statusColor = $statusColors[$rider['status']] ?? '#6c757d';
 
         .id-main { position: relative; z-index: 1; display: flex; flex: 1; min-height: 0; }
 
-        .id-photo-col { width: 27%; flex-shrink: 0; display: flex; flex-direction: column; background: #eef1f4; }
+        .id-photo-col { width: 35%; flex-shrink: 0; display: flex; flex-direction: column; background: #eef1f4; }
         .id-photo-col .photo-frame { position: relative; flex: 1; min-height: 0; overflow: hidden; }
         .id-photo-col .photo-frame img { width: 100%; height: 100%; object-fit: cover; display: block; }
-        .id-photo-col .photo-flag { position: absolute; top: 7px; left: -18px; width: 66px; text-align: center; background: #8f1424; color: #fff; font-size: 0.26rem; font-weight: 800; letter-spacing: 0.6px; transform: rotate(-45deg); padding: 1px 0; box-shadow: 0 1px 3px rgba(0,0,0,0.35); }
-        .id-photo-col .plate-badge { background: #1a1a2e; color: #fff; font-family: 'Courier New', monospace; font-size: 0.3rem; font-weight: 700; text-align: center; padding: 1.5px 2px; letter-spacing: 0.5px; }
+        .id-photo-col .photo-flag { position: absolute; top: 8px; left: -20px; width: 74px; text-align: center; background: #8f1424; color: #fff; font-size: 0.26rem; font-weight: 800; letter-spacing: 0.6px; transform: rotate(-45deg); padding: 1.5px 0; box-shadow: 0 1px 3px rgba(0,0,0,0.35); }
+        .id-photo-col .plate-badge { background: #1a1a2e; color: #fff; font-family: 'Courier New', monospace; font-size: 0.32rem; font-weight: 700; text-align: center; padding: 2px 2px; letter-spacing: 0.5px; }
         .id-photo-col .status-ribbon { padding: 1.5px 2px; font-size: 0.3rem; font-weight: 800; text-align: center; color: #fff; letter-spacing: 0.3px; }
 
-        .id-fields-col { flex: 1; min-width: 0; padding: 4px 6px 2px; display: flex; flex-direction: column; justify-content: center; }
-        .id-fields { list-style: none; counter-reset: idfield; margin: 0; padding: 0; }
-        .id-fields li { counter-increment: idfield; display: flex; gap: 3px; font-size: 0.32rem; padding: 0.8px 0; align-items: baseline; }
-        .id-fields li::before { content: counter(idfield) "."; font-weight: 800; color: #8f1424; flex-shrink: 0; width: 7px; }
-        .id-fields li .field-label { color: #9aa2ab; font-weight: 700; width: 34px; flex-shrink: 0; text-transform: uppercase; }
-        .id-fields li .field-value { color: #1a1a2e; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .id-fields-col { flex: 1; min-width: 0; padding: 5px 7px; display: flex; flex-direction: column; justify-content: center; gap: 3.5px; position: relative; background-image: repeating-linear-gradient(135deg, rgba(143,20,36,0.05) 0px, rgba(143,20,36,0.05) 1px, transparent 1px, transparent 7px); }
+        .id-field { line-height: 1.15; position: relative; z-index: 1; }
+        .id-field .field-label { font-size: 0.22rem; color: #9aa2ab; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700; }
+        .id-field .field-value { font-size: 0.36rem; color: #1a1a2e; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-        .id-qr-col { width: 24%; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; padding: 4px; position: relative; }
-        .id-holo { position: absolute; width: 30px; height: 30px; border-radius: 50%; background: conic-gradient(from 90deg, #ff9a8b, #a18cd1, #84fab0, #8fd3f4, #ff9a8b); opacity: 0.4; filter: blur(1.5px); top: 3px; }
-        .qr-wrap { width: 34px; height: 34px; background: #fff; padding: 2px; border-radius: 3px; position: relative; z-index: 1; border: 1px solid #ddd; }
+        .id-qr-col { width: 26%; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; padding: 4px; position: relative; }
+        .id-holo { position: absolute; width: 36px; height: 36px; border-radius: 50%; background: conic-gradient(from 90deg, #ff9a8b, #a18cd1, #84fab0, #8fd3f4, #ff9a8b); opacity: 0.35; filter: blur(1.8px); top: 2px; }
+        .qr-title { font-size: 0.24rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; color: #8f1424; position: relative; z-index: 1; }
+        .qr-wrap { width: 54px; height: 54px; background: #fff; padding: 3px; border-radius: 4px; position: relative; z-index: 1; border: 1px solid #ddd; }
         .qr-wrap img, .qr-wrap canvas { width: 100% !important; height: 100% !important; display: block; }
-        .qr-caption { font-size: 0.24rem; color: #6c757d; letter-spacing: 0.3px; text-transform: uppercase; font-weight: 700; position: relative; z-index: 1; }
+        .qr-center-badge { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); width: 16px; height: 16px; border-radius: 50%; background: #fff; display: flex; align-items: center; justify-content: center; overflow: hidden; z-index: 3; box-shadow: 0 0 0 2px #fff, 0 0 0 3px rgba(143,20,36,0.5); }
+        .qr-center-badge img { width: 100%; height: 100%; object-fit: contain; }
+        .qr-caption { font-size: 0.21rem; color: #6c757d; letter-spacing: 0.3px; text-transform: uppercase; font-weight: 700; position: relative; z-index: 1; }
 
         .id-footer { position: relative; z-index: 1; display: flex; align-items: flex-end; justify-content: space-between; gap: 4px; padding: 3px 8px; background: #f8f9fa; border-top: 1px solid #eee; flex-shrink: 0; }
         .id-sig { display: flex; flex-direction: column; align-items: flex-start; min-width: 0; }
@@ -65,7 +66,24 @@ $statusColor = $statusColors[$rider['status']] ?? '#6c757d';
         .id-expiry .expiry-label { font-size: 0.24rem; color: #9aa2ab; text-transform: uppercase; letter-spacing: 0.3px; }
         .id-expiry .expiry-date { font-size: 0.38rem; font-weight: 800; color: #8f1424; }
 
-        .id-terms { font-size: 0.4rem; line-height: 1.35; color: #6c757d; }
+        /* back of card — centered return-to-authority notice */
+        .id-back-body { position: relative; z-index: 1; flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 6px 16px; gap: 2.5px; }
+        .id-back-body .back-crest { width: 28px; height: 28px; border-radius: 50%; background: #fff; border: 1.5px solid #eee; display: flex; align-items: center; justify-content: center; overflow: hidden; margin-bottom: 1px; }
+        .id-back-body .back-crest img { width: 100%; height: 100%; object-fit: contain; }
+        .id-back-body .back-statement { font-size: 0.32rem; font-weight: 700; color: #1a1a2e; line-height: 1.3; max-width: 92%; }
+        .id-back-body .back-return-label { font-size: 0.25rem; color: #8f1424; font-weight: 800; text-transform: uppercase; letter-spacing: 0.6px; margin-top: 2px; }
+        .id-back-body .back-contact { font-size: 0.29rem; color: #333; line-height: 1.45; }
+        .id-back-body .back-terms { font-size: 0.23rem; color: #9aa2ab; margin-top: 3px; }
+
+        /* enlarge / preview */
+        .id-stage { position: relative; display: inline-block; }
+        .id-zoom-btn { position: absolute; top: 8px; right: 8px; background: rgba(26,26,46,0.55); color: #fff; border: none; width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; cursor: pointer; z-index: 5; transition: background 0.15s; }
+        .id-zoom-btn:hover { background: rgba(143,20,36,0.9); }
+        .id-zoom-wrap { width: 7.425in; height: 4.675in; margin: 20px auto; position: relative; }
+        .id-zoom-clone { transform: scale(2.2); transform-origin: top left; position: absolute; top: 0; left: 0; box-shadow: 0 30px 90px rgba(0,0,0,0.55); }
+        #idPreviewModal.modal { background: rgba(12,12,18,0.94); }
+        #idPreviewModal .modal-content { background: transparent; border: none; box-shadow: none; }
+        #idPreviewBody { max-height: 92vh; overflow-y: auto; overflow-x: hidden; padding: 20px 0; }
     </style>
 </head>
 <body>
@@ -76,74 +94,95 @@ $statusColor = $statusColors[$rider['status']] ?? '#6c757d';
     <?php $pageTitle = 'ID Card Preview'; require __DIR__ . '/../../includes/partials/topheader.php'; ?>
 
     <div class="content-area text-center">
-        <div class="id-card">
-            <div class="id-watermark"><span><?= h(strtoupper($city['name'])) ?></span></div>
-            <div class="id-header">
-                <div class="id-crest"><img src="<?= h(BASE_URL . $city['logo_path']) ?>" onerror="this.style.display='none'"></div>
-                <div class="id-header-text">
-                    <div class="entity-name"><?= h(strtoupper($city['name'])) ?></div>
-                    <div class="doc-type">Boda Boda Operator License</div>
-                </div>
-                <div class="id-header-right">
-                    <div class="doc-code"><?= h($city['id_prefix']) ?></div>
-                    <div class="id-number-big"><?= h($rider['id_number']) ?></div>
-                </div>
-            </div>
-            <div class="id-main">
-                <div class="id-photo-col">
-                    <div class="photo-frame">
-                        <img src="<?= $rider['photo_path'] ? h(BASE_URL.$rider['photo_path']) : BASE_URL.'/assets/images/avatar-placeholder.png' ?>">
-                        <div class="photo-flag"><?= h($city['id']) ?></div>
+        <div class="id-stage">
+            <button type="button" class="id-zoom-btn" title="Enlarge"><i class="fas fa-magnifying-glass-plus"></i></button>
+            <div class="id-card">
+                <div class="id-watermark"><span><?= h(strtoupper($city['name'])) ?></span></div>
+                <div class="id-header">
+                    <div class="id-crest"><img src="<?= h(BASE_URL . $city['logo_path']) ?>" onerror="this.style.display='none'"></div>
+                    <div class="id-header-text">
+                        <div class="entity-name"><?= h(strtoupper($city['name'])) ?></div>
+                        <div class="doc-type">Boda Boda Operator License</div>
                     </div>
-                    <div class="plate-badge"><?= h($rider['bike_plate']) ?></div>
-                    <div class="status-ribbon" style="background: <?= $statusColor ?>;"><?= strtoupper($rider['status']) ?></div>
+                    <div class="id-header-right">
+                        <div class="doc-code"><?= h($city['id_prefix']) ?></div>
+                        <div class="id-number-big"><?= h($rider['id_number']) ?></div>
+                    </div>
                 </div>
-                <div class="id-fields-col">
-                    <ol class="id-fields">
-                        <li><span class="field-label">Name</span><span class="field-value"><?= h($rider['full_name']) ?></span></li>
-                        <li><span class="field-label">DOB</span><span class="field-value"><?= formatDate($rider['date_of_birth']) ?></span></li>
-                        <li><span class="field-label">Gender</span><span class="field-value"><?= h($rider['gender'] ?: '—') ?></span></li>
-                        <li><span class="field-label">Stage</span><span class="field-value"><?= h($rider['stage_name']) ?></span></li>
-                        <li><span class="field-label">Addr</span><span class="field-value"><?= h($rider['physical_address'] ?: '—') ?></span></li>
-                        <li><span class="field-label">NIN</span><span class="field-value"><?= h($rider['nin'] ?: '—') ?></span></li>
-                    </ol>
+                <div class="id-main">
+                    <div class="id-photo-col">
+                        <div class="photo-frame">
+                            <img src="<?= $rider['photo_path'] ? h(BASE_URL.$rider['photo_path']) : BASE_URL.'/assets/images/avatar-placeholder.png' ?>">
+                            <div class="photo-flag"><?= h($city['id']) ?></div>
+                        </div>
+                        <div class="plate-badge"><?= h($rider['bike_plate']) ?></div>
+                        <div class="status-ribbon" style="background: <?= $statusColor ?>;"><?= strtoupper($rider['status']) ?></div>
+                    </div>
+                    <div class="id-fields-col">
+                        <div class="id-field"><div class="field-label">Name</div><div class="field-value"><?= h($rider['full_name']) ?></div></div>
+                        <div class="id-field"><div class="field-label">Date of Birth</div><div class="field-value"><?= formatDate($rider['date_of_birth']) ?></div></div>
+                        <div class="id-field"><div class="field-label">Gender</div><div class="field-value"><?= h($rider['gender'] ?: '—') ?></div></div>
+                        <div class="id-field"><div class="field-label">Stage</div><div class="field-value"><?= h($rider['stage_name']) ?></div></div>
+                        <div class="id-field"><div class="field-label">Address</div><div class="field-value"><?= h($rider['physical_address'] ?: '—') ?></div></div>
+                        <div class="id-field"><div class="field-label">NIN</div><div class="field-value"><?= h($rider['nin'] ?: '—') ?></div></div>
+                    </div>
+                    <div class="id-qr-col">
+                        <div class="id-holo"></div>
+                        <div class="qr-title">Verify</div>
+                        <div class="qr-wrap" id="qrFront">
+                            <div class="qr-center-badge"><img src="<?= h(BASE_URL . $city['logo_path']) ?>" onerror="this.style.display='none'"></div>
+                        </div>
+                        <div class="qr-caption">Scan to confirm</div>
+                    </div>
                 </div>
-                <div class="id-qr-col">
-                    <div class="id-holo"></div>
-                    <div class="qr-wrap" id="qrFront"></div>
-                    <div class="qr-caption">Scan to verify</div>
+                <div class="id-footer">
+                    <div class="id-sig">
+                        <div class="sig-line"><?= h($rider['registrar_name'] ?: 'BodaERP') ?></div>
+                        <div class="sig-label">Issued By</div>
+                    </div>
+                    <div class="id-expiry">
+                        <div class="expiry-label">Valid Until</div>
+                        <div class="expiry-date"><?= formatDate($rider['expiry_date']) ?></div>
+                    </div>
                 </div>
             </div>
-            <div class="id-footer">
-                <div class="id-sig">
-                    <div class="sig-line"><?= h($rider['registrar_name'] ?: 'BodaERP') ?></div>
-                    <div class="sig-label">Issued By</div>
+        </div>
+
+        <div class="id-stage">
+            <button type="button" class="id-zoom-btn" title="Enlarge"><i class="fas fa-magnifying-glass-plus"></i></button>
+            <div class="id-card">
+                <div class="id-watermark"><span><?= h(strtoupper($city['name'])) ?></span></div>
+                <div class="id-header">
+                    <div class="id-header-text"><div class="entity-name">If Found, Please Return</div></div>
                 </div>
-                <div class="id-expiry">
-                    <div class="expiry-label">Valid Until</div>
-                    <div class="expiry-date"><?= formatDate($rider['expiry_date']) ?></div>
+                <div class="id-back-body">
+                    <div class="back-crest"><img src="<?= h(BASE_URL . $city['logo_path']) ?>" onerror="this.style.display='none'"></div>
+                    <div class="back-statement">This card is the property of <?= h($city['name']) ?> and must be surrendered on request.</div>
+                    <div class="back-return-label">Return To The Issuing Authority</div>
+                    <div class="back-contact">
+                        <?= h($city['name']) ?> Council<br>
+                        <?= h($city['address'] ?: 'Uganda') ?><br>
+                        <?= h($city['contact_phone'] ?: '—') ?> · <?= h($city['contact_email'] ?: '—') ?>
+                    </div>
+                    <div class="back-terms">Non-transferable · Renew annually · Ref <?= h($rider['id_number']) ?></div>
                 </div>
             </div>
         </div>
 
-        <div class="id-card">
-            <div class="id-header"><div class="id-header-text"><div class="entity-name">Back · Terms &amp; Conditions</div></div></div>
-            <div class="id-main" style="padding: 8px 12px; flex-direction: column;">
-                <div class="id-fields-col p-0">
-                    <ol class="id-fields">
-                        <li><span class="field-label">Phone</span><span class="field-value"><?= h($rider['phone']) ?></span></li>
-                        <li><span class="field-label">Vehicle</span><span class="field-value"><?= h($rider['bike_plate']) ?> · <?= h($rider['bike_model'] ?: '—') ?></span></li>
-                        <li><span class="field-label">Since</span><span class="field-value"><?= formatDate($rider['member_since'], 'M Y') ?></span></li>
-                        <li><span class="field-label">Next of Kin</span><span class="field-value"><?= h($rider['next_of_kin_name'] ?: '—') ?></span></li>
-                        <li><span class="field-label">Chair</span><span class="field-value"><?= h($_SESSION['name']) ?></span></li>
-                    </ol>
-                </div>
-                <div class="id-terms mt-1 text-start">Non-transferable · Renew annually · Report if lost to your stage chairperson.</div>
-            </div>
+        <div class="mt-2">
+            <button class="btn btn-primary" onclick="window.print()"><i class="fas fa-print me-1"></i>Print ID Card</button>
+            <button class="btn btn-outline-dark" id="previewAllBtn"><i class="fas fa-magnifying-glass-plus me-1"></i>Preview / Enlarge</button>
+            <a href="<?= BASE_URL ?>/pages/chairperson/rider-profile.php?id=<?= $riderId ?>" class="btn btn-outline-secondary">Back to Profile</a>
         </div>
+    </div>
+</div>
 
-        <button class="btn btn-primary" onclick="window.print()"><i class="fas fa-print me-1"></i>Print ID Card</button>
-        <a href="<?= BASE_URL ?>/pages/chairperson/rider-profile.php?id=<?= $riderId ?>" class="btn btn-outline-secondary">Back to Profile</a>
+<div class="modal fade" id="idPreviewModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog" style="max-width: 96vw; margin: 3vh auto;">
+        <div class="modal-content">
+            <button type="button" class="btn-close btn-close-white position-fixed top-0 end-0 m-4" data-bs-dismiss="modal" style="z-index: 10;"></button>
+            <div class="modal-body d-flex flex-column justify-content-start align-items-center" id="idPreviewBody"></div>
+        </div>
     </div>
 </div>
 
@@ -152,9 +191,30 @@ $statusColor = $statusColors[$rider['status']] ?? '#6c757d';
 <script>
     new QRCode(document.getElementById('qrFront'), {
         text: <?= json_encode(verifyUrl($rider['id_number'])) ?>,
-        width: 120, height: 120,
+        width: 160, height: 160,
         colorDark: '#1a1a2e', colorLight: '#ffffff',
-        correctLevel: QRCode.CorrectLevel.M
+        correctLevel: QRCode.CorrectLevel.H
+    });
+
+    function openIdPreview(single) {
+        const body = document.getElementById('idPreviewBody');
+        body.innerHTML = '';
+        const cards = single ? [single] : document.querySelectorAll('.id-stage > .id-card');
+        cards.forEach(card => {
+            const clone = card.cloneNode(true);
+            clone.removeAttribute('id');
+            clone.querySelectorAll('[id]').forEach(el => el.removeAttribute('id'));
+            clone.classList.add('id-zoom-clone');
+            const wrap = document.createElement('div');
+            wrap.className = 'id-zoom-wrap';
+            wrap.appendChild(clone);
+            body.appendChild(wrap);
+        });
+        new bootstrap.Modal(document.getElementById('idPreviewModal')).show();
+    }
+    document.getElementById('previewAllBtn')?.addEventListener('click', () => openIdPreview(null));
+    document.querySelectorAll('.id-zoom-btn').forEach(btn => {
+        btn.addEventListener('click', () => openIdPreview(btn.nextElementSibling));
     });
 
     document.getElementById('toggleSidebar')?.addEventListener('click', () => {
