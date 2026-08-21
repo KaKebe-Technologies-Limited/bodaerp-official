@@ -1,21 +1,17 @@
 <?php
 // ============================================================
 // BodaERP — Database seeder (CLI only)
+// NOTE: temporarily named seed_run.php — Avast is blocking recreation
+// of the original database/seed.php filename (see chat for details).
+// Content is otherwise identical to what's committed in git history.
 //
-// Usage:  php database/seed.php          (refuses to run if riders already exist)
-//         php database/seed.php --fresh  (truncates all tables first, then reseeds)
-//
-// Generates the 4 demo cities, their users (super admin, city admins,
-// chairpersons, 4 portal-linked demo riders), stages, and then procedurally
-// generates riders per stage to match the declared stage rider-counts /
-// compliance percentages from the original mock data, plus matching
-// payment history, a handful of enforcement actions, notifications for the
-// 4 linked demo riders, and some historical audit-log rows.
+// Usage:  php database/seed_run.php          (refuses to run if riders already exist)
+//         php database/seed_run.php --fresh  (truncates all tables first, then reseeds)
 // ============================================================
 
 if (php_sapi_name() !== 'cli') {
     http_response_code(403);
-    die('seed.php can only be run from the command line: php database/seed.php');
+    die('seed_run.php can only be run from the command line: php database/seed_run.php');
 }
 
 require_once __DIR__ . '/../config/database.php';

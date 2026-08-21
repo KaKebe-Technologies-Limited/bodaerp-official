@@ -5,12 +5,14 @@
 // ============================================================
 
 // ----- DETECT ENVIRONMENT -----
+$serverName = $_SERVER['SERVER_NAME'] ?? '';
 $isLocal = (
-    $_SERVER['SERVER_NAME'] === 'localhost' ||
-    $_SERVER['SERVER_NAME'] === '127.0.0.1' ||
-    strpos($_SERVER['SERVER_NAME'], 'localhost') !== false ||
-    strpos($_SERVER['SERVER_NAME'], '192.168.') === 0 ||
-    strpos($_SERVER['SERVER_NAME'], '10.') === 0
+    php_sapi_name() === 'cli' ||
+    $serverName === 'localhost' ||
+    $serverName === '127.0.0.1' ||
+    strpos($serverName, 'localhost') !== false ||
+    strpos($serverName, '192.168.') === 0 ||
+    strpos($serverName, '10.') === 0
 );
 
 // ----- DATABASE CONSTANTS -----

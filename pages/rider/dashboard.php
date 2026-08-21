@@ -37,8 +37,19 @@ $recentNotifs = fetchAll("SELECT * FROM notifications WHERE rider_id=? ORDER BY 
             <div class="col-md-3 col-6"><div class="stat-card-modern"><div class="icon-badge <?= $rider['status']==='active'?'green':'red' ?>"><i class="fas fa-shield-alt"></i></div><div><span class="stat-number"><?= ucfirst($rider['status']) ?></span><div class="stat-label">Status</div></div></div></div>
             <div class="col-md-3 col-6"><div class="stat-card-modern"><div class="icon-badge blue"><i class="fas fa-calendar-alt"></i></div><div><span class="stat-number"><?= formatDate($rider['expiry_date']) ?></span><div class="stat-label">Expiry Date</div></div></div></div>
             <div class="col-md-3 col-6"><div class="stat-card-modern"><div class="icon-badge gold"><i class="fas fa-coins"></i></div><div><span class="stat-number"><?= h(formatCurrency($rider['annual_tax'])) ?></span><div class="stat-label">Annual Tax</div></div></div></div>
-            <div class="col-md-3 col-6"><div class="stat-card-modern"><div class="icon-badge <?= $hasPaid?'green':'red' ?>"><i class="fas fa-receipt"></i></div><div><span class="stat-number"><?= $hasPaid ? 'Paid' : 'Unpaid' ?></span><div class="stat-label">Payment Status</div></div></div></div>
+            <div class="col-md-3 col-6">
+                <a href="<?= BASE_URL ?>/pages/rider/payment-history.php" class="text-decoration-none">
+                    <div class="stat-card-modern"><div class="icon-badge <?= $hasPaid?'green':'red' ?>"><i class="fas fa-receipt"></i></div><div><span class="stat-number"><?= $hasPaid ? 'Paid' : 'Unpaid' ?></span><div class="stat-label">Payment Status</div></div></div>
+                </a>
+            </div>
         </div>
+
+        <?php if (!$hasPaid): ?>
+        <div class="alert alert-warning d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+            <div><i class="fas fa-exclamation-triangle me-2"></i>Your annual tax (<strong><?= h(formatCurrency($rider['annual_tax'])) ?></strong>) hasn't been paid for <?= h(CURRENT_FISCAL_YEAR) ?>.</div>
+            <a href="<?= BASE_URL ?>/pages/rider/payment-history.php" class="btn btn-primary btn-sm"><i class="fas fa-mobile-alt me-1"></i>Pay Now</a>
+        </div>
+        <?php endif; ?>
 
         <div class="row g-4">
             <div class="col-lg-8">

@@ -83,6 +83,16 @@ $statusColor = $statusColors[$rider['status']] ?? '#6c757d';
         #idPreviewModal.modal { background: rgba(12,12,18,0.94); }
         #idPreviewModal .modal-content { background: transparent; border: none; box-shadow: none; }
         #idPreviewBody { max-height: 92vh; overflow-y: auto; overflow-x: hidden; padding: 20px 0; }
+
+        /* print / save-as-PDF at true CR80 card size (3.375in x 2.125in) — no scale-to-fit */
+        @media print {
+            @page { size: 3.375in 2.125in; margin: 0; }
+            .id-zoom-btn, .mt-2, .modal { display: none !important; }
+            body, .content-area { margin: 0 !important; padding: 0 !important; }
+            .id-stage { display: block !important; margin: 0 !important; page-break-after: always; page-break-inside: avoid; }
+            .id-stage:last-of-type { page-break-after: auto; }
+            .id-card { margin: 0 !important; box-shadow: none !important; border-radius: 0 !important; }
+        }
     </style>
 </head>
 <body>
