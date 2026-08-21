@@ -58,10 +58,10 @@
     display: flex;
     align-items: center;
     gap: 14px;
-    padding: 12px 16px;
+    padding: 12px 18px;
     color: rgba(255, 255, 255, 0.6);
     text-decoration: none;
-    border-radius: var(--radius-sm);
+    border-radius: var(--radius-full);
     transition: all var(--transition-normal);
     font-weight: 500;
     font-size: 0.9rem;
@@ -72,6 +72,7 @@
     width: 20px;
     font-size: 1rem;
     text-align: center;
+    transition: all var(--transition-normal);
 }
 
 .sidebar .sidebar-menu li a .badge {
@@ -81,25 +82,23 @@
 .sidebar .sidebar-menu li a:hover {
     background: rgba(255, 255, 255, 0.08);
     color: var(--pure-white);
-    transform: translateX(4px);
+    transform: translateX(3px);
 }
 
 .sidebar .sidebar-menu li.active a {
-    background: var(--primary-blue-gradient);
-    color: var(--pure-white);
-    box-shadow: 0 4px 20px rgba(13, 110, 253, 0.3);
+    background: var(--pure-white);
+    color: var(--primary-blue-dark);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.22);
+    font-weight: 700;
+    transform: none;
 }
 
-.sidebar .sidebar-menu li.active a::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 3px;
-    height: 24px;
-    background: var(--pure-white);
-    border-radius: 0 var(--radius-full) var(--radius-full) 0;
+.sidebar .sidebar-menu li.active a i {
+    color: var(--primary-blue);
+}
+
+.sidebar .sidebar-menu li.active a:hover {
+    transform: none;
 }
 
 /* ----- Main Content ----- */
@@ -454,11 +453,180 @@
     color: #dc3545 !important;
 }
 
-/* Ensure active sidebar item indicator renders */
-.sidebar .sidebar-menu li.active a {
-    background: var(--primary-blue-gradient);
+/* ============================================================
+   SIDEBAR — profile footer card (shared across every role)
+   ============================================================ */
+.sidebar-footer-card {
+    margin: 18px 16px 6px;
+    padding: 12px 14px;
+    border-radius: var(--radius-lg);
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.sidebar-footer-card img {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.18);
+    flex-shrink: 0;
+    object-fit: cover;
+}
+
+.sidebar-footer-card .sfc-name {
+    font-size: 0.78rem;
+    font-weight: 700;
     color: var(--pure-white);
-    box-shadow: 0 4px 20px rgba(13,110,253,0.3);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.sidebar-footer-card .sfc-role {
+    font-size: 0.64rem;
+    color: rgba(255, 255, 255, 0.5);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.sidebar-footer-card .sfc-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #2ecc71;
+    box-shadow: 0 0 0 2px rgba(46, 204, 113, 0.25);
+    flex-shrink: 0;
+    margin-left: auto;
+}
+
+/* ============================================================
+   HERO STAT CARDS — bold gradient metric tiles
+   ============================================================ */
+.stat-hero-card {
+    border-radius: var(--radius-lg);
+    padding: 18px 20px;
+    color: var(--pure-white);
+    position: relative;
+    overflow: hidden;
+    min-height: 110px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    box-shadow: 0 10px 26px rgba(0, 0, 0, 0.12);
+    transition: all var(--transition-normal);
+    height: 100%;
+}
+
+.stat-hero-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 16px 34px rgba(0, 0, 0, 0.18);
+}
+
+.stat-hero-card::after {
+    content: '';
+    position: absolute;
+    top: -55%;
+    right: -20%;
+    width: 90%;
+    height: 220%;
+    background: rgba(255, 255, 255, 0.07);
+    border-radius: 50%;
+}
+
+.stat-hero-card .stat-hero-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.95rem;
+    position: relative;
+    z-index: 1;
+}
+
+.stat-hero-card .stat-hero-label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    opacity: 0.9;
+    margin-top: 14px;
+    position: relative;
+    z-index: 1;
+}
+
+.stat-hero-card .stat-hero-value {
+    font-size: 1.45rem;
+    font-weight: 900;
+    margin-top: 2px;
+    line-height: 1.15;
+    position: relative;
+    z-index: 1;
+    word-break: break-word;
+}
+
+.stat-hero-card.grad-blue  { background: var(--primary-blue-gradient); }
+.stat-hero-card.grad-red   { background: var(--secondary-red-gradient); }
+.stat-hero-card.grad-dark  { background: var(--dark-black-gradient); }
+.stat-hero-card.grad-gold  { background: linear-gradient(135deg, #f59e0b 0%, #b45309 100%); }
+.stat-hero-card.grad-green { background: linear-gradient(135deg, #198754 0%, #0f4c2e 100%); }
+
+@media (max-width: 576px) {
+    .stat-hero-card { padding: 14px 16px; min-height: 92px; border-radius: 14px; }
+    .stat-hero-card .stat-hero-icon { width: 28px; height: 28px; font-size: 0.8rem; }
+    .stat-hero-card .stat-hero-label { font-size: 0.68rem; margin-top: 10px; }
+    .stat-hero-card .stat-hero-value { font-size: 1.15rem; }
+}
+
+/* ============================================================
+   ACTIVITY ROW — polished list rows (recent users, recent trips…)
+   ============================================================ */
+.activity-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 11px 4px;
+    border-bottom: 1px solid var(--light-gray);
+    transition: background var(--transition-fast);
+}
+
+.activity-row:last-child {
+    border-bottom: none;
+}
+
+.activity-row:hover {
+    background: var(--off-white);
+    border-radius: var(--radius-sm);
+}
+
+.activity-row img {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--off-white);
+    flex-shrink: 0;
+}
+
+.activity-row .activity-title {
+    font-weight: 700;
+    font-size: 0.82rem;
+    color: var(--dark-black);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.activity-row .activity-sub {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 /* ===== PRINT ===== */

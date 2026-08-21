@@ -109,11 +109,11 @@ $roleColors = ['super_admin' => 'primary', 'city_admin' => 'success', 'chairpers
         </div>
 
         <div class="row g-3 row-cols-2 row-cols-md-3 row-cols-xl-5 mb-4">
-            <div class="col"><div class="stat-card-modern"><div class="icon-badge blue"><i class="fas fa-city"></i></div><div><span class="stat-number"><?= $totalCities ?></span><div class="stat-label">Active Cities</div></div></div></div>
-            <div class="col"><div class="stat-card-modern"><div class="icon-badge green"><i class="fas fa-users"></i></div><div><span class="stat-number"><?= number_format($totalRiders) ?></span><div class="stat-label">Total Riders</div></div></div></div>
-            <div class="col"><div class="stat-card-modern"><div class="icon-badge gold"><i class="fas fa-map-marker-alt"></i></div><div><span class="stat-number"><?= $totalStages ?></span><div class="stat-label">Total Stages</div></div></div></div>
-            <div class="col"><div class="stat-card-modern"><div class="icon-badge dark"><i class="fas fa-user-shield"></i></div><div><span class="stat-number"><?= $totalUsers ?></span><div class="stat-label">Platform Users</div></div></div></div>
-            <div class="col"><div class="stat-card-modern"><div class="icon-badge red"><i class="fas fa-money-bill-wave"></i></div><div><span class="stat-number" style="font-size:1.1rem;"><?= $totalRevenue >= 1000000 ? number_format($totalRevenue / 1000000, 1) . 'M' : number_format($totalRevenue) ?></span><div class="stat-label">Revenue (UGX)</div></div></div></div>
+            <div class="col"><div class="stat-hero-card grad-blue"><div class="stat-hero-icon"><i class="fas fa-city"></i></div><div><div class="stat-hero-value"><?= $totalCities ?></div><div class="stat-hero-label">Active Cities</div></div></div></div>
+            <div class="col"><div class="stat-hero-card grad-green"><div class="stat-hero-icon"><i class="fas fa-users"></i></div><div><div class="stat-hero-value"><?= number_format($totalRiders) ?></div><div class="stat-hero-label">Total Riders</div></div></div></div>
+            <div class="col"><div class="stat-hero-card grad-gold"><div class="stat-hero-icon"><i class="fas fa-map-marker-alt"></i></div><div><div class="stat-hero-value"><?= $totalStages ?></div><div class="stat-hero-label">Total Stages</div></div></div></div>
+            <div class="col"><div class="stat-hero-card grad-dark"><div class="stat-hero-icon"><i class="fas fa-user-shield"></i></div><div><div class="stat-hero-value"><?= $totalUsers ?></div><div class="stat-hero-label">Platform Users</div></div></div></div>
+            <div class="col"><div class="stat-hero-card grad-red"><div class="stat-hero-icon"><i class="fas fa-money-bill-wave"></i></div><div><div class="stat-hero-value"><?= $totalRevenue >= 1000000 ? number_format($totalRevenue / 1000000, 1) . 'M' : number_format($totalRevenue) ?></div><div class="stat-hero-label">Revenue (UGX)</div></div></div></div>
         </div>
 
         <div class="row g-3 g-md-4 mb-4">
@@ -217,13 +217,13 @@ $roleColors = ['super_admin' => 'primary', 'city_admin' => 'success', 'chairpers
                         <h6 class="fw-bold mb-3"><i class="fas fa-users text-primary me-2"></i>Recent Users Added</h6>
                         <div>
                         <?php foreach ($recentUsers as $u): ?>
-                            <div class="d-flex align-items-center gap-2 py-2 border-bottom">
-                                <img src="<?= BASE_URL ?>/assets/images/avatar-placeholder.png" width="32" height="32" class="rounded-circle">
-                                <div class="flex-1">
-                                    <div class="fw-bold" style="font-size:0.82rem;"><?= h($u['name']) ?></div>
-                                    <small class="text-muted"><?= h($u['email']) ?></small>
+                            <div class="activity-row">
+                                <img src="<?= BASE_URL ?>/assets/images/avatar-placeholder.png" alt="<?= h($u['name']) ?>">
+                                <div class="flex-1" style="min-width:0;">
+                                    <div class="activity-title"><?= h($u['name']) ?></div>
+                                    <div class="activity-sub"><?= h($u['email']) ?></div>
                                 </div>
-                                <span class="badge bg-<?= $roleColors[$u['role']] ?? 'secondary' ?>" style="font-size:0.6rem;"><?= strtoupper(str_replace('_', ' ', $u['role'])) ?></span>
+                                <span class="badge bg-<?= $roleColors[$u['role']] ?? 'secondary' ?>" style="font-size:0.6rem;flex-shrink:0;"><?= strtoupper(str_replace('_', ' ', $u['role'])) ?></span>
                             </div>
                         <?php endforeach; ?>
                         </div>
