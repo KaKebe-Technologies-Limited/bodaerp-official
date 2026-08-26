@@ -29,9 +29,9 @@ if ($isLocal) {
     // ===== LIVE SERVER ENVIRONMENT (Hostinger) =====
     define('DB_HOST', 'localhost');
     define('DB_PORT', '3306');
-    define('DB_NAME', 'u850523537_BodaERP27');
-    define('DB_USER', 'u850523537_bodAUser');
-    define('DB_PASS', 'i#@Recover2u');
+    define('DB_NAME', 'u850523537_BodaERP26');
+    define('DB_USER', 'u850523537_userBoda');
+    define('DB_PASS', 'BODAERP=1a');
     define('DB_CHARSET', 'utf8mb4');
     define('DB_ENV', 'live');
 }
