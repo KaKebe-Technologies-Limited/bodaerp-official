@@ -3,10 +3,14 @@
  * ioTec Pay Configuration — BodaERP
  * Same merchant account/credentials as ChamaFunds (shared ioTec Pay
  * client) — both apps collect into the same wallet.
- * Keep this file secure - DO NOT commit to public repositories
+ * Real credentials live in the untracked .env file at the project
+ * root (see .env.example for the required keys) — never hardcode
+ * them here again; this file is tracked in git.
  */
 
 require_once __DIR__ . '/../config/config.php'; // for BASE_URL, below
+require_once __DIR__ . '/env_loader.php';
+loadEnvFile(__DIR__ . '/../.env');
 
 // ── Environment ───────────────────────────────────────────────
 // ioTec Pay uses a single API host for both modes; "sandbox" here
@@ -17,13 +21,13 @@ require_once __DIR__ . '/../config/config.php'; // for BASE_URL, below
 define('IOTEC_SANDBOX', true);   // ← TEST MODE — no real money moves
 
 // ── API Credentials (same ioTec Pay client as ChamaFunds) ──────
-define('IOTEC_CLIENT_ID',     'pay-019f314e-f9f1-70a0-b089-06f53b92df21');
-define('IOTEC_CLIENT_SECRET', 'IO-87xRMPjXj99LezKzP884sJED8cnDQUynS');
-define('IOTEC_GRANT_TYPE',    'client_credentials');
+define('IOTEC_CLIENT_ID',     getenv('IOTEC_CLIENT_ID') ?: '');
+define('IOTEC_CLIENT_SECRET', getenv('IOTEC_CLIENT_SECRET') ?: '');
+define('IOTEC_GRANT_TYPE',    getenv('IOTEC_GRANT_TYPE') ?: 'client_credentials');
 
 // ── Wallets ───────────────────────────────────────────────────
-define('IOTEC_TEST_WALLET_ID', '019f314e-fa12-764a-b7a5-be6c5938974d');
-define('IOTEC_LIVE_WALLET_ID', '019f37d2-82a0-721e-8d72-7fd11d81368a');
+define('IOTEC_TEST_WALLET_ID', getenv('IOTEC_TEST_WALLET_ID') ?: '');
+define('IOTEC_LIVE_WALLET_ID', getenv('IOTEC_LIVE_WALLET_ID') ?: '');
 define('IOTEC_WALLET_ID', IOTEC_SANDBOX ? IOTEC_TEST_WALLET_ID : IOTEC_LIVE_WALLET_ID);
 
 // ── IPN / Callback verification ─────────────────────────────────
@@ -36,7 +40,7 @@ define('IOTEC_WALLET_ID', IOTEC_SANDBOX ? IOTEC_TEST_WALLET_ID : IOTEC_LIVE_WALL
 // reconcilePendingPayments() in iotec_functions.php), not this IPN
 // secret — ipn_handler.php exists here as a ready-to-use fallback for
 // whenever the callback URL question gets resolved.
-define('IOTEC_IPN_SECRET', '2ta6cfziH7W54kgDFGhUmZRq8esTXMw9SEBvLQyb');
+define('IOTEC_IPN_SECRET', getenv('IOTEC_IPN_SECRET') ?: '');
 
 // ── API Endpoints ─────────────────────────────────────────────
 define('IOTEC_AUTH_URL', 'https://id.iotec.io/connect/token');
