@@ -5,8 +5,8 @@
 // payment, poll its status, and (admin) reconcile stuck-pending ones.
 // ============================================================
 
-require_once __DIR__ . '/../includes/auth.php';
-require_once __DIR__ . '/../includes/iotec_functions.php';
+require_once __DIR__ . '/../../packages/backend/auth.php';
+require_once __DIR__ . '/../../packages/backend/iotec_functions.php';
 
 header('Content-Type: application/json');
 $action = $_GET['action'] ?? $_POST['action'] ?? '';

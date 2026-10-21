@@ -1,319 +1,87 @@
 -- ============================================================
--- BodaERP — MySQL / MariaDB schema
--- Import via phpMyAdmin, or:  mysql -u root < database/schema.sql
+-- BodaERP — PostgreSQL schema (minimal for Settings system)
+-- Run via: psql -U postgres -d bodaerp -f database/schema.sql
 -- ============================================================
 
-CREATE DATABASE IF NOT EXISTS bodaerp
-  CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE bodaerp;
-
-SET FOREIGN_KEY_CHECKS = 0;
-
--- ── cities (tenants) ────────────────────────────────────────
-DROP TABLE IF EXISTS cities;
-CREATE TABLE cities (
-  id                 CHAR(3) PRIMARY KEY,                 -- LIR, GUL, KLA, MBA
-  name               VARCHAR(120) NOT NULL,
-  country            VARCHAR(80)  NOT NULL DEFAULT 'Uganda',
-  currency           CHAR(3)      NOT NULL DEFAULT 'UGX',
-  logo_path          VARCHAR(255),
-  annual_fee         DECIMAL(12,2) NOT NULL DEFAULT 0,
-  fiscal_year        VARCHAR(20)  NOT NULL DEFAULT '2026/2027',
-  id_prefix          VARCHAR(20)  NOT NULL,
-  status             ENUM('active','pending','suspended') NOT NULL DEFAULT 'pending',
-  contact_email      VARCHAR(150),
-  contact_phone      VARCHAR(30),
-  address            VARCHAR(255),
-  payment_gateway    VARCHAR(60),
-  sms_gateway        VARCHAR(60),
-  revenue_split_city        TINYINT UNSIGNED NOT NULL DEFAULT 55,
-  revenue_split_association TINYINT UNSIGNED NOT NULL DEFAULT 26,
-  revenue_split_platform    TINYINT UNSIGNED NOT NULL DEFAULT 9,
-  revenue_split_government  TINYINT UNSIGNED NOT NULL DEFAULT 10,
-  compliance_target  TINYINT UNSIGNED NOT NULL DEFAULT 70,
-  grace_period_days  SMALLINT UNSIGNED NOT NULL DEFAULT 30,
-  reminder_days      SMALLINT UNSIGNED NOT NULL DEFAULT 14,
-  created_by         INT NULL,
-  created_at         DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at         DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  CONSTRAINT chk_revenue_split CHECK (revenue_split_city + revenue_split_association + revenue_split_platform + revenue_split_government = 100)
-) ENGINE=InnoDB;
-
--- ── stages ──────────────────────────────────────────────────
-DROP TABLE IF EXISTS stages;
-CREATE TABLE stages (
-  id          INT AUTO_INCREMENT PRIMARY KEY,
-  city_id     CHAR(3) NOT NULL,
-  code        VARCHAR(20) NOT NULL UNIQUE,          -- LIR-STG-001
-  name        VARCHAR(120) NOT NULL,
-  location    VARCHAR(150),
-  route       VARCHAR(150),
-  chairperson_name  VARCHAR(150),   -- lightweight contact info; may or may not have a linked login (see users.stage_id)
-  chairperson_phone VARCHAR(30),
-  status      ENUM('active','inactive') NOT NULL DEFAULT 'active',
-  created_at  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  FOREIGN KEY (city_id) REFERENCES cities(id) ON DELETE RESTRICT,
-  INDEX idx_stage_city (city_id)
-) ENGINE=InnoDB;
-
--- ── users (auth accounts, all roles) ───────────────────────
-DROP TABLE IF EXISTS users;
-CREATE TABLE users (
-  id             INT AUTO_INCREMENT PRIMARY KEY,
-  name           VARCHAR(150) NOT NULL,
-  email          VARCHAR(150) NOT NULL UNIQUE,
-  phone          VARCHAR(30),
-  password_hash  VARCHAR(255) NOT NULL,
-  role           ENUM('super_admin','city_admin','chairperson','rider','government') NOT NULL,
-  city_id        CHAR(3) NULL,
-  stage_id       INT NULL,
-  agency_name    VARCHAR(150) NULL,
-  avatar_path    VARCHAR(255),
-  status         ENUM('active','suspended') NOT NULL DEFAULT 'active',
-  reset_token    VARCHAR(64) NULL,
-  reset_expires  DATETIME NULL,
-  deleted_at     DATETIME NULL,
-  created_at     DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at     DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  FOREIGN KEY (city_id)  REFERENCES cities(id)  ON DELETE RESTRICT,
-  FOREIGN KEY (stage_id) REFERENCES stages(id) ON DELETE SET NULL,
-  INDEX idx_users_role (role),
-  INDEX idx_users_city (city_id),
-  INDEX idx_users_reset_token (reset_token)
-) ENGINE=InnoDB;
-
-ALTER TABLE cities
-  ADD CONSTRAINT fk_cities_created_by FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL;
-
--- ── riders (business/compliance record, not necessarily a login) ─
-DROP TABLE IF EXISTS riders;
-CREATE TABLE riders (
-  id                   INT AUTO_INCREMENT PRIMARY KEY,
-  user_id              INT NULL,                     -- only set if this rider has portal access
-  city_id              CHAR(3) NOT NULL,
-  stage_id             INT NOT NULL,
-  id_number            VARCHAR(30) NOT NULL UNIQUE,   -- BODA-LIR-004521
-  full_name            VARCHAR(150) NOT NULL,
-  nin                  VARCHAR(20) UNIQUE NULL,
-  date_of_birth        DATE NULL,
-  gender               ENUM('Male','Female','Other') NULL,
-  marital_status       ENUM('Single','Married','Divorced','Widowed') NULL,
-  phone                VARCHAR(30) NOT NULL,
-  email                VARCHAR(150) NULL,
-  physical_address     VARCHAR(255) NULL,
-  next_of_kin_name     VARCHAR(150) NULL,
-  next_of_kin_contact  VARCHAR(30) NULL,
-  bike_plate           VARCHAR(20) NOT NULL,
-  bike_model           VARCHAR(100) NULL,
-  route                VARCHAR(150) NULL,
-  photo_path           VARCHAR(255) NULL,
-  status               ENUM('active','expired','pending') NOT NULL DEFAULT 'pending',
-  member_since         DATE NOT NULL,
-  expiry_date          DATE NULL,
-  annual_tax           DECIMAL(12,2) NOT NULL,
-  created_by           INT NULL,                      -- chairperson user who registered them
-  deleted_at           DATETIME NULL,
-  created_at           DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at           DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  FOREIGN KEY (user_id)    REFERENCES users(id)  ON DELETE SET NULL,
-  FOREIGN KEY (city_id)    REFERENCES cities(id) ON DELETE RESTRICT,
-  FOREIGN KEY (stage_id)   REFERENCES stages(id) ON DELETE RESTRICT,
-  FOREIGN KEY (created_by) REFERENCES users(id)  ON DELETE SET NULL,
-  INDEX idx_riders_stage (stage_id),
-  INDEX idx_riders_city_status (city_id, status),
-  INDEX idx_riders_expiry (expiry_date)
-) ENGINE=InnoDB;
-
--- ── payments ────────────────────────────────────────────────
-DROP TABLE IF EXISTS payments;
-CREATE TABLE payments (
-  id              INT AUTO_INCREMENT PRIMARY KEY,
-  rider_id        INT NOT NULL,
-  city_id         CHAR(3) NOT NULL,
-  amount          DECIMAL(12,2) NOT NULL,
-  payment_method  ENUM('Mobile Money','Cash','Bank Transfer') NOT NULL,
-  receipt_number  VARCHAR(30) NOT NULL UNIQUE,
-  status          ENUM('Confirmed','Pending','Failed') NOT NULL DEFAULT 'Confirmed',
-  fiscal_year     VARCHAR(20) NOT NULL,
-  paid_at         DATETIME NOT NULL,
-  collected_by    INT NULL,
-  created_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (rider_id)     REFERENCES riders(id) ON DELETE RESTRICT,
-  FOREIGN KEY (city_id)      REFERENCES cities(id) ON DELETE RESTRICT,
-  FOREIGN KEY (collected_by) REFERENCES users(id)  ON DELETE SET NULL,
-  INDEX idx_payments_rider (rider_id),
-  INDEX idx_payments_city_status (city_id, status),
-  INDEX idx_payments_paidat (paid_at)
-) ENGINE=InnoDB;
-
--- ── enforcement_actions ─────────────────────────────────────
-DROP TABLE IF EXISTS enforcement_actions;
-CREATE TABLE enforcement_actions (
-  id              INT AUTO_INCREMENT PRIMARY KEY,
-  action_code     VARCHAR(20) NOT NULL UNIQUE,        -- ENF-2026-001
-  rider_id        INT NULL,
-  city_id         CHAR(3) NOT NULL,
-  stage_id        INT NULL,
-  plate           VARCHAR(20),
-  type            ENUM('warning','fine','suspension','impound') NOT NULL,
-  amount          DECIMAL(12,2) NULL,
-  description     VARCHAR(500),
-  action_date     DATE NOT NULL,
-  status          ENUM('pending','resolved','closed') NOT NULL DEFAULT 'pending',
-  officer_user_id INT NULL,
-  created_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  FOREIGN KEY (rider_id)        REFERENCES riders(id) ON DELETE SET NULL,
-  FOREIGN KEY (city_id)         REFERENCES cities(id) ON DELETE RESTRICT,
-  FOREIGN KEY (stage_id)        REFERENCES stages(id) ON DELETE SET NULL,
-  FOREIGN KEY (officer_user_id) REFERENCES users(id)  ON DELETE SET NULL,
-  INDEX idx_enforcement_city (city_id),
-  INDEX idx_enforcement_status (status)
-) ENGINE=InnoDB;
-
--- ── notifications ───────────────────────────────────────────
-DROP TABLE IF EXISTS notifications;
-CREATE TABLE notifications (
-  id          INT AUTO_INCREMENT PRIMARY KEY,
-  rider_id    INT NOT NULL,
-  type        ENUM('Renewal Reminder','Payment Confirmed','Important Update','ID Card Issued','Registration Complete') NOT NULL,
-  message     VARCHAR(255) NOT NULL,
-  is_read     TINYINT(1) NOT NULL DEFAULT 0,
-  created_at  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (rider_id) REFERENCES riders(id) ON DELETE CASCADE,
-  INDEX idx_notifications_rider (rider_id, is_read)
-) ENGINE=InnoDB;
-
--- ── audit_logs ──────────────────────────────────────────────
-DROP TABLE IF EXISTS audit_logs;
-CREATE TABLE audit_logs (
-  id                 BIGINT AUTO_INCREMENT PRIMARY KEY,
-  user_id            INT NULL,
-  user_name_snapshot VARCHAR(150),
-  role_snapshot      VARCHAR(20),
-  city_id            CHAR(3) NULL,
-  action             ENUM('LOGIN','LOGOUT','LOGIN_FAILED','CREATE','UPDATE','DELETE') NOT NULL,
-  entity_type        VARCHAR(50) NULL,
-  entity_id          VARCHAR(50) NULL,
-  details            VARCHAR(500),
-  ip_address         VARCHAR(45),
-  created_at         DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL,
-  INDEX idx_audit_user (user_id),
-  INDEX idx_audit_created (created_at),
-  INDEX idx_audit_action (action)
-) ENGINE=InnoDB;
-
--- ── login_sessions (audit trail of active/past sessions) ────
-DROP TABLE IF EXISTS login_sessions;
-CREATE TABLE login_sessions (
-  id             VARCHAR(64) PRIMARY KEY,   -- PHP session_id()
-  user_id        INT NOT NULL,
-  ip_address     VARCHAR(45),
-  user_agent     VARCHAR(255),
-  created_at     DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  last_activity  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  expires_at     DATETIME NULL,
-  is_active      TINYINT(1) NOT NULL DEFAULT 1,
-  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-  INDEX idx_sessions_user (user_id)
-) ENGINE=InnoDB;
-
--- ── platform_settings (single-row global config) ────────────
+-- ── platform_settings (single-row global config) ──────────────
 DROP TABLE IF EXISTS platform_settings;
 CREATE TABLE platform_settings (
-  id                          TINYINT UNSIGNED PRIMARY KEY DEFAULT 1,
+  id                          SERIAL PRIMARY KEY,
   platform_name               VARCHAR(100) NOT NULL DEFAULT 'BodaERP',
   operator_name                VARCHAR(150) NOT NULL DEFAULT 'Kakebe Technologies Limited',
   support_email                VARCHAR(150),
   support_phone                VARCHAR(30),
-  default_split_city           TINYINT UNSIGNED NOT NULL DEFAULT 55,
-  default_split_association    TINYINT UNSIGNED NOT NULL DEFAULT 26,
-  default_split_platform       TINYINT UNSIGNED NOT NULL DEFAULT 9,
-  default_split_government     TINYINT UNSIGNED NOT NULL DEFAULT 10,
-  require_2fa                  TINYINT(1) NOT NULL DEFAULT 1,
-  maintenance_mode             TINYINT(1) NOT NULL DEFAULT 0,
-  updated_at                   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  CONSTRAINT chk_settings_single_row CHECK (id = 1),
-  CONSTRAINT chk_default_split CHECK (default_split_city + default_split_association + default_split_platform + default_split_government = 100)
-) ENGINE=InnoDB;
+  default_split_city           SMALLINT NOT NULL DEFAULT 60,
+  default_split_association    SMALLINT NOT NULL DEFAULT 26,
+  default_split_platform       SMALLINT NOT NULL DEFAULT 14,
+  require_2fa                  BOOLEAN NOT NULL DEFAULT true,
+  maintenance_mode             BOOLEAN NOT NULL DEFAULT false,
+  updated_at                   TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
 
-INSERT INTO platform_settings (id, support_email, support_phone) VALUES (1, 'support@kakebe.tech', '+256 700 000 000');
+INSERT INTO platform_settings (platform_name, operator_name, support_email, support_phone, default_split_city, default_split_association, default_split_platform, require_2fa)
+VALUES ('BodaERP', 'Kakebe Technologies Limited', 'support@kakebe.tech', '+256 700 000 000', 60, 26, 14, true);
 
+-- ── settings (key-value store for ALL configurable content) ─────
+DROP TABLE IF EXISTS settings;
+CREATE TABLE settings (
+  id          SERIAL PRIMARY KEY,
+  "key"       VARCHAR(100) NOT NULL UNIQUE,         -- e.g., site_name, footer_contact, nav_home, etc.
+  value       TEXT NOT NULL,
+  value_type  VARCHAR(20) NOT NULL DEFAULT 'text',   -- text, textarea, select, boolean, json
+  category    VARCHAR(50) NOT NULL DEFAULT 'general', -- general, navigation, labels, features, appearance
+  description VARCHAR(255),                         -- admin help text
+  is_feature_flag BOolean NOT NULL DEFAULT false,       -- when true, controls feature enabled/disabled
+  sort_order  SMALLINT NOT NULL DEFAULT 0,
+  created_at  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
 
--- ── anomaly detection ───────────────────────────────────────
-CREATE TABLE IF NOT EXISTS `anomaly_flags` (
-  `id`                BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
-  `fingerprint`       VARCHAR(100) NOT NULL,
-  `rule_code`         VARCHAR(40)  NOT NULL,
-  `category`          VARCHAR(30)  NOT NULL,
-  `severity`          ENUM('low','medium','high') NOT NULL DEFAULT 'medium',
-  `entity_type`       VARCHAR(20)  NOT NULL,
-  `entity_id`         VARCHAR(80)  NOT NULL,
-  `rider_id`          INT NULL,
-  `city_id`           CHAR(3) NULL,
-  `title`             VARCHAR(200) NOT NULL,
-  `details`           VARCHAR(600) NULL,
-  `status`            ENUM('open','confirmed','dismissed','resolved') NOT NULL DEFAULT 'open',
-  `first_detected_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `last_seen_at`      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `resolved_at`       DATETIME NULL,
-  `reviewed_by`       INT NULL,
-  `reviewed_at`       DATETIME NULL,
-  `review_note`       VARCHAR(300) NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `uq_anomaly_fingerprint` (`fingerprint`),
-  KEY `idx_anomaly_status_sev` (`status`,`severity`),
-  KEY `idx_anomaly_rule` (`rule_code`),
-  KEY `idx_anomaly_city` (`city_id`),
-  KEY `idx_anomaly_rider` (`rider_id`),
-  KEY `idx_anomaly_seen` (`last_seen_at`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+-- Default configurable content (populate from what was previously hardcoded)
+INSERT INTO settings ("key", value, value_type, category, description, is_feature_flag, sort_order) VALUES
+  -- General site content
+  ('site_name', 'BodaERP', 'text', 'general', 'Site name / title', false, 1),
+  ('operator_name', 'Kakebe Technologies Limited', 'text', 'general', 'Operator/company name', false, 2),
+  ('support_email', 'support@kakebe.tech', 'text', 'general', 'Support email address', false, 3),
+  ('support_phone', '+256 700 000 000', 'text', 'general', 'Support phone number', false, 4),
+  ('footer_copyright', '&copy; 2026 BodaERP. All rights reserved.', 'text', 'general', 'Footer copyright text', false, 5),
+  ('footer_contact', 'support@kakebe.tech', 'text', 'general', 'Footer contact email', false, 6),
 
-CREATE TABLE IF NOT EXISTS `anomaly_scan_runs` (
-  `id`             INT UNSIGNED NOT NULL AUTO_INCREMENT,
-  `started_at`     DATETIME NOT NULL,
-  `finished_at`    DATETIME NULL,
-  `triggered_by`   VARCHAR(40) NOT NULL DEFAULT 'manual',
-  `new_flags`      INT NOT NULL DEFAULT 0,
-  `resolved_flags` INT NOT NULL DEFAULT 0,
-  `open_flags`     INT NOT NULL DEFAULT 0,
-  `duration_ms`    INT NOT NULL DEFAULT 0,
-  PRIMARY KEY (`id`),
-  KEY `idx_scan_started` (`started_at`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  -- Navigation labels
+  ('nav_home', 'Home', 'text', 'navigation', 'Home menu label', false, 1),
+  ('nav_dashboard', 'Dashboard', 'text', 'navigation', 'Dashboard menu label', false, 2),
+  ('nav_riders', 'Riders', 'text', 'navigation', 'Riders menu label', false, 3),
+  ('nav_stages', 'Stages', 'text', 'navigation', 'Stages menu label', false, 4),
+  ('nav_payments', 'Payments', 'text', 'navigation', 'Payments menu label', false, 5),
+  ('nav_settings', 'Settings', 'text', 'navigation', 'Settings menu label', false, 6),
+  ('nav_login', 'Login', 'text', 'navigation', 'Login menu label', false, 7),
+  ('nav_logout', 'Logout', 'text', 'navigation', 'Logout menu label', false, 8),
 
-SET FOREIGN_KEY_CHECKS = 1;
+  -- Page titles and labels (chairperson)
+  ('chairperson_dashboard_title', 'Stage Dashboard', 'text', 'labels', 'Chairperson dashboard page title', false, 1),
+  ('chairperson_welcome_text', 'Welcome to your stage dashboard', 'textarea', 'labels', 'Chairperson dashboard welcome message', false, 2),
+  ('chairperson_payment_initiated', 'Payment initiated successfully', 'text', 'labels', 'Payment initiation success message', false, 3),
 
--- ── views: computed stats (avoid drift vs. storing counters) ─
--- Using CREATE OR REPLACE so this works on shared hosting (no SUPER/SET USER needed)
-CREATE OR REPLACE VIEW v_stage_stats AS
-SELECT
-  s.id AS stage_id,
-  s.city_id,
-  s.code,
-  s.name,
-  COUNT(r.id) AS rider_count,
-  COALESCE(SUM(r.status = 'active'), 0)  AS active_count,
-  COALESCE(SUM(r.status = 'expired'), 0) AS expired_count,
-  COALESCE(SUM(r.status = 'pending'), 0) AS pending_count,
-  ROUND(100 * COALESCE(SUM(r.status = 'active'), 0) / NULLIF(COUNT(r.id), 0), 1) AS compliance_pct
-FROM stages s
-LEFT JOIN riders r ON r.stage_id = s.id AND r.deleted_at IS NULL
-GROUP BY s.id, s.city_id, s.code, s.name;
+  -- Page titles and labels (city council)
+  ('citycouncil_dashboard_title', 'City Council Dashboard', 'text', 'labels', 'City council dashboard page title', false, 1),
+  ('citycouncil_welcome_text', 'Welcome to your city dashboard', 'textarea', 'labels', 'City council dashboard welcome message', false, 2),
 
-CREATE OR REPLACE VIEW v_city_stats AS
-SELECT
-  c.id AS city_id,
-  c.name,
-  COUNT(DISTINCT s.id) AS stage_count,
-  COUNT(r.id) AS rider_count,
-  COALESCE(SUM(r.status = 'active'), 0)  AS active_count,
-  COALESCE(SUM(r.status = 'expired'), 0) AS expired_count,
-  COALESCE(SUM(r.status = 'pending'), 0) AS pending_count,
-  ROUND(100 * COALESCE(SUM(r.status = 'active'), 0) / NULLIF(COUNT(r.id), 0), 1) AS compliance_pct
-FROM cities c
-LEFT JOIN stages s ON s.city_id = c.id
-LEFT JOIN riders r ON r.stage_id = s.id AND r.deleted_at IS NULL
-GROUP BY c.id, c.name;
+  -- Page titles and labels (rider)
+  ('rider_dashboard_title', 'Rider Dashboard', 'text', 'labels', 'Rider dashboard page title', false, 1),
+  ('rider_welcome_text', 'Welcome to your rider dashboard', 'textarea', 'labels', 'Rider dashboard welcome message', false, 2),
+  ('rider_payment_history', 'Payment History', 'text', 'labels', 'Payment history section label', false, 3),
+  ('rider_id_card', 'ID Card', 'text', 'labels', 'ID Card section label', false, 4),
+
+  -- Page titles and labels (superadmin)
+  ('superadmin_dashboard_title', 'Super Admin Dashboard', 'text', 'labels', 'Super admin dashboard page title', false, 1),
+  ('superadmin_users_title', 'User Management', 'text', 'labels', 'Users page title', false, 2),
+  ('superadmin_cities_title', 'City Management', 'text', 'labels', 'Cities page title', false, 3),
+
+  -- Feature flags
+  ('feature_ckeditor5', 'true', 'boolean', 'features', 'Enable CKEditor 5 rich text editor', true, 1),
+  ('feature_online_payments', 'true', 'boolean', 'features', 'Enable online payment initiation', true, 2),
+  ('feature_ipn_notifications', 'true', 'boolean', 'features', 'Enable ioTec IPN notifications', true, 3),
+
+  -- Appearance
+  ('appearance_primary_color', '#0066CC', 'text', 'appearance', 'Primary color for UI', false, 1),
+  ('appearance_logo_url', '', 'text', 'appearance', 'Logo URL for header', false, 2);

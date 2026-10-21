@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    image: bodaerp:latest
+    container_name: bodaerp_web
+    ports:
+      - "8080:80"
+    volumes:
+      - .:/var/www/html
+    environment:
+      - DATABASE_URL=postgresql://bodaerp:bodaerppass@db:5432/bodaerp
+      - DOCKER_RUNNING=true
+    depends_on:
+      - db
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+
+  db:
+    image: postgres:15-alpine
+    container_name: bodaerp_db
+    restart: always
+    environment:
+      POSTGRES_DB: bodaerp
+      POSTGRES_USER: bodaerp
+      POSTGRES_PASSWORD: bodaerppass
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bodaerp -d bodaerp"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+
+volumes:
+  pg_data:

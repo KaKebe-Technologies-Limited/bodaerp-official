@@ -7,7 +7,7 @@
 // ============================================================
 if (php_sapi_name() !== 'cli') { http_response_code(403); exit('Run from the command line: php database/migrate.php'); }
 define('BODAERP_SKIP_MIGRATIONS', true);   // we run them explicitly below
-require_once __DIR__ . '/../includes/db_helpers.php';
+require_once __DIR__ . '/../packages/backend/db_helpers.php';
 
 if (in_array('--status', $argv, true)) {
     $s = migrator_status();

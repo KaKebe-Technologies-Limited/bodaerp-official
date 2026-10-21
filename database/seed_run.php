@@ -14,8 +14,8 @@ if (php_sapi_name() !== 'cli') {
     die('seed_run.php can only be run from the command line: php database/seed_run.php');
 }
 
-require_once __DIR__ . '/../config/database.php';
-require_once __DIR__ . '/../includes/db_helpers.php';
+require_once __DIR__ . '/../../packages/backend/database/database.php';
+require_once __DIR__ . '/../../packages/backend/db_helpers.php';
 $names = require __DIR__ . '/seed_data/names.php';
 
 $fresh = in_array('--fresh', $argv, true);

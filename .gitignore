@@ -31,3 +31,4 @@ Thumbs.db
 # ----- Environment files -----
 .env
 .env.*
+database/u850523537_BodaERP26.sql

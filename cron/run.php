@@ -12,7 +12,7 @@
 //   Add --all (CLI) or &all=1 (URL) to force every enabled job to run now.
 // ============================================================
 define('BODAERP_SKIP_AUTOMATION', true);
-require_once __DIR__ . '/../includes/automation.php';
+require_once __DIR__ . '/../packages/backend/automation.php';
 
 $isCli = PHP_SAPI === 'cli';
 if (!$isCli) {

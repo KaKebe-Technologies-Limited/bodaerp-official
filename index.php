@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/includes/functions.php';
+require_once __DIR__ . '/packages/backend/functions.php';
 
 $totalRiders    = (int) fetchValue("SELECT COUNT(*) FROM riders");
 $activeRiders   = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE status = 'active'");
