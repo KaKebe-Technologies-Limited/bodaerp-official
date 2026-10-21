@@ -7,6 +7,7 @@
 
 require_once __DIR__ . '/../config/config.php';
 require_once __DIR__ . '/functions.php';
+require_once __DIR__ . '/automation.php';
 
 if (session_status() === PHP_SESSION_NONE) {
     session_set_cookie_params([
@@ -155,6 +156,7 @@ function require_role(array $allowedRoles): array {
         redirect('/login.php?timeout=1');
     }
     $_SESSION['last_activity'] = time();
+    automation_tick();   // runs due scheduled jobs after the response is sent (throttled to once a minute)
 
     if (!in_array($_SESSION['role'], $allowedRoles, true)) {
         redirect(dashboard_url_for($_SESSION['role']));

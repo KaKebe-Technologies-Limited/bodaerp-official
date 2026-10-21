@@ -4,14 +4,6 @@ require_role(['super_admin']);
 $active = 'platform-settings';
 
 $errors = []; $saved = false;
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'run_migrations') {
-    csrf_verify();
-    $_SESSION['flash_migrate'] = migrator_run_tracked('manual:' . (int) $_SESSION['user_id']);
-    audit_log('UPDATE', 'database', null, 'Applied pending database updates');
-    redirect('/pages/superadmin/platform-settings.php#db-updates');
-}
-$migrateResult = $_SESSION['flash_migrate'] ?? null; unset($_SESSION['flash_migrate']);
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     csrf_verify();
     $name     = trim($_POST['platform_name'] ?? 'BodaERP');
@@ -37,8 +29,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $settings = fetchOne("SELECT * FROM platform_settings WHERE id = 1");
-$dbStatus = migrator_status();
-$dbFailure = migrator_last_failure();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -119,44 +109,12 @@ $dbFailure = migrator_last_failure();
             <button type="submit" class="btn btn-primary"><i class="fas fa-save me-2"></i>Save Settings</button>
         </form>
 
-        <div class="card mt-4" id="db-updates"><div class="card-body">
-            <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-3">
-                <div class="d-flex align-items-center gap-3">
-                    <div class="icon-badge <?= $dbStatus['pending'] || $dbFailure ? 'gold' : 'green' ?>"><i class="fas fa-database"></i></div>
-                    <div><h6 class="fw-bold mb-0">Database updates</h6>
-                        <small class="text-muted">New tables and fields are applied automatically after a deploy — no SQL to import.</small></div>
-                </div>
-                <form method="post" class="d-inline"><?= csrf_field() ?><input type="hidden" name="action" value="run_migrations">
-                    <button type="submit" class="btn btn-outline-primary btn-sm"><i class="fas fa-sync-alt me-1"></i>Check &amp; apply now</button></form>
+        <div class="card mt-4"><div class="card-body d-flex align-items-center justify-content-between flex-wrap gap-3">
+            <div class="d-flex align-items-center gap-3">
+                <div class="icon-badge green"><i class="fas fa-server"></i></div>
+                <div><h6 class="fw-bold mb-0">System &amp; Updates</h6><small class="text-muted">Database updates, data packs (add a city), automatic jobs and backups.</small></div>
             </div>
-            <?php if ($migrateResult): ?>
-                <?php if (!empty($migrateResult['failed']) || (!empty($migrateResult['error']) && empty($migrateResult['skipped']))): ?>
-                    <div class="alert alert-danger py-2 small"><strong>Update failed:</strong> <?= h($migrateResult['failed'] ?? '') ?> — <?= h($migrateResult['error']) ?></div>
-                <?php elseif (!empty($migrateResult['skipped'])): ?>
-                    <div class="alert alert-warning py-2 small">Another update is already running. Try again in a moment.</div>
-                <?php else: ?>
-                    <div class="alert alert-success py-2 small"><?= count($migrateResult['applied']) ? 'Applied ' . count($migrateResult['applied']) . ' update(s).' : 'Database is already up to date.' ?></div>
-                <?php endif; ?>
-            <?php elseif ($dbFailure): ?>
-                <div class="alert alert-danger py-2 small"><strong>Last automatic update failed</strong> (<?= h($dbFailure['at']) ?>): <?= h($dbFailure['migration']) ?> — <?= h($dbFailure['error']) ?>. It will retry automatically; fix the cause or press "Check &amp; apply now".</div>
-            <?php endif; ?>
-            <div class="mb-2">
-                <?php if ($dbStatus['pending']): ?><span class="badge bg-warning text-dark"><?= (int) $dbStatus['pending'] ?> pending</span>
-                <?php else: ?><span class="badge bg-success">Up to date</span><?php endif; ?>
-                <small class="text-muted ms-2"><?= count($dbStatus['migrations']) ?> migration(s) tracked</small>
-            </div>
-            <div class="table-responsive"><table class="table table-sm align-middle mb-0">
-                <thead><tr><th>Update</th><th>What it does</th><th>Applied</th></tr></thead>
-                <tbody>
-                <?php foreach (array_reverse($dbStatus['migrations']) as $m): ?>
-                    <tr>
-                        <td><code style="font-size:0.72rem;"><?= h($m['name']) ?></code></td>
-                        <td style="font-size:0.82rem;"><?= h($m['description']) ?></td>
-                        <td style="font-size:0.8rem;white-space:nowrap;"><?= $m['applied_at'] ? h(date('M d, Y H:i', strtotime($m['applied_at']))) . ' <small class="text-muted">· ' . h($m['applied_by']) . '</small>' : '<span class="badge bg-warning text-dark">Pending</span>' ?></td>
-                    </tr>
-                <?php endforeach; ?>
-                </tbody>
-            </table></div>
+            <a href="<?= BASE_URL ?>/pages/superadmin/system.php" class="btn btn-outline-primary btn-sm">Open System &amp; Updates</a>
         </div></div>
     </div>
 </div>

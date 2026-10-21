@@ -9,6 +9,7 @@ $nav = [
     'platform-reports'  => ['platform-reports.php', 'fa-chart-bar', 'Platform Reports', null],
     'data-quality'      => ['data-quality.php', 'fa-shield-alt', 'Data Quality & Flags', $badgeFlags ? ['bg-danger', $badgeFlags] : null],
     'audit-logs'        => ['audit-logs.php', 'fa-history', 'Audit Logs', null],
+    'system'            => ['system.php', 'fa-server', 'System & Updates', null],
     'platform-settings' => ['platform-settings.php', 'fa-cog', 'Platform Settings', null],
 ];
 ?>
