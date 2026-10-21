@@ -12,7 +12,7 @@ $cats  = anomaly_categories();
 
 if (!anomaly_tables_ready()): ?>
     <div class="alert alert-warning"><i class="fas fa-database me-2"></i>
-        The anomaly-detection tables are not installed yet. Run <code>database/add_anomaly_detection.sql</code> on this database, then reload.</div>
+        The anomaly-detection tables are not installed yet. Database updates apply automatically — open Platform Settings → Database updates and press <strong>Check &amp; apply now</strong>.</div>
 <?php return; endif;
 
 $filters = [

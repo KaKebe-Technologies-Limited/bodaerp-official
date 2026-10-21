@@ -33,8 +33,8 @@
 --
 --  >> After first login, change these passwords in Settings. <<
 --  NOTE: this file requires the `agency_name` column and the
---  'government' role added by database/add_government_portal.sql
---  (already included in a fresh u850523537_BodaERP26.sql schema).
+--  'government' role. Both are created automatically by the
+--  database/migrations (applied on the first page load).
 -- ============================================================
 
 SET NAMES utf8mb4;

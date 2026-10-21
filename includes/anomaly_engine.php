@@ -286,7 +286,7 @@ function anomaly_detectors(): array {
 // ---------- scan ----------
 
 function run_anomaly_scan(string $triggeredBy = 'manual'): array {
-    if (!anomaly_tables_ready()) return ['error' => 'Anomaly tables are missing. Run database/add_anomaly_detection.sql.'];
+    if (!anomaly_tables_ready()) return ['error' => 'Anomaly tables are missing. Run: php database/migrate.php'];
     if (!(int) fetchValue("SELECT GET_LOCK('bodaerp_anomaly_scan', 0)")) return ['skipped' => true];
 
     $t0 = microtime(true);

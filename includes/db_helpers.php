@@ -1,11 +1,13 @@
 <?php
 require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/migrator.php';
 
 // Accepts either positional ("WHERE id = ?", [$id]) or named
 // ("WHERE id = :id", ['id' => $id]) placeholders — mirrors how the
 // app used to call these helpers under PDO — and prepares/binds
 // them as a mysqli_stmt.
 function _dbPrepare(string $sql, array $params = []): mysqli_stmt {
+    migrator_auto();   // applies pending database/migrations once, before the first query of the request
     $values = $params;
 
     if ($params !== [] && array_keys($params) !== range(0, count($params) - 1)) {
