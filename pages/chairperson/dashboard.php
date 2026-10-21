@@ -40,10 +40,10 @@ $recentRiders = fetchAll("SELECT * FROM riders WHERE stage_id = ? AND deleted_at
         </div>
 
         <div class="row g-3 mb-4">
-            <div class="col-md-3 col-6"><div class="stat-card-modern"><div class="icon-badge blue"><i class="fas fa-users"></i></div><div><span class="stat-number"><?= $totalRiders ?></span><div class="stat-label">Total Riders</div></div></div></div>
-            <div class="col-md-3 col-6"><div class="stat-card-modern"><div class="icon-badge green"><i class="fas fa-check-circle"></i></div><div><span class="stat-number"><?= $activeRiders ?></span><div class="stat-label">Active (Paid)</div></div></div></div>
-            <div class="col-md-3 col-6"><div class="stat-card-modern"><div class="icon-badge red"><i class="fas fa-exclamation-triangle"></i></div><div><span class="stat-number"><?= $defaulters ?></span><div class="stat-label">Defaulters</div></div></div></div>
-            <div class="col-md-3 col-6"><div class="stat-card-modern"><div class="icon-badge gold"><i class="fas fa-money-bill-wave"></i></div><div><span class="stat-number"><?= h(formatCurrency($revenue)) ?></span><div class="stat-label">Revenue Collected</div></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card grad-blue"><div class="stat-hero-icon"><i class="fas fa-users"></i></div><div><div class="stat-hero-value"><?= $totalRiders ?></div><div class="stat-hero-label">Total Riders</div></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card grad-green"><div class="stat-hero-icon"><i class="fas fa-check-circle"></i></div><div><div class="stat-hero-value"><?= $activeRiders ?></div><div class="stat-hero-label">Active (Paid)</div></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card grad-red"><div class="stat-hero-icon"><i class="fas fa-exclamation-triangle"></i></div><div><div class="stat-hero-value"><?= $defaulters ?></div><div class="stat-hero-label">Defaulters</div></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card grad-gold"><div class="stat-hero-icon"><i class="fas fa-money-bill-wave"></i></div><div><div class="stat-hero-value"><?= h(formatCurrency($revenue)) ?></div><div class="stat-hero-label">Revenue Collected</div></div></div></div>
         </div>
 
         <h6 class="fw-bold mb-3">Quick Actions</h6>

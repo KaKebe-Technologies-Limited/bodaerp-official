@@ -32,23 +32,28 @@ for ($i = 11; $i >= 0; $i--) {
 <?php require __DIR__ . '/../../includes/partials/sidebar-chairperson.php'; ?>
 
 <div class="main-content" id="mainContent">
-    <?php $pageTitle = 'Stage Report'; require __DIR__ . '/../../includes/partials/topheader.php'; ?>
+    <?php $pageTitle = 'Stage Report'; $pageSubtitle = 'Performance summary for ' . ($stage['name'] ?? 'your stage'); require __DIR__ . '/../../includes/partials/topheader.php'; ?>
 
     <div class="content-area">
-        <div class="card mb-4"><div class="card-body">
-            <h5 class="fw-bold"><?= h($stage['name']) ?> — Performance Report</h5>
-            <p class="text-muted mb-0">Generated <?= date('M d, Y') ?></p>
-        </div></div>
+        <div class="dash-banner theme-blue">
+            <div class="d-flex justify-content-between align-items-center flex-wrap dash-banner-row">
+                <div>
+                    <h4><i class="fas fa-file-alt me-2"></i><?= h($stage['name']) ?> — Performance Report</h4>
+                    <p>A snapshot of riders, compliance, and revenue for your stage.</p>
+                </div>
+                <span class="dash-badge">Generated <?= date('M d, Y') ?></span>
+            </div>
+        </div>
 
-        <div class="row g-3 mb-4">
-            <div class="col-md-3 col-6"><div class="card"><div class="card-body text-center"><h3 class="fw-bold"><?= $totalRiders ?></h3><small class="text-muted">Total Riders</small></div></div></div>
-            <div class="col-md-3 col-6"><div class="card"><div class="card-body text-center"><h3 class="fw-bold text-success"><?= $active_ ?></h3><small class="text-muted">Active</small></div></div></div>
-            <div class="col-md-3 col-6"><div class="card"><div class="card-body text-center"><h3 class="fw-bold text-danger"><?= $expired ?></h3><small class="text-muted">Expired</small></div></div></div>
-            <div class="col-md-3 col-6"><div class="card"><div class="card-body text-center"><h3 class="fw-bold text-warning"><?= $compliance ?>%</h3><small class="text-muted">Compliance Rate</small></div></div></div>
+        <div class="row g-3 row-cols-2 row-cols-md-4 mb-4">
+            <div class="col"><div class="stat-hero-card grad-blue"><div class="stat-hero-icon"><i class="fas fa-users"></i></div><div><div class="stat-hero-value"><?= $totalRiders ?></div><div class="stat-hero-label">Total Riders</div></div></div></div>
+            <div class="col"><div class="stat-hero-card grad-green"><div class="stat-hero-icon"><i class="fas fa-user-check"></i></div><div><div class="stat-hero-value"><?= $active_ ?></div><div class="stat-hero-label">Active</div></div></div></div>
+            <div class="col"><div class="stat-hero-card grad-red"><div class="stat-hero-icon"><i class="fas fa-user-times"></i></div><div><div class="stat-hero-value"><?= $expired ?></div><div class="stat-hero-label">Expired</div></div></div></div>
+            <div class="col"><div class="stat-hero-card grad-gold"><div class="stat-hero-icon"><i class="fas fa-percentage"></i></div><div><div class="stat-hero-value"><?= $compliance ?>%</div><div class="stat-hero-label">Compliance Rate</div></div></div></div>
         </div>
 
         <div class="card"><div class="card-body">
-            <h6 class="fw-bold mb-3">Revenue Trend (last 12 months)</h6>
+            <h6 class="fw-bold mb-3"><i class="fas fa-chart-bar text-primary me-2"></i>Revenue Trend (Last 12 Months)</h6>
             <div id="stageReportChart" style="height: 250px;"></div>
         </div></div>
     </div>
@@ -60,7 +65,7 @@ for ($i = 11; $i >= 0; $i--) {
         series: [{ name: 'Revenue (UGX K)', data: <?= json_encode($chartValues) ?> }],
         chart: { type: 'bar', height: 250, toolbar: { show: false } },
         plotOptions: { bar: { borderRadius: 6, columnWidth: '55%' } },
-        colors: ['#0d6efd'],
+        colors: ['#5b4bd5'],
         dataLabels: { enabled: false },
         xaxis: { categories: <?= json_encode($chartLabels) ?> },
         yaxis: { labels: { formatter: v => 'UGX ' + v + 'K' } },

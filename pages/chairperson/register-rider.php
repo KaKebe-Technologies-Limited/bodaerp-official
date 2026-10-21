@@ -91,18 +91,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <?php require __DIR__ . '/../../includes/partials/sidebar-chairperson.php'; ?>
 
 <div class="main-content" id="mainContent">
-    <?php $pageTitle = 'Register New Rider'; require __DIR__ . '/../../includes/partials/topheader.php'; ?>
+    <?php $pageTitle = 'Register New Rider'; $pageSubtitle = 'Onboard a new boda rider to ' . ($stage['name'] ?? 'your stage'); require __DIR__ . '/../../includes/partials/topheader.php'; ?>
 
     <div class="content-area">
         <div class="card">
-            <div class="card-body p-5">
+            <div class="card-body p-4 p-md-5">
                 <?php if ($errors): ?><div class="alert alert-danger"><?php foreach ($errors as $e) echo h($e) . '<br>'; ?></div><?php endif; ?>
-                <h4 class="fw-bold mb-4"><i class="fas fa-user-plus text-primary me-2"></i>Register New Rider <span class="badge bg-primary ms-2"><?= h($stage['name']) ?></span></h4>
+                <div class="d-flex align-items-center gap-3 mb-4">
+                    <div class="icon-badge blue"><i class="fas fa-user-plus"></i></div>
+                    <div><h4 class="fw-bold mb-0">Register New Rider</h4><small class="text-muted"><?= h($stage['name']) ?></small></div>
+                </div>
 
                 <form method="post" enctype="multipart/form-data">
                     <?= csrf_field() ?>
                     <div class="row">
-                        <div class="col-12 mb-3"><h6 class="fw-bold text-primary">👤 Personal Information</h6><hr></div>
+                        <div class="col-12 mb-3 d-flex align-items-center gap-2"><div class="icon-badge blue" style="width:32px;height:32px;font-size:0.85rem;"><i class="fas fa-user"></i></div><h6 class="fw-bold text-primary mb-0">Personal Information</h6><hr class="flex-grow-1"></div>
                         <div class="col-md-6 mb-3"><label class="form-label fw-semibold">Full Name <span class="text-danger">*</span></label><input type="text" name="full_name" class="form-control form-control-lg" placeholder="e.g., AKELLO JAMES" required></div>
                         <div class="col-md-6 mb-3"><label class="form-label fw-semibold">NIN <span class="text-danger">*</span></label><input type="text" name="nin" class="form-control form-control-lg" placeholder="e.g., CM1234567890ABC" required></div>
                         <div class="col-md-4 mb-3"><label class="form-label fw-semibold">Date of Birth</label><input type="date" name="dob" class="form-control form-control-lg"></div>
@@ -122,14 +125,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <div class="input-group"><span class="input-group-text">+256</span><input type="tel" name="nok_phone" class="form-control form-control-lg" placeholder="e.g., 772123456"></div>
                         </div>
 
-                        <div class="col-12 mb-3 mt-3"><h6 class="fw-bold text-primary">🏍️ Bike & Stage Information</h6><hr></div>
+                        <div class="col-12 mb-3 mt-3 d-flex align-items-center gap-2"><div class="icon-badge gold" style="width:32px;height:32px;font-size:0.85rem;"><i class="fas fa-motorcycle"></i></div><h6 class="fw-bold text-primary mb-0">Bike &amp; Stage Information</h6><hr class="flex-grow-1"></div>
                         <div class="col-md-4 mb-3"><label class="form-label fw-semibold">Bike Plate <span class="text-danger">*</span></label><input type="text" name="bike_plate" class="form-control form-control-lg" placeholder="e.g., UAS 123K" required></div>
                         <div class="col-md-4 mb-3"><label class="form-label fw-semibold">Bike Model</label><input type="text" name="bike_model" class="form-control form-control-lg" placeholder="e.g., Honda CG 125"></div>
                         <div class="col-md-4 mb-3"><label class="form-label fw-semibold">Stage</label><input type="text" class="form-control form-control-lg" value="<?= h($stage['name']) ?>" disabled></div>
                         <div class="col-md-6 mb-3"><label class="form-label fw-semibold">Route</label><input type="text" name="route" class="form-control form-control-lg" placeholder="e.g., Railway - Town" value="<?= h($stage['route'] ?? '') ?>"></div>
                         <div class="col-md-6 mb-3"><label class="form-label fw-semibold">Stage Chairperson</label><input type="text" class="form-control form-control-lg" value="<?= h($_SESSION['name']) ?>" disabled></div>
 
-                        <div class="col-12 mb-3 mt-3"><h6 class="fw-bold text-primary">📸 Upload Photo</h6><hr></div>
+                        <div class="col-12 mb-3 mt-3 d-flex align-items-center gap-2"><div class="icon-badge dark" style="width:32px;height:32px;font-size:0.85rem;"><i class="fas fa-camera"></i></div><h6 class="fw-bold text-primary mb-0">Upload Photo</h6><hr class="flex-grow-1"></div>
                         <div class="col-12 mb-3">
                             <div class="upload-zone border-2 rounded-4 p-5 text-center" style="border: 2px dashed #dee2e6; cursor: pointer;" onclick="document.getElementById('photoInput').click()">
                                 <i class="fas fa-cloud-upload-alt fa-4x text-muted mb-3"></i>
@@ -140,7 +143,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             </div>
                         </div>
 
-                        <div class="col-12 mb-3 mt-3"><h6 class="fw-bold text-primary">💰 Payment</h6><hr></div>
+                        <div class="col-12 mb-3 mt-3 d-flex align-items-center gap-2"><div class="icon-badge green" style="width:32px;height:32px;font-size:0.85rem;"><i class="fas fa-money-bill-wave"></i></div><h6 class="fw-bold text-primary mb-0">Payment</h6><hr class="flex-grow-1"></div>
                         <div class="col-md-6 mb-3"><label class="form-label fw-semibold">Annual Tax</label><div class="input-group"><span class="input-group-text">UGX</span><input type="text" class="form-control form-control-lg" value="<?= number_format($city['annual_fee']) ?>" readonly></div></div>
                         <div class="col-md-6 mb-3"><label class="form-label fw-semibold">Payment Status</label>
                             <select name="payment_status" class="form-select form-select-lg"><option value="Paid">✅ Paid - Activate Now</option><option value="Unpaid">⏳ Unpaid - Activate Later</option></select>

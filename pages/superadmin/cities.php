@@ -30,6 +30,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $address       = trim($_POST['address'] ?? '');
         $splitCity     = (int) ($_POST['split_city'] ?? 0);
         $splitAssoc    = (int) ($_POST['split_assoc'] ?? 0);
+        $splitGov      = (int) ($_POST['split_government'] ?? 0);
         $splitPlatform = (int) ($_POST['split_platform'] ?? 0);
         $gateway       = $_POST['payment_gateway'] ?? 'MTN MoMo';
         $fiscal        = trim($_POST['fiscal_year'] ?? '2026/2027');
@@ -38,13 +39,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if (!preg_match('/^[A-Z]{3}$/', $id)) $errors[] = 'City code must be exactly 3 letters.';
         if ($name === '') $errors[] = 'City name is required.';
-        if ($splitCity + $splitAssoc + $splitPlatform !== 100) $errors[] = 'Revenue splits must total 100%.';
+        if ($splitCity + $splitAssoc + $splitGov + $splitPlatform !== 100) $errors[] = 'Revenue splits must total 100%.';
 
         if (!$errors && $editId) {
             runQuery("UPDATE cities SET name=?,country=?,currency=?,annual_fee=?,logo_path=?,contact_email=?,contact_phone=?,address=?,
-                      revenue_split_city=?,revenue_split_association=?,revenue_split_platform=?,payment_gateway=?,fiscal_year=?,compliance_target=?,status=?
+                      revenue_split_city=?,revenue_split_association=?,revenue_split_government=?,revenue_split_platform=?,payment_gateway=?,fiscal_year=?,compliance_target=?,status=?
                       WHERE id=?",
-                [$name,$country,$currency,$fee,$logo,$email,$phone,$address,$splitCity,$splitAssoc,$splitPlatform,$gateway,$fiscal,$target,$status,$editId]);
+                [$name,$country,$currency,$fee,$logo,$email,$phone,$address,$splitCity,$splitAssoc,$splitGov,$splitPlatform,$gateway,$fiscal,$target,$status,$editId]);
             audit_log('UPDATE', 'city', $editId, 'City updated');
             redirect('/pages/superadmin/cities.php');
         } elseif (!$errors) {
@@ -53,10 +54,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             } else {
                 runQuery("INSERT INTO cities (id,name,country,currency,logo_path,annual_fee,fiscal_year,id_prefix,status,
                           contact_email,contact_phone,address,payment_gateway,sms_gateway,
-                          revenue_split_city,revenue_split_association,revenue_split_platform,compliance_target,created_by)
-                          VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,\"Africa's Talking\",?,?,?,?,?)",
+                          revenue_split_city,revenue_split_association,revenue_split_government,revenue_split_platform,compliance_target,created_by)
+                          VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,\"Africa's Talking\",?,?,?,?,?,?)",
                     [$id,$name,$country,$currency,$logo,$fee,$fiscal,'BODA-'.$id,$status,$email,$phone,$address,$gateway,
-                     $splitCity,$splitAssoc,$splitPlatform,$target,$_SESSION['user_id']]);
+                     $splitCity,$splitAssoc,$splitGov,$splitPlatform,$target,$_SESSION['user_id']]);
                 audit_log('CREATE', 'city', $id, 'City created');
                 redirect('/pages/superadmin/cities.php');
             }
@@ -78,16 +79,22 @@ $cities = fetchAll("SELECT c.*,
     FROM cities c $where ORDER BY c.created_at", $qparams);
 $citiesById = [];
 foreach ($cities as $c) { $citiesById[$c['id']] = $c; }
+
+$totalCitiesAll  = (int) fetchValue("SELECT COUNT(*) FROM cities");
+$activeCitiesAll = (int) fetchValue("SELECT COUNT(*) FROM cities WHERE status = 'active'");
+$pendingCitiesAll = (int) fetchValue("SELECT COUNT(*) FROM cities WHERE status = 'pending'");
+$totalRidersAll  = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE deleted_at IS NULL");
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <?php $pageTitle = 'Manage Cities - BodaERP Platform'; require __DIR__ . '/../../includes/partials/head-assets.php'; ?>
     <style>
-        .city-logo-preview { width:60px;height:60px;object-fit:contain;border-radius:8px;border:2px solid #e9ecef;background:#f8f9fa;padding:4px; }
+        .city-logo-preview { width:60px;height:60px;object-fit:contain;border-radius:12px;border:2px solid var(--light-gray);background:var(--off-white);padding:4px; }
         .split-total { font-weight:700; font-size:0.9rem; }
         .split-total.ok  { color:#198754; }
         .split-total.bad { color:#dc3545; }
+        .city-cell-logo { width:38px;height:38px;object-fit:contain;background:var(--pure-white);border-radius:10px;padding:3px; }
     </style>
 </head>
 <body>
@@ -99,7 +106,10 @@ foreach ($cities as $c) { $citiesById[$c['id']] = $c; }
         <div class="d-flex justify-content-between align-items-center">
             <div class="d-flex align-items-center gap-3">
                 <button class="btn btn-light d-lg-none" id="toggleSidebar"><i class="fas fa-bars"></i></button>
-                <h5 class="mb-0 fw-bold"><span class="text-gradient-blue">Manage Cities</span></h5>
+                <div>
+                    <h5 class="mb-0 fw-bold"><span class="text-gradient-blue">Manage Cities</span></h5>
+                    <small class="text-muted d-none d-sm-block">Onboard and configure cities on the platform</small>
+                </div>
             </div>
             <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#cityModal" onclick="openAddCity()">
                 <i class="fas fa-plus me-2"></i>Add New City
@@ -111,6 +121,14 @@ foreach ($cities as $c) { $citiesById[$c['id']] = $c; }
         <?php if ($errors): ?>
             <div class="alert alert-danger"><?php foreach ($errors as $e) echo h($e) . '<br>'; ?></div>
         <?php endif; ?>
+
+        <div class="row g-3 row-cols-2 row-cols-xl-4 mb-4">
+            <div class="col"><div class="stat-hero-card grad-blue"><div class="stat-hero-icon"><i class="fas fa-city"></i></div><div><div class="stat-hero-value"><?= $totalCitiesAll ?></div><div class="stat-hero-label">Total Cities</div></div></div></div>
+            <div class="col"><div class="stat-hero-card grad-green"><div class="stat-hero-icon"><i class="fas fa-check-circle"></i></div><div><div class="stat-hero-value"><?= $activeCitiesAll ?></div><div class="stat-hero-label">Active</div></div></div></div>
+            <div class="col"><div class="stat-hero-card grad-gold"><div class="stat-hero-icon"><i class="fas fa-hourglass-half"></i></div><div><div class="stat-hero-value"><?= $pendingCitiesAll ?></div><div class="stat-hero-label">Pending</div></div></div></div>
+            <div class="col"><div class="stat-hero-card grad-dark"><div class="stat-hero-icon"><i class="fas fa-users"></i></div><div><div class="stat-hero-value"><?= number_format($totalRidersAll) ?></div><div class="stat-hero-label">Platform Riders</div></div></div></div>
+        </div>
+
         <div class="card mb-3 no-print">
             <div class="card-body">
                 <form class="row g-2 align-items-center" method="get">
@@ -135,14 +153,14 @@ foreach ($cities as $c) { $citiesById[$c['id']] = $c; }
                 <div class="table-responsive">
                     <table class="table table-hover align-middle" id="citiesTable">
                         <thead>
-                            <tr><th>City</th><th>Annual Fee</th><th>Revenue Split (City / Assoc / Platform)</th><th>Stages</th><th>Riders</th><th>Status</th><th class="no-export">Actions</th></tr>
+                            <tr><th>City</th><th>Annual Fee</th><th>Revenue Split (City / Assoc / Gov / Platform)</th><th>Stages</th><th>Riders</th><th>Status</th><th class="no-export">Actions</th></tr>
                         </thead>
                         <tbody>
                         <?php foreach ($cities as $t): $sc = ['active'=>'success','pending'=>'warning','inactive'=>'secondary']; ?>
                             <tr id="row-<?= h($t['id']) ?>">
                                 <td>
                                     <div class="d-flex align-items-center gap-2">
-                                        <img src="<?= h(BASE_URL . $t['logo_path']) ?>" width="32" height="32" class="rounded border" style="object-fit:contain;background:white;" onerror="this.src='<?= BASE_URL ?>/assets/images/logo.png'">
+                                        <img src="<?= h(BASE_URL . $t['logo_path']) ?>" class="city-cell-logo border" onerror="this.src='<?= BASE_URL ?>/assets/images/logo.png'">
                                         <div><strong><?= h($t['name']) ?></strong><br><small class="text-muted"><?= h($t['id']) ?> · <?= h($t['country']) ?></small></div>
                                     </div>
                                 </td>
@@ -150,6 +168,7 @@ foreach ($cities as $c) { $citiesById[$c['id']] = $c; }
                                 <td>
                                     <span class="badge bg-primary"><?= (int)$t['revenue_split_city'] ?>%</span>
                                     <span class="badge bg-success ms-1"><?= (int)$t['revenue_split_association'] ?>%</span>
+                                    <span class="badge ms-1" style="background:#e0529c;"><?= (int)$t['revenue_split_government'] ?>%</span>
                                     <span class="badge bg-info text-dark ms-1"><?= (int)$t['revenue_split_platform'] ?>%</span>
                                 </td>
                                 <td><?= (int) $t['stage_count'] ?></td>
@@ -169,6 +188,13 @@ foreach ($cities as $c) { $citiesById[$c['id']] = $c; }
                         <?php endforeach; ?>
                         </tbody>
                     </table>
+                    <?php if (!$cities): ?>
+                    <div class="empty-state">
+                        <i class="fas fa-city"></i>
+                        <h5>No cities found</h5>
+                        <p>Try adjusting your search or filter, or add a new city to get started.</p>
+                    </div>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>
@@ -181,7 +207,7 @@ foreach ($cities as $c) { $citiesById[$c['id']] = $c; }
             <form method="post" id="cityForm">
                 <?= csrf_field() ?>
                 <input type="hidden" name="edit_city_id" id="editCityId">
-                <div class="modal-header" style="background:linear-gradient(135deg,#0d6efd,#1a3a5c);color:white;">
+                <div class="modal-header" style="background:var(--primary-blue-gradient);color:white;border-bottom:none;">
                     <h5 class="modal-title fw-bold" id="cityModalTitle"><i class="fas fa-city me-2"></i>Add New City</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
@@ -234,9 +260,10 @@ foreach ($cities as $c) { $citiesById[$c['id']] = $c; }
                         <div class="col-12">
                             <label class="form-label fw-semibold">Revenue Split <span class="text-danger">*</span> <small class="text-muted">— must total 100%</small></label>
                             <div class="row g-2 align-items-end">
-                                <div class="col-4"><label class="small text-muted">City Council %</label><input type="number" class="form-control" name="split_city" id="splitCity" value="60" min="0" max="100" oninput="updateSplitTotal()"></div>
-                                <div class="col-4"><label class="small text-muted">Boda Association %</label><input type="number" class="form-control" name="split_assoc" id="splitAssoc" value="26" min="0" max="100" oninput="updateSplitTotal()"></div>
-                                <div class="col-4"><label class="small text-muted">Kakebe Tech (Platform) %</label><input type="number" class="form-control" name="split_platform" id="splitPlatform" value="14" min="0" max="100" oninput="updateSplitTotal()"></div>
+                                <div class="col-3"><label class="small text-muted">City Council %</label><input type="number" class="form-control" name="split_city" id="splitCity" value="55" min="0" max="100" oninput="updateSplitTotal()"></div>
+                                <div class="col-3"><label class="small text-muted">Boda Association %</label><input type="number" class="form-control" name="split_assoc" id="splitAssoc" value="26" min="0" max="100" oninput="updateSplitTotal()"></div>
+                                <div class="col-3"><label class="small text-muted">Government %</label><input type="number" class="form-control" name="split_government" id="splitGovernment" value="10" min="0" max="100" oninput="updateSplitTotal()"></div>
+                                <div class="col-3"><label class="small text-muted">Kakebe Tech (Platform) %</label><input type="number" class="form-control" name="split_platform" id="splitPlatform" value="9" min="0" max="100" oninput="updateSplitTotal()"></div>
                             </div>
                             <div class="mt-2">Total: <span id="splitTotal" class="split-total ok">100%</span></div>
                         </div>
@@ -278,15 +305,16 @@ foreach ($cities as $c) { $citiesById[$c['id']] = $c; }
     function updateSplitTotal() {
         const city  = parseFloat(document.getElementById('splitCity').value)||0;
         const assoc = parseFloat(document.getElementById('splitAssoc').value)||0;
+        const gov   = parseFloat(document.getElementById('splitGovernment').value)||0;
         const plat  = parseFloat(document.getElementById('splitPlatform').value)||0;
-        const total = city + assoc + plat;
+        const total = city + assoc + gov + plat;
         const el = document.getElementById('splitTotal');
         el.textContent = total + '%';
         el.className = 'split-total ' + (total === 100 ? 'ok' : 'bad');
     }
 
     document.getElementById('cityForm').addEventListener('submit', function(e) {
-        const total = (parseFloat(document.getElementById('splitCity').value)||0) + (parseFloat(document.getElementById('splitAssoc').value)||0) + (parseFloat(document.getElementById('splitPlatform').value)||0);
+        const total = (parseFloat(document.getElementById('splitCity').value)||0) + (parseFloat(document.getElementById('splitAssoc').value)||0) + (parseFloat(document.getElementById('splitGovernment').value)||0) + (parseFloat(document.getElementById('splitPlatform').value)||0);
         if (total !== 100) { e.preventDefault(); alert('Revenue splits must total 100%'); }
     });
 
@@ -295,9 +323,10 @@ foreach ($cities as $c) { $citiesById[$c['id']] = $c; }
         document.getElementById('editCityId').value = '';
         ['cityId','cityName','cityEmail','cityPhone','cityAddress'].forEach(id => document.getElementById(id).value = '');
         document.getElementById('cityId').readOnly = false;
-        document.getElementById('splitCity').value = 60;
+        document.getElementById('splitCity').value = 55;
         document.getElementById('splitAssoc').value = 26;
-        document.getElementById('splitPlatform').value = 14;
+        document.getElementById('splitGovernment').value = 10;
+        document.getElementById('splitPlatform').value = 9;
         document.getElementById('cityFee').value = 50000;
         document.getElementById('cityCompliance').value = 70;
         document.getElementById('cityLogo').value = '';
@@ -323,6 +352,7 @@ foreach ($cities as $c) { $citiesById[$c['id']] = $c; }
         document.getElementById('cityAddress').value = t.address || '';
         document.getElementById('splitCity').value = t.revenue_split_city;
         document.getElementById('splitAssoc').value = t.revenue_split_association;
+        document.getElementById('splitGovernment').value = t.revenue_split_government;
         document.getElementById('splitPlatform').value = t.revenue_split_platform;
         document.getElementById('cityPayGW').value = t.payment_gateway;
         document.getElementById('cityFiscal').value = t.fiscal_year;

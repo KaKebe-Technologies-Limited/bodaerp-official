@@ -60,7 +60,7 @@ $statusColor = $statusColors[$rider['status']] ?? '#6c757d';
 
         .id-footer { position: relative; z-index: 1; display: flex; align-items: flex-end; justify-content: space-between; gap: 4px; padding: 3px 8px; background: #f8f9fa; border-top: 1px solid #eee; flex-shrink: 0; }
         .id-sig { display: flex; flex-direction: column; align-items: flex-start; min-width: 0; }
-        .id-sig .sig-line { font-family: 'Brush Script MT', cursive; font-size: 0.5rem; color: #1a3a5c; line-height: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 120px; }
+        .id-sig .sig-line { font-family: 'Brush Script MT', cursive; font-size: 0.5rem; color: #2f2480; line-height: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 120px; }
         .id-sig .sig-label { font-size: 0.24rem; color: #9aa2ab; text-transform: uppercase; letter-spacing: 0.3px; border-top: 1px solid #ccc; padding-top: 1px; margin-top: 1px; }
         .id-expiry { text-align: right; flex-shrink: 0; }
         .id-expiry .expiry-label { font-size: 0.24rem; color: #9aa2ab; text-transform: uppercase; letter-spacing: 0.3px; }

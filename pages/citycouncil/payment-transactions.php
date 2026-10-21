@@ -118,7 +118,7 @@ function qsMerge2(array $overrides): string { return '?' . http_build_query(arra
                     <table class="table table-hover mb-0" id="transactionsTable">
                         <thead><tr><th>Receipt #</th><th>Rider</th><th>Stage</th><th>Amount</th><th>Date</th><th>Method</th><th>Status</th></tr></thead>
                         <tbody>
-                        <?php if (!$transactions): ?><tr><td colspan="7" class="text-center py-4 text-muted">No transactions found</td></tr><?php endif; ?>
+                        <?php if (!$transactions): ?><tr><td colspan="7"><div class="empty-state" style="padding:36px 20px;"><i class="fas fa-inbox"></i><h5>No transactions found</h5></div></td></tr><?php endif; ?>
                         <?php foreach ($transactions as $t): $sc = ['Confirmed'=>'bg-success','Pending'=>'bg-warning text-dark','Failed'=>'bg-danger']; ?>
                             <tr>
                                 <td><code><?= h($t['receipt_number']) ?></code></td>

@@ -24,6 +24,7 @@ const ROLE_DASHBOARDS = [
     'city_admin'  => '/pages/citycouncil/dashboard.php',
     'chairperson' => '/pages/chairperson/dashboard.php',
     'rider'       => '/pages/rider/dashboard.php',
+    'government'  => '/pages/government/dashboard.php',
 ];
 
 function dashboard_url_for(string $role): string {
@@ -100,6 +101,7 @@ function attempt_login(string $email, string $password): array|string {
     $_SESSION['id_prefix']     = $city['id_prefix'] ?? null;
     $_SESSION['stage_id']      = $user['stage_id'];
     $_SESSION['rider_id']      = $riderId;
+    $_SESSION['agency_name']   = $user['agency_name'] ?? null;
     $_SESSION['last_activity'] = time();
     csrf_token();
 

@@ -19,7 +19,7 @@
 .search-bar .form-control:focus {
     background: var(--pure-white);
     border-color: var(--primary-blue);
-    box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.08);
+    box-shadow: 0 0 0 4px rgba(91, 75, 213, 0.08);
 }
 
 .search-bar .search-icon {

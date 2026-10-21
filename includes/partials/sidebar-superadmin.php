@@ -1,10 +1,13 @@
 <?php
+require_once __DIR__ . '/../anomaly_engine.php';
+$badgeFlags = anomaly_open_count('high');
 $nav = [
     'dashboard'         => ['dashboard.php', 'fa-th-large', 'Platform Overview', null],
     'cities'            => ['cities.php', 'fa-city', 'Manage Cities', null],
     'users'             => ['users.php', 'fa-users-cog', 'All Users', null],
     'revenue-splits'    => ['revenue-splits.php', 'fa-percentage', 'Revenue Splits', null],
     'platform-reports'  => ['platform-reports.php', 'fa-chart-bar', 'Platform Reports', null],
+    'data-quality'      => ['data-quality.php', 'fa-shield-alt', 'Data Quality & Flags', $badgeFlags ? ['bg-danger', $badgeFlags] : null],
     'audit-logs'        => ['audit-logs.php', 'fa-history', 'Audit Logs', null],
     'platform-settings' => ['platform-settings.php', 'fa-cog', 'Platform Settings', null],
 ];

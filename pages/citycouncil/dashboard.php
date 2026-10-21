@@ -28,41 +28,13 @@ for ($i = 11; $i >= 0; $i--) {
 <html lang="en">
 <head>
     <?php $pageTitle = 'City Council Dashboard - BodaERP'; require __DIR__ . '/../../includes/partials/head-assets.php'; ?>
-    <style>
-        .council-stat-card { background: white; border-radius: 14px; padding: 16px 20px; border-left: 4px solid #198754; box-shadow: 0 2px 12px rgba(0,0,0,0.04); transition: all 0.3s ease; height: 100%; }
-        .council-stat-card:hover { transform: translateX(4px); box-shadow: 0 4px 20px rgba(0,0,0,0.06); }
-        .council-stat-card .stat-number { font-size: 1.6rem; font-weight: 900; color: #1a1a2e; line-height: 1; word-break: break-word; }
-        .council-stat-card .stat-label { font-size: 0.75rem; color: #6c757d; font-weight: 500; }
-        .council-stat-card .stat-icon { font-size: 1.6rem; opacity: 0.15; }
-        .council-stat-card.green { border-left-color: #198754; }
-        .council-stat-card.blue { border-left-color: #0d6efd; }
-        .council-stat-card.red { border-left-color: #dc3545; }
-        .council-stat-card.gold { border-left-color: #f59e0b; }
-        @media (max-width: 576px) {
-            .council-stat-card { padding: 12px 14px; border-radius: 12px; }
-            .council-stat-card .stat-number { font-size: 1.05rem; }
-            .council-stat-card .stat-label { font-size: 0.66rem; }
-            .council-stat-card .stat-icon { font-size: 1.2rem; }
-        }
-    </style>
 </head>
 <body>
 
 <?php require __DIR__ . '/../../includes/partials/sidebar-citycouncil.php'; ?>
 
 <div class="main-content" id="mainContent">
-    <header class="top-header">
-        <div class="d-flex justify-content-between align-items-center">
-            <div class="d-flex align-items-center gap-3">
-                <button class="btn btn-light d-lg-none" id="toggleSidebar"><i class="fas fa-bars"></i></button>
-                <h5 class="mb-0 fw-bold"><span class="text-gradient-blue">City Council Dashboard</span></h5>
-            </div>
-            <div class="user-info">
-                <img src="<?= BASE_URL ?>/assets/images/avatar-placeholder.png" alt="Council" class="rounded-circle" width="40" height="40">
-                <div><span class="fw-bold d-block" style="font-size: 0.85rem;">City Council</span><small class="text-muted" style="font-size: 0.7rem;"><?= h($city['name']) ?></small></div>
-            </div>
-        </div>
-    </header>
+    <?php $pageTitle = 'City Council Dashboard'; $pageSubtitle = 'Overview for ' . $city['name']; require __DIR__ . '/../../includes/partials/topheader.php'; ?>
 
     <div class="content-area">
         <div class="dash-banner theme-blue">
@@ -78,19 +50,11 @@ for ($i = 11; $i >= 0; $i--) {
             </div>
         </div>
 
-        <div class="row g-3 g-md-4 mb-4">
-            <div class="col-6 col-xl-3">
-                <div class="council-stat-card green"><div class="d-flex justify-content-between align-items-center"><div><span class="stat-number"><?= number_format($totalRiders) ?></span><div class="stat-label">Total Riders</div></div><i class="fas fa-users stat-icon"></i></div></div>
-            </div>
-            <div class="col-6 col-xl-3">
-                <div class="council-stat-card blue"><div class="d-flex justify-content-between align-items-center"><div><span class="stat-number"><?= h(formatCurrency($totalRevenue)) ?></span><div class="stat-label">Total Revenue</div></div><i class="fas fa-money-bill-wave stat-icon"></i></div></div>
-            </div>
-            <div class="col-6 col-xl-3">
-                <div class="council-stat-card gold"><div class="d-flex justify-content-between align-items-center"><div><span class="stat-number"><?= $complianceRate ?>%</span><div class="stat-label">Compliance Rate</div></div><i class="fas fa-check-circle stat-icon"></i></div></div>
-            </div>
-            <div class="col-6 col-xl-3">
-                <div class="council-stat-card red"><div class="d-flex justify-content-between align-items-center"><div><span class="stat-number"><?= number_format($defaulters) ?></span><div class="stat-label">Defaulters</div></div><i class="fas fa-exclamation-triangle stat-icon"></i></div></div>
-            </div>
+        <div class="row g-3 row-cols-2 row-cols-xl-4 mb-4">
+            <div class="col"><div class="stat-hero-card grad-green"><div class="stat-hero-icon"><i class="fas fa-users"></i></div><div><div class="stat-hero-value"><?= number_format($totalRiders) ?></div><div class="stat-hero-label">Total Riders</div></div></div></div>
+            <div class="col"><div class="stat-hero-card grad-blue"><div class="stat-hero-icon"><i class="fas fa-money-bill-wave"></i></div><div><div class="stat-hero-value"><?= h(formatCurrency($totalRevenue)) ?></div><div class="stat-hero-label">Total Revenue</div></div></div></div>
+            <div class="col"><div class="stat-hero-card grad-gold"><div class="stat-hero-icon"><i class="fas fa-check-circle"></i></div><div><div class="stat-hero-value"><?= $complianceRate ?>%</div><div class="stat-hero-label">Compliance Rate</div></div></div></div>
+            <div class="col"><div class="stat-hero-card grad-red"><div class="stat-hero-icon"><i class="fas fa-exclamation-triangle"></i></div><div><div class="stat-hero-value"><?= number_format($defaulters) ?></div><div class="stat-hero-label">Defaulters</div></div></div></div>
         </div>
 
         <div class="row g-4 mb-4">
@@ -110,6 +74,7 @@ for ($i = 11; $i >= 0; $i--) {
                         <div class="mt-3">
                             <div class="d-flex justify-content-between align-items-center py-1"><span><span class="badge bg-primary me-2">●</span> City Council</span><span class="fw-bold"><?= (int)$city['revenue_split_city'] ?>%</span></div>
                             <div class="d-flex justify-content-between align-items-center py-1"><span><span class="badge bg-success me-2">●</span> Boda Association</span><span class="fw-bold"><?= (int)$city['revenue_split_association'] ?>%</span></div>
+                            <div class="d-flex justify-content-between align-items-center py-1"><span><span class="badge me-2" style="background:#e0529c;">●</span> Government</span><span class="fw-bold"><?= (int)$city['revenue_split_government'] ?>%</span></div>
                             <div class="d-flex justify-content-between align-items-center py-1"><span><span class="badge bg-info me-2">●</span> Kakebe Tech</span><span class="fw-bold"><?= (int)$city['revenue_split_platform'] ?>%</span></div>
                         </div>
                     </div>
@@ -133,20 +98,20 @@ for ($i = 11; $i >= 0; $i--) {
         series: [{ name: 'Revenue (UGX M)', data: <?= json_encode($chartValues) ?> }],
         chart: { type: 'area', height: 280, toolbar: { show: false }, animations: { enabled: true } },
         dataLabels: { enabled: false },
-        stroke: { curve: 'smooth', width: 3, colors: ['#0d6efd'] },
+        stroke: { curve: 'smooth', width: 3, colors: ['#5b4bd5'] },
         fill: { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.4, opacityTo: 0.05 } },
         xaxis: { categories: <?= json_encode($chartLabels) ?>, labels: { style: { colors: '#6c757d', fontSize: '12px' } } },
         yaxis: { labels: { formatter: (val) => 'UGX ' + val + 'M', style: { colors: '#6c757d', fontSize: '12px' } } },
         grid: { borderColor: '#f1f1f1', strokeDashArray: 4 },
-        colors: ['#0d6efd'],
+        colors: ['#5b4bd5'],
         tooltip: { theme: 'dark', y: { formatter: (val) => 'UGX ' + val + ' Million' } }
     }).render();
 
     new ApexCharts(document.querySelector('#pieChart'), {
-        series: [<?= (int)$city['revenue_split_city'] ?>, <?= (int)$city['revenue_split_association'] ?>, <?= (int)$city['revenue_split_platform'] ?>],
+        series: [<?= (int)$city['revenue_split_city'] ?>, <?= (int)$city['revenue_split_association'] ?>, <?= (int)$city['revenue_split_government'] ?>, <?= (int)$city['revenue_split_platform'] ?>],
         chart: { type: 'donut', height: 200, animations: { enabled: true } },
-        labels: ['City Council', 'Boda Association', 'Kakebe Tech'],
-        colors: ['#0d6efd', '#198754', '#0dcaf0'],
+        labels: ['City Council', 'Boda Association', 'Government', 'Kakebe Tech'],
+        colors: ['#5b4bd5', '#198754', '#e0529c', '#0dcaf0'],
         legend: { show: false },
         plotOptions: { pie: { donut: { size: '70%', labels: { show: true, total: { show: true, label: 'Total Split', formatter: () => '100%' } } } } },
         stroke: { width: 0 },

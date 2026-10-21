@@ -26,16 +26,17 @@ CREATE TABLE cities (
   address            VARCHAR(255),
   payment_gateway    VARCHAR(60),
   sms_gateway        VARCHAR(60),
-  revenue_split_city        TINYINT UNSIGNED NOT NULL DEFAULT 60,
+  revenue_split_city        TINYINT UNSIGNED NOT NULL DEFAULT 55,
   revenue_split_association TINYINT UNSIGNED NOT NULL DEFAULT 26,
-  revenue_split_platform    TINYINT UNSIGNED NOT NULL DEFAULT 14,
+  revenue_split_platform    TINYINT UNSIGNED NOT NULL DEFAULT 9,
+  revenue_split_government  TINYINT UNSIGNED NOT NULL DEFAULT 10,
   compliance_target  TINYINT UNSIGNED NOT NULL DEFAULT 70,
   grace_period_days  SMALLINT UNSIGNED NOT NULL DEFAULT 30,
   reminder_days      SMALLINT UNSIGNED NOT NULL DEFAULT 14,
   created_by         INT NULL,
   created_at         DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at         DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  CONSTRAINT chk_revenue_split CHECK (revenue_split_city + revenue_split_association + revenue_split_platform = 100)
+  CONSTRAINT chk_revenue_split CHECK (revenue_split_city + revenue_split_association + revenue_split_platform + revenue_split_government = 100)
 ) ENGINE=InnoDB;
 
 -- ── stages ──────────────────────────────────────────────────
@@ -64,9 +65,10 @@ CREATE TABLE users (
   email          VARCHAR(150) NOT NULL UNIQUE,
   phone          VARCHAR(30),
   password_hash  VARCHAR(255) NOT NULL,
-  role           ENUM('super_admin','city_admin','chairperson','rider') NOT NULL,
+  role           ENUM('super_admin','city_admin','chairperson','rider','government') NOT NULL,
   city_id        CHAR(3) NULL,
   stage_id       INT NULL,
+  agency_name    VARCHAR(150) NULL,
   avatar_path    VARCHAR(255),
   status         ENUM('active','suspended') NOT NULL DEFAULT 'active',
   reset_token    VARCHAR(64) NULL,
@@ -226,16 +228,61 @@ CREATE TABLE platform_settings (
   operator_name                VARCHAR(150) NOT NULL DEFAULT 'Kakebe Technologies Limited',
   support_email                VARCHAR(150),
   support_phone                VARCHAR(30),
-  default_split_city           TINYINT UNSIGNED NOT NULL DEFAULT 60,
+  default_split_city           TINYINT UNSIGNED NOT NULL DEFAULT 55,
   default_split_association    TINYINT UNSIGNED NOT NULL DEFAULT 26,
-  default_split_platform       TINYINT UNSIGNED NOT NULL DEFAULT 14,
+  default_split_platform       TINYINT UNSIGNED NOT NULL DEFAULT 9,
+  default_split_government     TINYINT UNSIGNED NOT NULL DEFAULT 10,
   require_2fa                  TINYINT(1) NOT NULL DEFAULT 1,
   maintenance_mode             TINYINT(1) NOT NULL DEFAULT 0,
   updated_at                   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  CONSTRAINT chk_settings_single_row CHECK (id = 1)
+  CONSTRAINT chk_settings_single_row CHECK (id = 1),
+  CONSTRAINT chk_default_split CHECK (default_split_city + default_split_association + default_split_platform + default_split_government = 100)
 ) ENGINE=InnoDB;
 
 INSERT INTO platform_settings (id, support_email, support_phone) VALUES (1, 'support@kakebe.tech', '+256 700 000 000');
+
+
+-- ── anomaly detection ───────────────────────────────────────
+CREATE TABLE IF NOT EXISTS `anomaly_flags` (
+  `id`                BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `fingerprint`       VARCHAR(100) NOT NULL,
+  `rule_code`         VARCHAR(40)  NOT NULL,
+  `category`          VARCHAR(30)  NOT NULL,
+  `severity`          ENUM('low','medium','high') NOT NULL DEFAULT 'medium',
+  `entity_type`       VARCHAR(20)  NOT NULL,
+  `entity_id`         VARCHAR(80)  NOT NULL,
+  `rider_id`          INT NULL,
+  `city_id`           CHAR(3) NULL,
+  `title`             VARCHAR(200) NOT NULL,
+  `details`           VARCHAR(600) NULL,
+  `status`            ENUM('open','confirmed','dismissed','resolved') NOT NULL DEFAULT 'open',
+  `first_detected_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `last_seen_at`      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `resolved_at`       DATETIME NULL,
+  `reviewed_by`       INT NULL,
+  `reviewed_at`       DATETIME NULL,
+  `review_note`       VARCHAR(300) NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_anomaly_fingerprint` (`fingerprint`),
+  KEY `idx_anomaly_status_sev` (`status`,`severity`),
+  KEY `idx_anomaly_rule` (`rule_code`),
+  KEY `idx_anomaly_city` (`city_id`),
+  KEY `idx_anomaly_rider` (`rider_id`),
+  KEY `idx_anomaly_seen` (`last_seen_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `anomaly_scan_runs` (
+  `id`             INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `started_at`     DATETIME NOT NULL,
+  `finished_at`    DATETIME NULL,
+  `triggered_by`   VARCHAR(40) NOT NULL DEFAULT 'manual',
+  `new_flags`      INT NOT NULL DEFAULT 0,
+  `resolved_flags` INT NOT NULL DEFAULT 0,
+  `open_flags`     INT NOT NULL DEFAULT 0,
+  `duration_ms`    INT NOT NULL DEFAULT 0,
+  PRIMARY KEY (`id`),
+  KEY `idx_scan_started` (`started_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 SET FOREIGN_KEY_CHECKS = 1;
 

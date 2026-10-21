@@ -72,28 +72,28 @@ try {
     $cities = [
         ['id'=>'LIR','name'=>'Lira City','logo'=>'/assets/images/lcc.png','fee'=>50000,'status'=>'active',
          'email'=>'council@liracityuganda.go.ug','phone'=>'+256 473 420 123','address'=>'Lira City Council, Parliament Avenue, Lira, Uganda',
-         'gateway'=>'MTN MoMo','split'=>[60,26,14],'target'=>70,'created'=>'2025-01-01'],
+         'gateway'=>'MTN MoMo','split'=>[55,26,9,10],'target'=>70,'created'=>'2025-01-01'],
         ['id'=>'GUL','name'=>'Gulu City','logo'=>'/assets/images/logo.png','fee'=>45000,'status'=>'active',
          'email'=>'council@gulucity.go.ug','phone'=>'+256 471 432 456','address'=>'Gulu City Council, Gulu, Uganda',
-         'gateway'=>'Airtel Money','split'=>[55,30,15],'target'=>70,'created'=>'2025-03-01'],
+         'gateway'=>'Airtel Money','split'=>[50,28,10,12],'target'=>70,'created'=>'2025-03-01'],
         ['id'=>'KLA','name'=>'Kampala City','logo'=>'/assets/images/logo.png','fee'=>60000,'status'=>'active',
          'email'=>'council@kcca.go.ug','phone'=>'+256 417 123 456','address'=>'KCCA, City Square, Kampala, Uganda',
-         'gateway'=>'MTN MoMo','split'=>[65,22,13],'target'=>75,'created'=>'2025-06-01'],
+         'gateway'=>'MTN MoMo','split'=>[58,22,9,11],'target'=>75,'created'=>'2025-06-01'],
         ['id'=>'MBA','name'=>'Mbarara City','logo'=>'/assets/images/logo.png','fee'=>48000,'status'=>'pending',
          'email'=>'council@mbararacity.go.ug','phone'=>'+256 485 456 789','address'=>'Mbarara City Council, Mbarara, Uganda',
-         'gateway'=>'Both','split'=>[58,28,14],'target'=>70,'created'=>'2026-01-15'],
+         'gateway'=>'Both','split'=>[52,26,10,12],'target'=>70,'created'=>'2026-01-15'],
     ];
     $citySql = "INSERT INTO cities (id,name,country,currency,logo_path,annual_fee,fiscal_year,id_prefix,status,
                 contact_email,contact_phone,address,payment_gateway,sms_gateway,
-                revenue_split_city,revenue_split_association,revenue_split_platform,compliance_target,created_by,created_at)
+                revenue_split_city,revenue_split_association,revenue_split_platform,revenue_split_government,compliance_target,created_by,created_at)
                 VALUES (:id,:name,'Uganda','UGX',:logo,:fee,'2026/2027',:prefix,:status,
                 :email,:phone,:address,:gateway,\"Africa's Talking\",
-                :sc,:sa,:sp,:target,:created_by,:created_at)";
+                :sc,:sa,:sp,:sg,:target,:created_by,:created_at)";
     foreach ($cities as $c) {
         runQuery($citySql, [
             'id'=>$c['id'],'name'=>$c['name'],'logo'=>$c['logo'],'fee'=>$c['fee'],'prefix'=>'BODA-'.$c['id'],'status'=>$c['status'],
             'email'=>$c['email'],'phone'=>$c['phone'],'address'=>$c['address'],'gateway'=>$c['gateway'],
-            'sc'=>$c['split'][0],'sa'=>$c['split'][1],'sp'=>$c['split'][2],'target'=>$c['target'],
+            'sc'=>$c['split'][0],'sa'=>$c['split'][1],'sp'=>$c['split'][2],'sg'=>$c['split'][3],'target'=>$c['target'],
             'created_by'=>$superAdminId,'created_at'=>$c['created'].' 09:00:00',
         ]);
     }

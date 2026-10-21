@@ -18,14 +18,6 @@ $overallRate = $totalRiders ? round(100 * $activeRiders / $totalRiders) : 0;
 <head>
     <?php $pageTitle = 'Compliance Monitoring - BodaERP'; require __DIR__ . '/../../includes/partials/head-assets.php'; ?>
     <style>
-        .council-stat-card { background: white; border-radius: 14px; padding: 16px 20px; border-left: 4px solid #198754; box-shadow: 0 2px 12px rgba(0,0,0,0.04); }
-        .council-stat-card .stat-number { font-size: 1.6rem; font-weight: 900; color: #1a1a2e; line-height: 1; }
-        .council-stat-card .stat-label { font-size: 0.75rem; color: #6c757d; font-weight: 500; }
-        .council-stat-card .stat-icon { font-size: 1.6rem; opacity: 0.15; }
-        .council-stat-card.gold { border-left-color: #f59e0b; }
-        .council-stat-card.green { border-left-color: #198754; }
-        .council-stat-card.red { border-left-color: #dc3545; }
-        .council-stat-card.blue { border-left-color: #0d6efd; }
     </style>
 </head>
 <body>
@@ -44,10 +36,10 @@ $overallRate = $totalRiders ? round(100 * $activeRiders / $totalRiders) : 0;
 
     <div class="content-area">
         <div class="row g-3 mb-4">
-            <div class="col-md-3 col-6"><div class="council-stat-card gold"><div class="d-flex justify-content-between align-items-center"><div><span class="stat-number"><?= $overallRate ?>%</span><div class="stat-label">Compliance Rate</div></div><i class="fas fa-check-circle stat-icon"></i></div></div></div>
-            <div class="col-md-3 col-6"><div class="council-stat-card green"><div class="d-flex justify-content-between align-items-center"><div><span class="stat-number"><?= number_format($activeRiders) ?></span><div class="stat-label">Compliant Riders</div></div><i class="fas fa-user-check stat-icon"></i></div></div></div>
-            <div class="col-md-3 col-6"><div class="council-stat-card red"><div class="d-flex justify-content-between align-items-center"><div><span class="stat-number"><?= number_format($defaulters) ?></span><div class="stat-label">Non-Compliant</div></div><i class="fas fa-exclamation-circle stat-icon"></i></div></div></div>
-            <div class="col-md-3 col-6"><div class="council-stat-card blue"><div class="d-flex justify-content-between align-items-center"><div><span class="stat-number"><?= count($stages) ?></span><div class="stat-label">Stages Monitored</div></div><i class="fas fa-map-marker-alt stat-icon"></i></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card grad-gold"><div class="stat-hero-icon"><i class="fas fa-check-circle"></i></div><div><div class="stat-hero-value"><?= $overallRate ?>%</div><div class="stat-hero-label">Compliance Rate</div></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card grad-green"><div class="stat-hero-icon"><i class="fas fa-user-check"></i></div><div><div class="stat-hero-value"><?= number_format($activeRiders) ?></div><div class="stat-hero-label">Compliant Riders</div></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card grad-red"><div class="stat-hero-icon"><i class="fas fa-exclamation-circle"></i></div><div><div class="stat-hero-value"><?= number_format($defaulters) ?></div><div class="stat-hero-label">Non-Compliant</div></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card grad-blue"><div class="stat-hero-icon"><i class="fas fa-map-marker-alt"></i></div><div><div class="stat-hero-value"><?= count($stages) ?></div><div class="stat-hero-label">Stages Monitored</div></div></div></div>
         </div>
 
         <div class="card mb-4">
@@ -94,7 +86,7 @@ $overallRate = $totalRiders ? round(100 * $activeRiders / $totalRiders) : 0;
         series: [{ name: 'Compliance %', data: <?= json_encode(array_map(fn($s) => (float)($s['compliance_pct'] ?? 0), $stages)) ?> }],
         chart: { type: 'bar', height: 320, toolbar: { show: false } },
         plotOptions: { bar: { borderRadius: 6, columnWidth: '55%', distributed: true } },
-        colors: ['#0d6efd','#198754','#f59e0b','#dc3545','#0dcaf0','#6f42c1','#fd7e14','#20c997','#e83e8c','#6c757d'],
+        colors: ['#5b4bd5','#198754','#f59e0b','#dc3545','#0dcaf0','#6f42c1','#fd7e14','#20c997','#e83e8c','#6c757d'],
         legend: { show: false },
         dataLabels: { enabled: true, formatter: v => v + '%' },
         xaxis: { categories: <?= json_encode(array_column($stages, 'name')) ?>, labels: { style: { colors: '#6c757d', fontSize: '11px' } } },

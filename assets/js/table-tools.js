@@ -63,7 +63,7 @@ function exportTablePDF(tableId, filename, title) {
         body: rows.slice(1),
         startY: 26,
         styles: { fontSize: 8, cellPadding: 2 },
-        headStyles: { fillColor: [13, 110, 253] },
+        headStyles: { fillColor: [91, 75, 213] },
         margin: { left: 14, right: 14 },
     });
     doc.save(filename.endsWith('.pdf') ? filename : filename + '.pdf');

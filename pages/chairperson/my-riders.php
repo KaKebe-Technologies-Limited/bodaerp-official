@@ -32,24 +32,20 @@ $expiringSoon = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE stage_id = ?
 <html lang="en">
 <head>
     <?php $pageTitle = 'My Riders - BodaERP'; require __DIR__ . '/../../includes/partials/head-assets.php'; ?>
-    <style>
-        .status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; }
-        .status-dot.active { background: #198754; } .status-dot.expired { background: #dc3545; } .status-dot.pending { background: #ffc107; }
-    </style>
 </head>
 <body>
 
 <?php require __DIR__ . '/../../includes/partials/sidebar-chairperson.php'; ?>
 
 <div class="main-content" id="mainContent">
-    <?php $pageTitle = 'My Riders'; require __DIR__ . '/../../includes/partials/topheader.php'; ?>
+    <?php $pageTitle = 'My Riders'; $pageSubtitle = 'All riders registered under your stage'; require __DIR__ . '/../../includes/partials/topheader.php'; ?>
 
     <div class="content-area">
-        <div class="row g-3 mb-4">
-            <div class="col-md-3 col-6"><div class="card"><div class="card-body"><span class="stat-number fs-3 fw-bold"><?= $totalRiders ?></span><div class="text-muted small">Total Riders</div></div></div></div>
-            <div class="col-md-3 col-6"><div class="card"><div class="card-body"><span class="stat-number fs-3 fw-bold text-success"><?= $activeRiders ?></span><div class="text-muted small">Active</div></div></div></div>
-            <div class="col-md-3 col-6"><div class="card"><div class="card-body"><span class="stat-number fs-3 fw-bold text-danger"><?= $defaulters ?></span><div class="text-muted small">Defaulters</div></div></div></div>
-            <div class="col-md-3 col-6"><div class="card"><div class="card-body"><span class="stat-number fs-3 fw-bold text-warning"><?= $expiringSoon ?></span><div class="text-muted small">Expiring Soon</div></div></div></div>
+        <div class="row g-3 row-cols-2 row-cols-xl-4 mb-4">
+            <div class="col"><div class="stat-hero-card grad-blue"><div class="stat-hero-icon"><i class="fas fa-users"></i></div><div><div class="stat-hero-value"><?= $totalRiders ?></div><div class="stat-hero-label">Total Riders</div></div></div></div>
+            <div class="col"><div class="stat-hero-card grad-green"><div class="stat-hero-icon"><i class="fas fa-user-check"></i></div><div><div class="stat-hero-value"><?= $activeRiders ?></div><div class="stat-hero-label">Active</div></div></div></div>
+            <div class="col"><div class="stat-hero-card grad-red"><div class="stat-hero-icon"><i class="fas fa-exclamation-triangle"></i></div><div><div class="stat-hero-value"><?= $defaulters ?></div><div class="stat-hero-label">Defaulters</div></div></div></div>
+            <div class="col"><div class="stat-hero-card grad-gold"><div class="stat-hero-icon"><i class="fas fa-hourglass-half"></i></div><div><div class="stat-hero-value"><?= $expiringSoon ?></div><div class="stat-hero-label">Expiring Soon</div></div></div></div>
         </div>
 
         <div class="card mb-4">
@@ -85,7 +81,6 @@ $expiringSoon = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE stage_id = ?
                     <table class="table table-hover mb-0" id="myRidersTable">
                         <thead><tr><th>#</th><th>Rider</th><th>Plate</th><th>Phone</th><th>Status</th><th>Expiry</th><th class="no-export">Action</th></tr></thead>
                         <tbody>
-                        <?php if (!$riders): ?><tr><td colspan="7" class="text-center py-4 text-muted">No riders found</td></tr><?php endif; ?>
                         <?php foreach ($riders as $i => $r): $sc = ['active'=>'bg-success','expired'=>'bg-danger','pending'=>'bg-warning text-dark']; ?>
                             <tr>
                                 <td><?= $i+1 ?></td>
@@ -106,6 +101,13 @@ $expiringSoon = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE stage_id = ?
                         <?php endforeach; ?>
                         </tbody>
                     </table>
+                    <?php if (!$riders): ?>
+                    <div class="empty-state">
+                        <i class="fas fa-users"></i>
+                        <h5>No riders found</h5>
+                        <p>Try adjusting your search or filters, or register a new rider to get started.</p>
+                    </div>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>

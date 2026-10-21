@@ -26,11 +26,6 @@ $worst = $stages ? end($stages)['performance'] : 0;
 <head>
     <?php $pageTitle = 'Stage Performance - BodaERP'; require __DIR__ . '/../../includes/partials/head-assets.php'; ?>
     <style>
-        .council-stat-card { background: white; border-radius: 14px; padding: 16px 20px; border-left: 4px solid #198754; box-shadow: 0 2px 12px rgba(0,0,0,0.04); }
-        .council-stat-card .stat-number { font-size: 1.6rem; font-weight: 900; color: #1a1a2e; line-height: 1; }
-        .council-stat-card .stat-label { font-size: 0.75rem; color: #6c757d; font-weight: 500; }
-        .council-stat-card.gold { border-left-color: #f59e0b; }
-        .council-stat-card.red { border-left-color: #dc3545; }
     </style>
 </head>
 <body>
@@ -49,9 +44,9 @@ $worst = $stages ? end($stages)['performance'] : 0;
 
     <div class="content-area">
         <div class="row g-3 mb-4">
-            <div class="col-md-4"><div class="council-stat-card"><span class="stat-number"><?= $best ?>%</span><div class="stat-label">Best Performing</div></div></div>
-            <div class="col-md-4"><div class="council-stat-card gold"><span class="stat-number"><?= $avg ?>%</span><div class="stat-label">Average Score</div></div></div>
-            <div class="col-md-4"><div class="council-stat-card red"><span class="stat-number"><?= $worst ?>%</span><div class="stat-label">Needs Attention</div></div></div>
+            <div class="col-md-4"><div class="stat-hero-card grad-green"><div class="stat-hero-icon"><i class="fas fa-trophy"></i></div><div><div class="stat-hero-value"><?= $best ?>%</div><div class="stat-hero-label">Best Performing</div></div></div></div>
+            <div class="col-md-4"><div class="stat-hero-card grad-gold"><div class="stat-hero-icon"><i class="fas fa-chart-line"></i></div><div><div class="stat-hero-value"><?= $avg ?>%</div><div class="stat-hero-label">Average Score</div></div></div></div>
+            <div class="col-md-4"><div class="stat-hero-card grad-red"><div class="stat-hero-icon"><i class="fas fa-exclamation-triangle"></i></div><div><div class="stat-hero-value"><?= $worst ?>%</div><div class="stat-hero-label">Needs Attention</div></div></div></div>
         </div>
 
         <div class="card mb-4"><div class="card-body">
@@ -97,7 +92,7 @@ $worst = $stages ? end($stages)['performance'] : 0;
         series: [{ name: 'Performance %', data: <?= json_encode(array_column($stages, 'performance')) ?> }],
         chart: { type: 'bar', height: 320, toolbar: { show: false } },
         plotOptions: { bar: { borderRadius: 6, columnWidth: '55%', distributed: true } },
-        colors: ['#0d6efd','#198754','#f59e0b','#dc3545','#0dcaf0','#6f42c1','#fd7e14','#20c997','#e83e8c','#6c757d'],
+        colors: ['#5b4bd5','#198754','#f59e0b','#dc3545','#0dcaf0','#6f42c1','#fd7e14','#20c997','#e83e8c','#6c757d'],
         legend: { show: false },
         dataLabels: { enabled: true, formatter: v => v + '%' },
         xaxis: { categories: <?= json_encode(array_column($stages, 'name')) ?> },

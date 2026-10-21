@@ -33,7 +33,7 @@ $stage = fetchOne("SELECT * FROM stages WHERE id = ?", [$stageId]);
 <?php require __DIR__ . '/../../includes/partials/sidebar-chairperson.php'; ?>
 
 <div class="main-content" id="mainContent">
-    <?php $pageTitle = 'Stage Settings'; require __DIR__ . '/../../includes/partials/topheader.php'; ?>
+    <?php $pageTitle = 'Stage Settings'; $pageSubtitle = 'Manage your stage details and view city-wide defaults'; require __DIR__ . '/../../includes/partials/topheader.php'; ?>
 
     <div class="content-area">
         <?php if ($saved): ?><div class="alert alert-success">Stage settings updated!</div><?php endif; ?>
@@ -41,7 +41,10 @@ $stage = fetchOne("SELECT * FROM stages WHERE id = ?", [$stageId]);
         <div class="row g-4">
             <div class="col-lg-6">
                 <div class="card"><div class="card-body">
-                    <h5 class="fw-bold mb-3">Stage Information</h5>
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <div class="icon-badge blue"><i class="fas fa-map-marker-alt"></i></div>
+                        <h5 class="fw-bold mb-0">Stage Information</h5>
+                    </div>
                     <form method="post">
                         <?= csrf_field() ?>
                         <div class="mb-3"><label class="form-label fw-semibold">Stage Name <span class="text-danger">*</span></label><input type="text" name="name" class="form-control" value="<?= h($stage['name']) ?>" required></div>
@@ -57,7 +60,10 @@ $stage = fetchOne("SELECT * FROM stages WHERE id = ?", [$stageId]);
             </div>
             <div class="col-lg-6">
                 <div class="card"><div class="card-body">
-                    <h5 class="fw-bold mb-3">Notifications & Tax (set by City Council)</h5>
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <div class="icon-badge gold"><i class="fas fa-bell"></i></div>
+                        <div><h5 class="fw-bold mb-0">Notifications &amp; Tax</h5><small class="text-muted">Set city-wide by City Council</small></div>
+                    </div>
                     <div class="form-check form-switch mb-2"><input class="form-check-input" type="checkbox" checked disabled><label class="form-check-label">Notify on new rider registration</label></div>
                     <div class="form-check form-switch mb-2"><input class="form-check-input" type="checkbox" checked disabled><label class="form-check-label">Notify on payment received</label></div>
                     <div class="form-check form-switch mb-3"><input class="form-check-input" type="checkbox" checked disabled><label class="form-check-label">Notify on expiry approaching</label></div>

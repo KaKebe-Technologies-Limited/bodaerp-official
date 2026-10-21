@@ -86,14 +86,6 @@ function qsMerge(array $overrides): string {
 <head>
     <?php $pageTitle = 'City Riders - BodaERP'; require __DIR__ . '/../../includes/partials/head-assets.php'; ?>
     <style>
-        .council-stat-card { background: white; border-radius: 14px; padding: 16px 20px; border-left: 4px solid #0d6efd; box-shadow: 0 2px 12px rgba(0,0,0,0.04); }
-        .council-stat-card .stat-number { font-size: 1.6rem; font-weight: 900; color: #1a1a2e; line-height: 1; }
-        .council-stat-card .stat-label { font-size: 0.75rem; color: #6c757d; font-weight: 500; }
-        .council-stat-card .stat-icon { font-size: 1.6rem; opacity: 0.15; }
-        .council-stat-card.blue { border-left-color: #0d6efd; }
-        .council-stat-card.green { border-left-color: #198754; }
-        .council-stat-card.red { border-left-color: #dc3545; }
-        .council-stat-card.gold { border-left-color: #f59e0b; }
         .status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; }
         .status-dot.active { background: #198754; } .status-dot.expired { background: #dc3545; } .status-dot.pending { background: #ffc107; }
     </style>
@@ -114,10 +106,10 @@ function qsMerge(array $overrides): string {
 
     <div class="content-area">
         <div class="row g-3 mb-4">
-            <div class="col-md-3 col-6"><div class="council-stat-card blue"><div class="d-flex justify-content-between align-items-center"><div><span class="stat-number"><?= number_format($totalRiders) ?></span><div class="stat-label">Total Riders</div></div><i class="fas fa-users stat-icon"></i></div></div></div>
-            <div class="col-md-3 col-6"><div class="council-stat-card green"><div class="d-flex justify-content-between align-items-center"><div><span class="stat-number"><?= number_format($activeRiders) ?></span><div class="stat-label">Active (Paid)</div></div><i class="fas fa-check-circle stat-icon"></i></div></div></div>
-            <div class="col-md-3 col-6"><div class="council-stat-card red"><div class="d-flex justify-content-between align-items-center"><div><span class="stat-number"><?= number_format($expiredRiders) ?></span><div class="stat-label">Expired</div></div><i class="fas fa-exclamation-circle stat-icon"></i></div></div></div>
-            <div class="col-md-3 col-6"><div class="council-stat-card gold"><div class="d-flex justify-content-between align-items-center"><div><span class="stat-number"><?= $stageCount ?></span><div class="stat-label">Stages</div></div><i class="fas fa-map-marker-alt stat-icon"></i></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card grad-blue"><div class="stat-hero-icon"><i class="fas fa-users"></i></div><div><div class="stat-hero-value"><?= number_format($totalRiders) ?></div><div class="stat-hero-label">Total Riders</div></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card grad-green"><div class="stat-hero-icon"><i class="fas fa-check-circle"></i></div><div><div class="stat-hero-value"><?= number_format($activeRiders) ?></div><div class="stat-hero-label">Active (Paid)</div></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card grad-red"><div class="stat-hero-icon"><i class="fas fa-exclamation-circle"></i></div><div><div class="stat-hero-value"><?= number_format($expiredRiders) ?></div><div class="stat-hero-label">Expired</div></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card grad-gold"><div class="stat-hero-icon"><i class="fas fa-map-marker-alt"></i></div><div><div class="stat-hero-value"><?= $stageCount ?></div><div class="stat-hero-label">Stages</div></div></div></div>
         </div>
 
         <div class="card mb-4">
@@ -171,7 +163,7 @@ function qsMerge(array $overrides): string {
                         <thead><tr><th>ID</th><th>Rider</th><th>Plate</th><th>Stage</th><th>Phone</th><th>Status</th><th>Expiry</th><th class="no-export">Actions</th></tr></thead>
                         <tbody>
                         <?php if (!$riders): ?>
-                            <tr><td colspan="8" class="text-center py-4"><i class="fas fa-inbox fa-2x text-muted mb-2 d-block"></i><span class="text-muted">No riders found</span></td></tr>
+                            <tr><td colspan="8"><div class="empty-state" style="padding:36px 20px;"><i class="fas fa-inbox"></i><h5>No riders found</h5></div></td></tr>
                         <?php endif; ?>
                         <?php foreach ($riders as $r):
                             $statusBadge = ['active'=>'bg-success','expired'=>'bg-danger','pending'=>'bg-warning text-dark'][$r['status']];

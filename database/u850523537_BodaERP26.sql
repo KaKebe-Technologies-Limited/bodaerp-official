@@ -73,9 +73,10 @@ CREATE TABLE `cities` (
   `address` varchar(255) DEFAULT NULL,
   `payment_gateway` varchar(60) DEFAULT NULL,
   `sms_gateway` varchar(60) DEFAULT NULL,
-  `revenue_split_city` tinyint(3) UNSIGNED NOT NULL DEFAULT 60,
+  `revenue_split_city` tinyint(3) UNSIGNED NOT NULL DEFAULT 55,
   `revenue_split_association` tinyint(3) UNSIGNED NOT NULL DEFAULT 26,
-  `revenue_split_platform` tinyint(3) UNSIGNED NOT NULL DEFAULT 14,
+  `revenue_split_platform` tinyint(3) UNSIGNED NOT NULL DEFAULT 9,
+  `revenue_split_government` tinyint(3) UNSIGNED NOT NULL DEFAULT 10,
   `compliance_target` tinyint(3) UNSIGNED NOT NULL DEFAULT 70,
   `grace_period_days` smallint(5) UNSIGNED NOT NULL DEFAULT 30,
   `reminder_days` smallint(5) UNSIGNED NOT NULL DEFAULT 14,
@@ -171,9 +172,10 @@ CREATE TABLE `platform_settings` (
   `operator_name` varchar(150) NOT NULL DEFAULT 'Kakebe Technologies Limited',
   `support_email` varchar(150) DEFAULT NULL,
   `support_phone` varchar(30) DEFAULT NULL,
-  `default_split_city` tinyint(3) UNSIGNED NOT NULL DEFAULT 60,
+  `default_split_city` tinyint(3) UNSIGNED NOT NULL DEFAULT 55,
   `default_split_association` tinyint(3) UNSIGNED NOT NULL DEFAULT 26,
-  `default_split_platform` tinyint(3) UNSIGNED NOT NULL DEFAULT 14,
+  `default_split_platform` tinyint(3) UNSIGNED NOT NULL DEFAULT 9,
+  `default_split_government` tinyint(3) UNSIGNED NOT NULL DEFAULT 10,
   `require_2fa` tinyint(1) NOT NULL DEFAULT 1,
   `maintenance_mode` tinyint(1) NOT NULL DEFAULT 0,
   `updated_at` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
@@ -183,8 +185,8 @@ CREATE TABLE `platform_settings` (
 -- Dumping data for table `platform_settings`
 --
 
-INSERT INTO `platform_settings` (`id`, `platform_name`, `operator_name`, `support_email`, `support_phone`, `default_split_city`, `default_split_association`, `default_split_platform`, `require_2fa`, `maintenance_mode`, `updated_at`) VALUES
-(1, 'BodaERP', 'Kakebe Technologies Limited', 'support@kakebe.tech', '+256 700 000 000', 60, 26, 14, 1, 0, '2026-08-08 08:12:40');
+INSERT INTO `platform_settings` (`id`, `platform_name`, `operator_name`, `support_email`, `support_phone`, `default_split_city`, `default_split_association`, `default_split_platform`, `default_split_government`, `require_2fa`, `maintenance_mode`, `updated_at`) VALUES
+(1, 'BodaERP', 'Kakebe Technologies Limited', 'support@kakebe.tech', '+256 700 000 000', 55, 26, 9, 10, 1, 0, '2026-08-08 08:12:40');
 
 -- --------------------------------------------------------
 
@@ -254,9 +256,10 @@ CREATE TABLE `users` (
   `email` varchar(150) NOT NULL,
   `phone` varchar(30) DEFAULT NULL,
   `password_hash` varchar(255) NOT NULL,
-  `role` enum('super_admin','city_admin','chairperson','rider') NOT NULL,
+  `role` enum('super_admin','city_admin','chairperson','rider','government') NOT NULL,
   `city_id` char(3) DEFAULT NULL,
   `stage_id` int(11) DEFAULT NULL,
+  `agency_name` varchar(150) DEFAULT NULL,
   `avatar_path` varchar(255) DEFAULT NULL,
   `status` enum('active','suspended') NOT NULL DEFAULT 'active',
   `deleted_at` datetime DEFAULT NULL,
@@ -488,6 +491,52 @@ ALTER TABLE `stages`
 ALTER TABLE `users`
   ADD CONSTRAINT `users_ibfk_1` FOREIGN KEY (`city_id`) REFERENCES `cities` (`id`),
   ADD CONSTRAINT `users_ibfk_2` FOREIGN KEY (`stage_id`) REFERENCES `stages` (`id`) ON DELETE SET NULL;
+-- --------------------------------------------------------
+--
+-- Anomaly detection tables
+--
+
+CREATE TABLE IF NOT EXISTS `anomaly_flags` (
+  `id`                BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `fingerprint`       VARCHAR(100) NOT NULL,
+  `rule_code`         VARCHAR(40)  NOT NULL,
+  `category`          VARCHAR(30)  NOT NULL,
+  `severity`          ENUM('low','medium','high') NOT NULL DEFAULT 'medium',
+  `entity_type`       VARCHAR(20)  NOT NULL,
+  `entity_id`         VARCHAR(80)  NOT NULL,
+  `rider_id`          INT NULL,
+  `city_id`           CHAR(3) NULL,
+  `title`             VARCHAR(200) NOT NULL,
+  `details`           VARCHAR(600) NULL,
+  `status`            ENUM('open','confirmed','dismissed','resolved') NOT NULL DEFAULT 'open',
+  `first_detected_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `last_seen_at`      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `resolved_at`       DATETIME NULL,
+  `reviewed_by`       INT NULL,
+  `reviewed_at`       DATETIME NULL,
+  `review_note`       VARCHAR(300) NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_anomaly_fingerprint` (`fingerprint`),
+  KEY `idx_anomaly_status_sev` (`status`,`severity`),
+  KEY `idx_anomaly_rule` (`rule_code`),
+  KEY `idx_anomaly_city` (`city_id`),
+  KEY `idx_anomaly_rider` (`rider_id`),
+  KEY `idx_anomaly_seen` (`last_seen_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS `anomaly_scan_runs` (
+  `id`             INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `started_at`     DATETIME NOT NULL,
+  `finished_at`    DATETIME NULL,
+  `triggered_by`   VARCHAR(40) NOT NULL DEFAULT 'manual',
+  `new_flags`      INT NOT NULL DEFAULT 0,
+  `resolved_flags` INT NOT NULL DEFAULT 0,
+  `open_flags`     INT NOT NULL DEFAULT 0,
+  `duration_ms`    INT NOT NULL DEFAULT 0,
+  PRIMARY KEY (`id`),
+  KEY `idx_scan_started` (`started_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

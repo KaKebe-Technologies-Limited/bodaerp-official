@@ -35,8 +35,8 @@ $recentNotifs = fetchAll("SELECT * FROM notifications WHERE rider_id=? ORDER BY 
 
         <div class="row g-3 mb-4">
             <div class="col-md-3 col-6"><div class="stat-card-modern"><div class="icon-badge <?= $rider['status']==='active'?'green':'red' ?>"><i class="fas fa-shield-alt"></i></div><div><span class="stat-number"><?= ucfirst($rider['status']) ?></span><div class="stat-label">Status</div></div></div></div>
-            <div class="col-md-3 col-6"><div class="stat-card-modern"><div class="icon-badge blue"><i class="fas fa-calendar-alt"></i></div><div><span class="stat-number"><?= formatDate($rider['expiry_date']) ?></span><div class="stat-label">Expiry Date</div></div></div></div>
-            <div class="col-md-3 col-6"><div class="stat-card-modern"><div class="icon-badge gold"><i class="fas fa-coins"></i></div><div><span class="stat-number"><?= h(formatCurrency($rider['annual_tax'])) ?></span><div class="stat-label">Annual Tax</div></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card grad-blue"><div class="stat-hero-icon"><i class="fas fa-calendar-alt"></i></div><div><div class="stat-hero-value"><?= formatDate($rider['expiry_date']) ?></div><div class="stat-hero-label">Expiry Date</div></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card grad-gold"><div class="stat-hero-icon"><i class="fas fa-coins"></i></div><div><div class="stat-hero-value"><?= h(formatCurrency($rider['annual_tax'])) ?></div><div class="stat-hero-label">Annual Tax</div></div></div></div>
             <div class="col-md-3 col-6">
                 <a href="<?= BASE_URL ?>/pages/rider/payment-history.php" class="text-decoration-none">
                     <div class="stat-card-modern"><div class="icon-badge <?= $hasPaid?'green':'red' ?>"><i class="fas fa-receipt"></i></div><div><span class="stat-number"><?= $hasPaid ? 'Paid' : 'Unpaid' ?></span><div class="stat-label">Payment Status</div></div></div>

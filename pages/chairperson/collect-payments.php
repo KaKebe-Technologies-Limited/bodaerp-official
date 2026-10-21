@@ -56,23 +56,26 @@ $receiptMsg = $_GET['receipt'] ?? null;
 <?php require __DIR__ . '/../../includes/partials/sidebar-chairperson.php'; ?>
 
 <div class="main-content" id="mainContent">
-    <?php $pageTitle = 'Collect Payments'; require __DIR__ . '/../../includes/partials/topheader.php'; ?>
+    <?php $pageTitle = 'Collect Payments'; $pageSubtitle = 'Record and track rider tax payments for your stage'; require __DIR__ . '/../../includes/partials/topheader.php'; ?>
 
     <div class="content-area">
         <?php if ($receiptMsg): ?><div class="alert alert-success">Payment recorded! Receipt: <strong><?= h($receiptMsg) ?></strong></div><?php endif; ?>
         <?php if ($errors): ?><div class="alert alert-danger"><?php foreach ($errors as $e) echo h($e) . '<br>'; ?></div><?php endif; ?>
 
-        <div class="row g-3 mb-4">
-            <div class="col-md-3 col-6"><div class="card"><div class="card-body"><span class="fs-4 fw-bold"><?= h(formatCurrency($revenue)) ?></span><div class="text-muted small">Total Collected</div></div></div></div>
-            <div class="col-md-3 col-6"><div class="card"><div class="card-body"><span class="fs-4 fw-bold text-success"><?= $activeRiders ?></span><div class="text-muted small">Active Riders</div></div></div></div>
-            <div class="col-md-3 col-6"><div class="card"><div class="card-body"><span class="fs-4 fw-bold text-danger"><?= $defaulters ?></span><div class="text-muted small">Defaulters</div></div></div></div>
-            <div class="col-md-3 col-6"><div class="card"><div class="card-body"><span class="fs-4 fw-bold"><?= h(formatCurrency($thisMonth)) ?></span><div class="text-muted small">This Month</div></div></div></div>
+        <div class="row g-3 row-cols-2 row-cols-xl-4 mb-4">
+            <div class="col"><div class="stat-hero-card grad-blue"><div class="stat-hero-icon"><i class="fas fa-money-bill-wave"></i></div><div><div class="stat-hero-value"><?= h(formatCurrency($revenue)) ?></div><div class="stat-hero-label">Total Collected</div></div></div></div>
+            <div class="col"><div class="stat-hero-card grad-green"><div class="stat-hero-icon"><i class="fas fa-user-check"></i></div><div><div class="stat-hero-value"><?= $activeRiders ?></div><div class="stat-hero-label">Active Riders</div></div></div></div>
+            <div class="col"><div class="stat-hero-card grad-red"><div class="stat-hero-icon"><i class="fas fa-exclamation-triangle"></i></div><div><div class="stat-hero-value"><?= $defaulters ?></div><div class="stat-hero-label">Defaulters</div></div></div></div>
+            <div class="col"><div class="stat-hero-card grad-gold"><div class="stat-hero-icon"><i class="fas fa-calendar-alt"></i></div><div><div class="stat-hero-value"><?= h(formatCurrency($thisMonth)) ?></div><div class="stat-hero-label">This Month</div></div></div></div>
         </div>
 
         <div class="row g-4">
             <div class="col-lg-4">
                 <div class="card"><div class="card-body">
-                    <h6 class="fw-bold mb-3"><i class="fas fa-money-bill-wave text-primary me-2"></i>Record Payment</h6>
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <div class="icon-badge blue"><i class="fas fa-money-bill-wave"></i></div>
+                        <h6 class="fw-bold mb-0">Record Payment</h6>
+                    </div>
                     <form method="post">
                         <?= csrf_field() ?>
                         <div class="mb-3"><label class="form-label fw-semibold">Select Rider <span class="text-danger">*</span></label>
@@ -113,6 +116,13 @@ $receiptMsg = $_GET['receipt'] ?? null;
                             <?php endforeach; ?>
                             </tbody>
                         </table>
+                        <?php if (!$recentPayments): ?>
+                        <div class="empty-state">
+                            <i class="fas fa-receipt"></i>
+                            <h5>No payments yet</h5>
+                            <p>Payments recorded for your stage will appear here.</p>
+                        </div>
+                        <?php endif; ?>
                     </div>
                 </div></div>
             </div>

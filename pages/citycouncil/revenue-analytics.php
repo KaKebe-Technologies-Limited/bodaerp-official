@@ -32,13 +32,6 @@ $transactions = fetchAll("SELECT p.*, r.full_name, s.name AS stage_name FROM pay
 <head>
     <?php $pageTitle = 'Revenue Analytics - BodaERP'; require __DIR__ . '/../../includes/partials/head-assets.php'; ?>
     <style>
-        .council-stat-card { background: white; border-radius: 14px; padding: 16px 20px; border-left: 4px solid #0d6efd; box-shadow: 0 2px 12px rgba(0,0,0,0.04); }
-        .council-stat-card .stat-number { font-size: 1.6rem; font-weight: 900; color: #1a1a2e; line-height: 1; }
-        .council-stat-card .stat-label { font-size: 0.75rem; color: #6c757d; font-weight: 500; }
-        .council-stat-card .stat-icon { font-size: 1.6rem; opacity: 0.15; }
-        .council-stat-card.green { border-left-color: #198754; }
-        .council-stat-card.gold { border-left-color: #f59e0b; }
-        .council-stat-card.red { border-left-color: #dc3545; }
     </style>
 </head>
 <body>
@@ -58,10 +51,10 @@ $transactions = fetchAll("SELECT p.*, r.full_name, s.name AS stage_name FROM pay
 
     <div class="content-area">
         <div class="row g-3 mb-4">
-            <div class="col-md-3 col-6"><div class="council-stat-card"><div class="d-flex justify-content-between align-items-center"><div><span class="stat-number"><?= h(formatCurrency($totalRevenue)) ?></span><div class="stat-label">Total Revenue</div></div><i class="fas fa-money-bill-wave stat-icon"></i></div></div></div>
-            <div class="col-md-3 col-6"><div class="council-stat-card green"><div class="d-flex justify-content-between align-items-center"><div><span class="stat-number"><?= h(formatCurrency($thisMonth)) ?></span><div class="stat-label">This Month</div></div><i class="fas fa-calendar stat-icon"></i></div></div></div>
-            <div class="col-md-3 col-6"><div class="council-stat-card gold"><div class="d-flex justify-content-between align-items-center"><div><span class="stat-number"><?= h(formatCurrency(round($avgPayment))) ?></span><div class="stat-label">Avg. Payment</div></div><i class="fas fa-receipt stat-icon"></i></div></div></div>
-            <div class="col-md-3 col-6"><div class="council-stat-card red"><div class="d-flex justify-content-between align-items-center"><div><span class="stat-number"><?= number_format($txnCount) ?></span><div class="stat-label">Transactions</div></div><i class="fas fa-exchange-alt stat-icon"></i></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card grad-blue"><div class="stat-hero-icon"><i class="fas fa-money-bill-wave"></i></div><div><div class="stat-hero-value"><?= h(formatCurrency($totalRevenue)) ?></div><div class="stat-hero-label">Total Revenue</div></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card grad-green"><div class="stat-hero-icon"><i class="fas fa-calendar"></i></div><div><div class="stat-hero-value"><?= h(formatCurrency($thisMonth)) ?></div><div class="stat-hero-label">This Month</div></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card grad-gold"><div class="stat-hero-icon"><i class="fas fa-receipt"></i></div><div><div class="stat-hero-value"><?= h(formatCurrency(round($avgPayment))) ?></div><div class="stat-hero-label">Avg. Payment</div></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card grad-red"><div class="stat-hero-icon"><i class="fas fa-exchange-alt"></i></div><div><div class="stat-hero-value"><?= number_format($txnCount) ?></div><div class="stat-hero-label">Transactions</div></div></div></div>
         </div>
 
         <div class="row g-4 mb-4">
@@ -123,19 +116,19 @@ $transactions = fetchAll("SELECT p.*, r.full_name, s.name AS stage_name FROM pay
         series: [{ name: 'Revenue', data: <?= json_encode($chartValues) ?> }],
         chart: { type: 'area', height: 280, toolbar: { show: false } },
         dataLabels: { enabled: false },
-        stroke: { curve: 'smooth', width: 3, colors: ['#0d6efd'] },
+        stroke: { curve: 'smooth', width: 3, colors: ['#5b4bd5'] },
         fill: { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.4, opacityTo: 0.05 } },
         xaxis: { categories: <?= json_encode($chartLabels) ?> },
         yaxis: { labels: { formatter: v => 'UGX ' + v + 'M' } },
-        colors: ['#0d6efd'],
+        colors: ['#5b4bd5'],
         tooltip: { y: { formatter: v => 'UGX ' + v + ' Million' } }
     }).render();
 
     new ApexCharts(document.querySelector('#pieChart'), {
-        series: [<?= (int)$city['revenue_split_city'] ?>, <?= (int)$city['revenue_split_association'] ?>, <?= (int)$city['revenue_split_platform'] ?>],
+        series: [<?= (int)$city['revenue_split_city'] ?>, <?= (int)$city['revenue_split_association'] ?>, <?= (int)$city['revenue_split_government'] ?>, <?= (int)$city['revenue_split_platform'] ?>],
         chart: { type: 'donut', height: 220 },
-        labels: ['City Council', 'Boda Association', 'Kakebe Tech'],
-        colors: ['#0d6efd', '#198754', '#0dcaf0'],
+        labels: ['City Council', 'Boda Association', 'Government', 'Kakebe Tech'],
+        colors: ['#5b4bd5', '#198754', '#e0529c', '#0dcaf0'],
         dataLabels: { enabled: true, formatter: v => Math.round(v) + '%' },
     }).render();
 

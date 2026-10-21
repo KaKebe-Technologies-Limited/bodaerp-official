@@ -18,11 +18,12 @@ $cities = fetchAll("SELECT c.*,
     (SELECT COALESCE(SUM(p.amount),0) FROM payments p WHERE p.city_id = c.id AND p.status = 'Confirmed') AS revenue_collected
     FROM cities c ORDER BY c.created_at");
 
-$splitCityTotal = 0; $splitAssocTotal = 0; $splitPlatformTotal = 0;
+$splitCityTotal = 0; $splitAssocTotal = 0; $splitGovTotal = 0; $splitPlatformTotal = 0;
 foreach ($cities as &$c) {
     $c['compliance_pct'] = $c['rider_count'] ? round(100 * $c['active_rider_count'] / $c['rider_count']) : 0;
     $splitCityTotal     += $c['revenue_collected'] * $c['revenue_split_city'] / 100;
     $splitAssocTotal    += $c['revenue_collected'] * $c['revenue_split_association'] / 100;
+    $splitGovTotal      += $c['revenue_collected'] * $c['revenue_split_government'] / 100;
     $splitPlatformTotal += $c['revenue_collected'] * $c['revenue_split_platform'] / 100;
 }
 unset($c);
@@ -54,7 +55,7 @@ $roleColors = ['super_admin' => 'primary', 'city_admin' => 'success', 'chairpers
 <head>
     <?php $pageTitle = 'Super Admin - BodaERP Platform'; require __DIR__ . '/../../includes/partials/head-assets.php'; ?>
     <style>
-        .role-badge-sa { background: linear-gradient(135deg,#0d6efd,#1a3a5c); color: white; font-size: 0.65rem; padding: 3px 12px; border-radius: 20px; font-weight: 700; }
+        .role-badge-sa { background: linear-gradient(135deg,#5b4bd5,#2f2480); color: white; font-size: 0.65rem; padding: 3px 12px; border-radius: 20px; font-weight: 700; }
         .chart-card { border: none; border-radius: 14px; box-shadow: 0 2px 12px rgba(0,0,0,0.04); background: white; height: 100%; }
         .section-heading { font-weight: 700; font-size: 0.95rem; margin-bottom: 0; }
         .city-cell-logo { width: 30px; height: 30px; object-fit: contain; background: white; border-radius: 6px; }
@@ -133,6 +134,7 @@ $roleColors = ['super_admin' => 'primary', 'city_admin' => 'success', 'chairpers
                         <div class="mt-2">
                             <div class="d-flex justify-content-between align-items-center py-1"><span><span class="badge bg-primary me-2">●</span>City Councils</span><span class="fw-bold small">UGX <?= number_format(round($splitCityTotal)) ?></span></div>
                             <div class="d-flex justify-content-between align-items-center py-1"><span><span class="badge bg-success me-2">●</span>Associations</span><span class="fw-bold small">UGX <?= number_format(round($splitAssocTotal)) ?></span></div>
+                            <div class="d-flex justify-content-between align-items-center py-1"><span><span class="badge me-2" style="background:#e0529c;">●</span>Government</span><span class="fw-bold small">UGX <?= number_format(round($splitGovTotal)) ?></span></div>
                             <div class="d-flex justify-content-between align-items-center py-1"><span><span class="badge bg-info text-dark me-2">●</span>Kakebe Tech</span><span class="fw-bold small">UGX <?= number_format(round($splitPlatformTotal)) ?></span></div>
                         </div>
                     </div>
@@ -173,7 +175,7 @@ $roleColors = ['super_admin' => 'primary', 'city_admin' => 'success', 'chairpers
                 </div>
                 <div class="table-responsive">
                     <table class="table table-hover table-sm align-middle" id="citiesOverviewTable">
-                        <thead><tr><th>City</th><th>Status</th><th>Stages</th><th>Riders</th><th>Compliance</th><th>Revenue Collected</th><th>Split C/A/P</th><th>Actions</th></tr></thead>
+                        <thead><tr><th>City</th><th>Status</th><th>Stages</th><th>Riders</th><th>Compliance</th><th>Revenue Collected</th><th>Split C/A/G/P</th><th>Actions</th></tr></thead>
                         <tbody>
                         <?php foreach ($cities as $t): $statusColor = $t['status'] === 'active' ? 'success' : ($t['status'] === 'pending' ? 'warning' : 'secondary'); ?>
                             <tr>
@@ -194,6 +196,7 @@ $roleColors = ['super_admin' => 'primary', 'city_admin' => 'success', 'chairpers
                                 <td style="font-size:0.72rem;white-space:nowrap;">
                                     <span class="badge bg-primary"><?= (int) $t['revenue_split_city'] ?></span>
                                     <span class="badge bg-success"><?= (int) $t['revenue_split_association'] ?></span>
+                                    <span class="badge" style="background:#e0529c;"><?= (int) $t['revenue_split_government'] ?></span>
                                     <span class="badge bg-info text-dark"><?= (int) $t['revenue_split_platform'] ?></span>
                                 </td>
                                 <td>
@@ -255,20 +258,20 @@ $roleColors = ['super_admin' => 'primary', 'city_admin' => 'success', 'chairpers
         series: [{ name: 'Revenue (UGX M)', data: <?= json_encode($chartValues) ?> }],
         chart: { type: 'area', height: 280, toolbar: { show: false }, animations: { enabled: true } },
         dataLabels: { enabled: false },
-        stroke: { curve: 'smooth', width: 3, colors: ['#0d6efd'] },
+        stroke: { curve: 'smooth', width: 3, colors: ['#5b4bd5'] },
         fill: { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.4, opacityTo: 0.05 } },
         xaxis: { categories: <?= json_encode($chartLabels) ?>, labels: { style: { colors: '#6c757d', fontSize: '12px' } } },
         yaxis: { labels: { formatter: (val) => 'UGX ' + val + 'M', style: { colors: '#6c757d', fontSize: '12px' } } },
         grid: { borderColor: '#f1f1f1', strokeDashArray: 4 },
-        colors: ['#0d6efd'],
+        colors: ['#5b4bd5'],
         tooltip: { theme: 'dark', y: { formatter: (val) => 'UGX ' + val + ' Million' } }
     }).render();
 
     new ApexCharts(document.querySelector('#splitChart'), {
-        series: [<?= round($splitCityTotal) ?>, <?= round($splitAssocTotal) ?>, <?= round($splitPlatformTotal) ?>],
+        series: [<?= round($splitCityTotal) ?>, <?= round($splitAssocTotal) ?>, <?= round($splitGovTotal) ?>, <?= round($splitPlatformTotal) ?>],
         chart: { type: 'donut', height: 200, animations: { enabled: true } },
-        labels: ['City Councils', 'Associations', 'Kakebe Tech'],
-        colors: ['#0d6efd', '#198754', '#0dcaf0'],
+        labels: ['City Councils', 'Associations', 'Government', 'Kakebe Tech'],
+        colors: ['#5b4bd5', '#198754', '#e0529c', '#0dcaf0'],
         legend: { show: false },
         plotOptions: { pie: { donut: { size: '70%', labels: { show: true, total: { show: true, label: 'Total Revenue', formatter: () => 'UGX ' + <?= round($totalRevenue / 1000000, 1) ?> + 'M' } } } } },
         stroke: { width: 0 },
@@ -282,7 +285,7 @@ $roleColors = ['super_admin' => 'primary', 'city_admin' => 'success', 'chairpers
         plotOptions: { bar: { borderRadius: 6, columnWidth: '45%', distributed: true } },
         dataLabels: { enabled: false },
         legend: { show: false },
-        colors: ['#0d6efd', '#198754', '#f59e0b', '#0dcaf0', '#dc3545', '#6f42c1'],
+        colors: ['#5b4bd5', '#198754', '#f59e0b', '#0dcaf0', '#dc3545', '#6f42c1'],
         xaxis: { categories: <?= json_encode(array_map(fn($c) => $c['name'], $cities)) ?>, labels: { style: { colors: '#6c757d', fontSize: '11px' } } },
         yaxis: { labels: { style: { colors: '#6c757d', fontSize: '12px' } } },
         grid: { borderColor: '#f1f1f1', strokeDashArray: 4 },

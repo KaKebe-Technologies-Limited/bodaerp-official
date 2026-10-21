@@ -11,6 +11,7 @@
             'city_admin'  => 'City Council',
             'chairperson' => 'Chairperson',
             'rider'       => 'Rider',
+            'government'  => $_SESSION['agency_name'] ?? 'Government Portal',
         ];
         $sfcRole = $sfcRoleLabels[$_SESSION['role'] ?? ''] ?? ($_SESSION['role'] ?? '');
         ?>

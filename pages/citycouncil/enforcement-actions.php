@@ -77,13 +77,6 @@ $actionsById = array_column($actions, null, 'id');
 <head>
     <?php $pageTitle = 'Enforcement Actions - BodaERP'; require __DIR__ . '/../../includes/partials/head-assets.php'; ?>
     <style>
-        .council-stat-card { background: white; border-radius: 14px; padding: 16px 20px; border-left: 4px solid #dc3545; box-shadow: 0 2px 12px rgba(0,0,0,0.04); }
-        .council-stat-card .stat-number { font-size: 1.6rem; font-weight: 900; color: #1a1a2e; line-height: 1; }
-        .council-stat-card .stat-label { font-size: 0.75rem; color: #6c757d; font-weight: 500; }
-        .council-stat-card .stat-icon { font-size: 1.6rem; opacity: 0.15; }
-        .council-stat-card.gold { border-left-color: #f59e0b; }
-        .council-stat-card.green { border-left-color: #198754; }
-        .council-stat-card.blue { border-left-color: #0d6efd; }
     </style>
 </head>
 <body>
@@ -104,10 +97,10 @@ $actionsById = array_column($actions, null, 'id');
     <div class="content-area">
         <?php if ($errors): ?><div class="alert alert-danger"><?php foreach ($errors as $e) echo h($e); ?></div><?php endif; ?>
         <div class="row g-3 mb-4">
-            <div class="col-md-3 col-6"><div class="council-stat-card"><div class="d-flex justify-content-between align-items-center"><div><span class="stat-number"><?= $total ?></span><div class="stat-label">Total Actions</div></div><i class="fas fa-gavel stat-icon"></i></div></div></div>
-            <div class="col-md-3 col-6"><div class="council-stat-card gold"><div class="d-flex justify-content-between align-items-center"><div><span class="stat-number"><?= $pending ?></span><div class="stat-label">Pending</div></div><i class="fas fa-clock stat-icon"></i></div></div></div>
-            <div class="col-md-3 col-6"><div class="council-stat-card green"><div class="d-flex justify-content-between align-items-center"><div><span class="stat-number"><?= $resolved ?></span><div class="stat-label">Resolved</div></div><i class="fas fa-check-circle stat-icon"></i></div></div></div>
-            <div class="col-md-3 col-6"><div class="council-stat-card blue"><div class="d-flex justify-content-between align-items-center"><div><span class="stat-number"><?= $closed ?></span><div class="stat-label">Closed</div></div><i class="fas fa-archive stat-icon"></i></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card grad-red"><div class="stat-hero-icon"><i class="fas fa-gavel"></i></div><div><div class="stat-hero-value"><?= $total ?></div><div class="stat-hero-label">Total Actions</div></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card grad-gold"><div class="stat-hero-icon"><i class="fas fa-clock"></i></div><div><div class="stat-hero-value"><?= $pending ?></div><div class="stat-hero-label">Pending</div></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card grad-green"><div class="stat-hero-icon"><i class="fas fa-check-circle"></i></div><div><div class="stat-hero-value"><?= $resolved ?></div><div class="stat-hero-label">Resolved</div></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card grad-blue"><div class="stat-hero-icon"><i class="fas fa-archive"></i></div><div><div class="stat-hero-value"><?= $closed ?></div><div class="stat-hero-label">Closed</div></div></div></div>
         </div>
 
         <?php if ($actions): ?>
@@ -151,7 +144,7 @@ $actionsById = array_column($actions, null, 'id');
                     <table class="table table-hover mb-0" id="actionsTable">
                         <thead><tr><th>#</th><th>Action ID</th><th>Rider</th><th>Plate</th><th>Stage</th><th>Type</th><th>Date</th><th>Status</th><th class="no-export">Actions</th></tr></thead>
                         <tbody>
-                        <?php if (!$actions): ?><tr><td colspan="9" class="text-center py-4 text-muted">No enforcement actions recorded</td></tr><?php endif; ?>
+                        <?php if (!$actions): ?><tr><td colspan="9"><div class="empty-state" style="padding:36px 20px;"><i class="fas fa-inbox"></i><h5>No enforcement actions recorded</h5></div></td></tr><?php endif; ?>
                         <?php foreach ($actions as $i => $a):
                             $typeBadge = ['warning'=>'bg-warning text-dark','fine'=>'bg-danger','suspension'=>'bg-dark','impound'=>'bg-secondary'][$a['type']];
                             $statusBadge = ['pending'=>'bg-warning text-dark','resolved'=>'bg-success','closed'=>'bg-secondary'][$a['status']];

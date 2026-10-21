@@ -33,7 +33,10 @@ $roleColors   = ['super_admin'=>'primary','city_admin'=>'success','chairperson'=
         <div class="d-flex justify-content-between align-items-center">
             <div class="d-flex align-items-center gap-3">
                 <button class="btn btn-light d-lg-none" id="toggleSidebar"><i class="fas fa-bars"></i></button>
-                <h5 class="mb-0 fw-bold"><span class="text-gradient-blue">Audit Logs</span></h5>
+                <div>
+                    <h5 class="mb-0 fw-bold"><span class="text-gradient-blue">Audit Logs</span></h5>
+                    <small class="text-muted d-none d-sm-block">Full activity trail across the platform</small>
+                </div>
             </div>
             <div class="user-info">
                 <img src="<?= BASE_URL ?>/assets/images/avatar-placeholder.png" class="rounded-circle" width="40" height="40">

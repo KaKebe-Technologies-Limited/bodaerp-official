@@ -26,8 +26,15 @@
 --  chairperson   chair.nakasero@bodaerp.com     Chair@2026
 --  rider         james.rider@bodaerp.com        Rider@2026
 --  rider         grace.rider@bodaerp.com        Rider@2026
+--  government    works@gov.bodaerp.com          Gov@2026
+--  government    ura@gov.bodaerp.com            Gov@2026
+--  government    localgov@gov.bodaerp.com       Gov@2026
+--  government    ict@gov.bodaerp.com            Gov@2026
 --
 --  >> After first login, change these passwords in Settings. <<
+--  NOTE: this file requires the `agency_name` column and the
+--  'government' role added by database/add_government_portal.sql
+--  (already included in a fresh u850523537_BodaERP26.sql schema).
 -- ============================================================
 
 SET NAMES utf8mb4;
@@ -44,10 +51,10 @@ INSERT INTO `users` (`id`,`name`,`email`,`phone`,`password_hash`,`role`,`city_id
 -- 2. Cities
 -- ------------------------------------------------------------
 INSERT INTO `cities`
-(`id`,`name`,`country`,`currency`,`logo_path`,`annual_fee`,`fiscal_year`,`id_prefix`,`status`,`contact_email`,`contact_phone`,`address`,`payment_gateway`,`sms_gateway`,`revenue_split_city`,`revenue_split_association`,`revenue_split_platform`,`compliance_target`,`grace_period_days`,`reminder_days`,`created_by`,`created_at`) VALUES
-('LIR','Lira City','Uganda','UGX','/assets/images/logo.png',50000.00,'2026/2027','BODA-LIR','active','council@liracityuganda.go.ug','+256 473 420 123','Lira City Council, Parliament Avenue, Lira, Uganda','MTN MoMo','Africa''s Talking',60,26,14,70,30,14,1,'2025-01-01 09:00:00'),
-('GUL','Gulu City','Uganda','UGX','/assets/images/logo.png',45000.00,'2026/2027','BODA-GUL','active','council@gulucity.go.ug','+256 471 432 456','Gulu City Council, Gulu, Uganda','Airtel Money','Africa''s Talking',55,30,15,70,30,14,1,'2025-03-01 09:00:00'),
-('KLA','Kampala City','Uganda','UGX','/assets/images/logo.png',60000.00,'2026/2027','BODA-KLA','active','council@kcca.go.ug','+256 417 123 456','KCCA, City Square, Kampala, Uganda','MTN MoMo','Africa''s Talking',65,22,13,75,30,14,1,'2025-06-01 09:00:00');
+(`id`,`name`,`country`,`currency`,`logo_path`,`annual_fee`,`fiscal_year`,`id_prefix`,`status`,`contact_email`,`contact_phone`,`address`,`payment_gateway`,`sms_gateway`,`revenue_split_city`,`revenue_split_association`,`revenue_split_platform`,`revenue_split_government`,`compliance_target`,`grace_period_days`,`reminder_days`,`created_by`,`created_at`) VALUES
+('LIR','Lira City','Uganda','UGX','/assets/images/logo.png',50000.00,'2026/2027','BODA-LIR','active','council@liracityuganda.go.ug','+256 473 420 123','Lira City Council, Parliament Avenue, Lira, Uganda','MTN MoMo','Africa''s Talking',55,26,9,10,70,30,14,1,'2025-01-01 09:00:00'),
+('GUL','Gulu City','Uganda','UGX','/assets/images/logo.png',45000.00,'2026/2027','BODA-GUL','active','council@gulucity.go.ug','+256 471 432 456','Gulu City Council, Gulu, Uganda','Airtel Money','Africa''s Talking',50,28,10,12,70,30,14,1,'2025-03-01 09:00:00'),
+('KLA','Kampala City','Uganda','UGX','/assets/images/logo.png',60000.00,'2026/2027','BODA-KLA','active','council@kcca.go.ug','+256 417 123 456','KCCA, City Square, Kampala, Uganda','MTN MoMo','Africa''s Talking',58,22,9,11,75,30,14,1,'2025-06-01 09:00:00');
 
 -- ------------------------------------------------------------
 -- 3. Stages
@@ -70,6 +77,15 @@ INSERT INTO `users` (`id`,`name`,`email`,`phone`,`password_hash`,`role`,`city_id
 (7,'Nakato Sarah','chair.nakasero@bodaerp.com','+256 772 333 001','$2y$10$uBrs2SttZK63SVWohYSb0.OdWxPY3fIFMIjWniqdhpP0qLr.C/PZe','chairperson','KLA',4,'active','2025-06-11 09:00:00'),
 (8,'Akello James','james.rider@bodaerp.com','+256 772 123 456','$2y$10$ByGLTF9YSM/CRJ920KYK0eAiFJl879KuRS.dQidlcif5AvjgdTAe.','rider','LIR',1,'active','2025-02-01 09:00:00'),
 (9,'Aciro Grace','grace.rider@bodaerp.com','+256 772 222 456','$2y$10$ByGLTF9YSM/CRJ920KYK0eAiFJl879KuRS.dQidlcif5AvjgdTAe.','rider','GUL',3,'active','2025-03-20 09:00:00');
+
+-- ------------------------------------------------------------
+-- 4b. Government / national portal accounts (city_id & stage_id NULL)
+-- ------------------------------------------------------------
+INSERT INTO `users` (`id`,`name`,`email`,`phone`,`password_hash`,`role`,`city_id`,`stage_id`,`agency_name`,`status`,`created_at`) VALUES
+(10,'Ministry of Works & Transport','works@gov.bodaerp.com','+256 414 320 452','$2y$10$TgchybDM.KANJVJ4NZQagOqJS9vpySi3RvIFTLIqGtncDB3McOobi','government',NULL,NULL,'Ministry of Works & Transport','active','2026-01-05 09:00:00'),
+(11,'Uganda Revenue Authority','ura@gov.bodaerp.com','+256 417 442 040','$2y$10$TgchybDM.KANJVJ4NZQagOqJS9vpySi3RvIFTLIqGtncDB3McOobi','government',NULL,NULL,'Uganda Revenue Authority (URA)','active','2026-01-05 09:00:00'),
+(12,'Ministry of Local Government','localgov@gov.bodaerp.com','+256 414 347 083','$2y$10$TgchybDM.KANJVJ4NZQagOqJS9vpySi3RvIFTLIqGtncDB3McOobi','government',NULL,NULL,'Ministry of Local Government','active','2026-01-05 09:00:00'),
+(13,'Ministry of ICT & National Guidance','ict@gov.bodaerp.com','+256 414 236 954','$2y$10$TgchybDM.KANJVJ4NZQagOqJS9vpySi3RvIFTLIqGtncDB3McOobi','government',NULL,NULL,'Ministry of ICT & National Guidance','active','2026-01-05 09:00:00');
 
 -- ------------------------------------------------------------
 -- 5. Riders
@@ -123,7 +139,7 @@ INSERT INTO `enforcement_actions`
 -- ------------------------------------------------------------
 -- 9. Fix AUTO_INCREMENT counters
 -- ------------------------------------------------------------
-ALTER TABLE `users`               AUTO_INCREMENT = 10;
+ALTER TABLE `users`               AUTO_INCREMENT = 14;
 ALTER TABLE `stages`              AUTO_INCREMENT = 5;
 ALTER TABLE `riders`              AUTO_INCREMENT = 9;
 ALTER TABLE `payments`            AUTO_INCREMENT = 9;

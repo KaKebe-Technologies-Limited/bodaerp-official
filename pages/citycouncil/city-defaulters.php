@@ -41,12 +41,6 @@ $amountOwed = array_sum(array_map(fn($d) => (float) $d['annual_tax'], $defaulter
 <head>
     <?php $pageTitle = 'City Defaulters - BodaERP'; require __DIR__ . '/../../includes/partials/head-assets.php'; ?>
     <style>
-        .council-stat-card { background: white; border-radius: 14px; padding: 16px 20px; border-left: 4px solid #dc3545; box-shadow: 0 2px 12px rgba(0,0,0,0.04); }
-        .council-stat-card .stat-number { font-size: 1.6rem; font-weight: 900; color: #1a1a2e; line-height: 1; }
-        .council-stat-card .stat-label { font-size: 0.75rem; color: #6c757d; font-weight: 500; }
-        .council-stat-card .stat-icon { font-size: 1.6rem; opacity: 0.15; }
-        .council-stat-card.blue { border-left-color: #0d6efd; }
-        .council-stat-card.gold { border-left-color: #f59e0b; }
     </style>
 </head>
 <body>
@@ -65,10 +59,10 @@ $amountOwed = array_sum(array_map(fn($d) => (float) $d['annual_tax'], $defaulter
 
     <div class="content-area">
         <div class="row g-3 mb-4">
-            <div class="col-md-3 col-6"><div class="council-stat-card"><div class="d-flex justify-content-between align-items-center"><div><span class="stat-number"><?= number_format($totalDefaulters) ?></span><div class="stat-label">Total Defaulters</div></div><i class="fas fa-exclamation-triangle stat-icon"></i></div></div></div>
-            <div class="col-md-3 col-6"><div class="council-stat-card"><div class="d-flex justify-content-between align-items-center"><div><span class="stat-number"><?= number_format($critical) ?></span><div class="stat-label">Critical (&gt;90 days)</div></div><i class="fas fa-fire stat-icon"></i></div></div></div>
-            <div class="col-md-3 col-6"><div class="council-stat-card gold"><div class="d-flex justify-content-between align-items-center"><div><span class="stat-number"><?= number_format($warning) ?></span><div class="stat-label">Warning</div></div><i class="fas fa-clock stat-icon"></i></div></div></div>
-            <div class="col-md-3 col-6"><div class="council-stat-card blue"><div class="d-flex justify-content-between align-items-center"><div><span class="stat-number"><?= h(formatCurrency($amountOwed)) ?></span><div class="stat-label">Amount Owed</div></div><i class="fas fa-money-bill-wave stat-icon"></i></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card grad-red"><div class="stat-hero-icon"><i class="fas fa-exclamation-triangle"></i></div><div><div class="stat-hero-value"><?= number_format($totalDefaulters) ?></div><div class="stat-hero-label">Total Defaulters</div></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card grad-red"><div class="stat-hero-icon"><i class="fas fa-fire"></i></div><div><div class="stat-hero-value"><?= number_format($critical) ?></div><div class="stat-hero-label">Critical (&gt;90 days)</div></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card grad-gold"><div class="stat-hero-icon"><i class="fas fa-clock"></i></div><div><div class="stat-hero-value"><?= number_format($warning) ?></div><div class="stat-hero-label">Warning</div></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card grad-blue"><div class="stat-hero-icon"><i class="fas fa-money-bill-wave"></i></div><div><div class="stat-hero-value"><?= h(formatCurrency($amountOwed)) ?></div><div class="stat-hero-label">Amount Owed</div></div></div></div>
         </div>
 
         <div class="card mb-3 no-print">
@@ -95,7 +89,7 @@ $amountOwed = array_sum(array_map(fn($d) => (float) $d['annual_tax'], $defaulter
                         <thead><tr><th>#</th><th>Rider</th><th>Plate</th><th>Stage</th><th>Phone</th><th>Amount</th><th>Last Payment</th><th>Overdue</th><th>Status</th><th class="no-export">Actions</th></tr></thead>
                         <tbody>
                         <?php if (!$defaulters): ?>
-                            <tr><td colspan="10" class="text-center py-4 text-muted">No defaulters — great compliance!</td></tr>
+                            <tr><td colspan="10"><div class="empty-state" style="padding:36px 20px;"><i class="fas fa-inbox"></i><h5>No defaulters — great compliance!</h5></div></td></tr>
                         <?php endif; ?>
                         <?php foreach ($defaulters as $i => $d):
                             $days = (int) $d['overdue_days'];

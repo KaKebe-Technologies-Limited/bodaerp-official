@@ -12,18 +12,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $fiscal = trim($_POST['fiscal_year'] ?? '2026/2027');
     $sc = (int) ($_POST['split_city'] ?? 0);
     $sa = (int) ($_POST['split_assoc'] ?? 0);
+    $sg = (int) ($_POST['split_government'] ?? 0);
     $sp = (int) ($_POST['split_platform'] ?? 0);
     $gateway = $_POST['payment_gateway'] ?? 'MTN MoMo';
     $target = (int) ($_POST['compliance_target'] ?? 70);
     $grace = (int) ($_POST['grace_period_days'] ?? 30);
     $reminder = (int) ($_POST['reminder_days'] ?? 14);
 
-    if ($sc + $sa + $sp !== 100) {
+    if ($sc + $sa + $sg + $sp !== 100) {
         $errors[] = 'Revenue split must total 100%.';
     } else {
-        runQuery("UPDATE cities SET annual_fee=?,currency=?,fiscal_year=?,revenue_split_city=?,revenue_split_association=?,revenue_split_platform=?,
+        runQuery("UPDATE cities SET annual_fee=?,currency=?,fiscal_year=?,revenue_split_city=?,revenue_split_association=?,revenue_split_government=?,revenue_split_platform=?,
                   payment_gateway=?,compliance_target=?,grace_period_days=?,reminder_days=? WHERE id=?",
-            [$fee,$currency,$fiscal,$sc,$sa,$sp,$gateway,$target,$grace,$reminder,$cityId]);
+            [$fee,$currency,$fiscal,$sc,$sa,$sg,$sp,$gateway,$target,$grace,$reminder,$cityId]);
         audit_log('UPDATE', 'city', $cityId, 'Council settings updated');
         $saved = true;
     }
@@ -86,11 +87,12 @@ $totalRiders = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE city_id = ? A
                         <div class="mb-3">
                             <label class="form-label fw-semibold">Revenue Distribution</label>
                             <div class="row g-2">
-                                <div class="col-4"><label class="small text-muted">City Council</label><div class="input-group"><input type="number" class="form-control" name="split_city" value="<?= (int)$city['revenue_split_city'] ?>"><span class="input-group-text">%</span></div></div>
-                                <div class="col-4"><label class="small text-muted">Boda Assoc.</label><div class="input-group"><input type="number" class="form-control" name="split_assoc" value="<?= (int)$city['revenue_split_association'] ?>"><span class="input-group-text">%</span></div></div>
-                                <div class="col-4"><label class="small text-muted">Kakebe Tech</label><div class="input-group"><input type="number" class="form-control" name="split_platform" value="<?= (int)$city['revenue_split_platform'] ?>"><span class="input-group-text">%</span></div></div>
+                                <div class="col-3"><label class="small text-muted">City Council</label><div class="input-group"><input type="number" class="form-control" name="split_city" id="csSplitCity" value="<?= (int)$city['revenue_split_city'] ?>" oninput="updateCsSplitTotal()"><span class="input-group-text">%</span></div></div>
+                                <div class="col-3"><label class="small text-muted">Boda Assoc.</label><div class="input-group"><input type="number" class="form-control" name="split_assoc" id="csSplitAssoc" value="<?= (int)$city['revenue_split_association'] ?>" oninput="updateCsSplitTotal()"><span class="input-group-text">%</span></div></div>
+                                <div class="col-3"><label class="small text-muted">Government</label><div class="input-group"><input type="number" class="form-control" name="split_government" id="csSplitGov" value="<?= (int)$city['revenue_split_government'] ?>" oninput="updateCsSplitTotal()"><span class="input-group-text">%</span></div></div>
+                                <div class="col-3"><label class="small text-muted">Kakebe Tech</label><div class="input-group"><input type="number" class="form-control" name="split_platform" id="csSplitPlatform" value="<?= (int)$city['revenue_split_platform'] ?>" oninput="updateCsSplitTotal()"><span class="input-group-text">%</span></div></div>
                             </div>
-                            <small class="text-muted">Total must equal 100%</small>
+                            <small class="text-muted">Total: <span id="csSplitTotal" class="fw-bold" style="color:#198754;">100%</span> — must equal 100%</small>
                         </div>
                         <div class="mb-3"><label class="form-label fw-semibold">Payment Gateway</label>
                             <select class="form-select" name="payment_gateway">
@@ -129,6 +131,16 @@ $totalRiders = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE city_id = ? A
 
 <?php require __DIR__ . '/../../includes/partials/scripts-footer.php'; ?>
 <script>
+    function updateCsSplitTotal() {
+        const total = (parseFloat(document.getElementById('csSplitCity').value)||0)
+            + (parseFloat(document.getElementById('csSplitAssoc').value)||0)
+            + (parseFloat(document.getElementById('csSplitGov').value)||0)
+            + (parseFloat(document.getElementById('csSplitPlatform').value)||0);
+        const el = document.getElementById('csSplitTotal');
+        el.textContent = total + '%';
+        el.style.color = total === 100 ? '#198754' : '#dc3545';
+    }
+
     document.getElementById('toggleSidebar')?.addEventListener('click', () => {
         document.getElementById('sidebar').classList.toggle('open');
         document.getElementById('sidebarOverlay').classList.toggle('active');

@@ -4,6 +4,7 @@ $roleLabels = [
     'city_admin'  => $_SESSION['city_name'] ?? 'City Council',
     'chairperson' => 'Stage Chairperson',
     'rider'       => 'Rider',
+    'government'  => $_SESSION['agency_name'] ?? 'Government Portal',
 ];
 $roleLabel = $roleLabels[$_SESSION['role']] ?? $_SESSION['role'];
 ?>
@@ -13,9 +14,14 @@ $roleLabel = $roleLabels[$_SESSION['role']] ?? $_SESSION['role'];
             <button class="btn btn-light d-lg-none" id="toggleSidebar">
                 <i class="fas fa-bars"></i>
             </button>
-            <h5 class="mb-0 fw-bold">
-                <span class="text-gradient-blue"><?= h($pageTitle ?? '') ?></span>
-            </h5>
+            <div>
+                <h5 class="mb-0 fw-bold">
+                    <span class="text-gradient-blue"><?= h($pageTitle ?? '') ?></span>
+                </h5>
+                <?php if (!empty($pageSubtitle)): ?>
+                    <small class="text-muted d-none d-sm-block"><?= h($pageSubtitle) ?></small>
+                <?php endif; ?>
+            </div>
         </div>
         <div class="d-flex align-items-center gap-3">
             <div class="user-info">

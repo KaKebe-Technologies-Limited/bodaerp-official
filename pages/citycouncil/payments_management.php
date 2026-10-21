@@ -22,12 +22,6 @@ $recent = fetchAll("SELECT p.*, r.full_name, s.name AS stage_name FROM payments 
 <head>
     <?php $pageTitle = 'Payments Management - BodaERP'; require __DIR__ . '/../../includes/partials/head-assets.php'; ?>
     <style>
-        .council-stat-card { background: white; border-radius: 14px; padding: 16px 20px; border-left: 4px solid #0d6efd; box-shadow: 0 2px 12px rgba(0,0,0,0.04); }
-        .council-stat-card .stat-number { font-size: 1.6rem; font-weight: 900; color: #1a1a2e; line-height: 1; }
-        .council-stat-card .stat-label { font-size: 0.75rem; color: #6c757d; font-weight: 500; }
-        .council-stat-card .stat-icon { font-size: 1.6rem; opacity: 0.15; }
-        .council-stat-card.gold { border-left-color: #f59e0b; }
-        .council-stat-card.red { border-left-color: #dc3545; }
         .method-card { background: white; border-radius: 12px; padding: 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.04); text-align: center; }
     </style>
 </head>
@@ -54,10 +48,10 @@ $recent = fetchAll("SELECT p.*, r.full_name, s.name AS stage_name FROM payments 
     <div class="content-area">
         <p id="reconcileStatus" class="small mb-3 d-none"></p>
         <div class="row g-3 mb-4">
-            <div class="col-md-3 col-6"><div class="council-stat-card"><div class="d-flex justify-content-between align-items-center"><div><span class="stat-number"><?= h(formatCurrency($totalCollected)) ?></span><div class="stat-label">Total Collected</div></div><i class="fas fa-money-bill-wave stat-icon"></i></div></div></div>
-            <div class="col-md-3 col-6"><div class="council-stat-card"><div class="d-flex justify-content-between align-items-center"><div><span class="stat-number"><?= number_format($txnCount) ?></span><div class="stat-label">Transactions</div></div><i class="fas fa-exchange-alt stat-icon"></i></div></div></div>
-            <div class="col-md-3 col-6"><div class="council-stat-card gold"><div class="d-flex justify-content-between align-items-center"><div><span class="stat-number"><?= h(formatCurrency($pendingAmt)) ?></span><div class="stat-label">Pending</div></div><i class="fas fa-clock stat-icon"></i></div></div></div>
-            <div class="col-md-3 col-6"><div class="council-stat-card red"><div class="d-flex justify-content-between align-items-center"><div><span class="stat-number"><?= h(formatCurrency($failedAmt)) ?></span><div class="stat-label">Failed</div></div><i class="fas fa-times-circle stat-icon"></i></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card grad-blue"><div class="stat-hero-icon"><i class="fas fa-money-bill-wave"></i></div><div><div class="stat-hero-value"><?= h(formatCurrency($totalCollected)) ?></div><div class="stat-hero-label">Total Collected</div></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card grad-blue"><div class="stat-hero-icon"><i class="fas fa-exchange-alt"></i></div><div><div class="stat-hero-value"><?= number_format($txnCount) ?></div><div class="stat-hero-label">Transactions</div></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card grad-gold"><div class="stat-hero-icon"><i class="fas fa-clock"></i></div><div><div class="stat-hero-value"><?= h(formatCurrency($pendingAmt)) ?></div><div class="stat-hero-label">Pending</div></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card grad-red"><div class="stat-hero-icon"><i class="fas fa-times-circle"></i></div><div><div class="stat-hero-value"><?= h(formatCurrency($failedAmt)) ?></div><div class="stat-hero-label">Failed</div></div></div></div>
         </div>
 
         <div class="row g-3 mb-4">

@@ -12,16 +12,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $phone    = trim($_POST['support_phone'] ?? '');
     $sc = (int) ($_POST['default_split_city'] ?? 0);
     $sa = (int) ($_POST['default_split_assoc'] ?? 0);
+    $sg = (int) ($_POST['default_split_government'] ?? 0);
     $sp = (int) ($_POST['default_split_platform'] ?? 0);
     $req2fa = isset($_POST['require_2fa']) ? 1 : 0;
     $maint  = isset($_POST['maintenance_mode']) ? 1 : 0;
 
-    if ($sc + $sa + $sp !== 100) {
+    if ($sc + $sa + $sg + $sp !== 100) {
         $errors[] = 'Default revenue split must total 100%.';
     } else {
         runQuery("UPDATE platform_settings SET platform_name=?,operator_name=?,support_email=?,support_phone=?,
-                  default_split_city=?,default_split_association=?,default_split_platform=?,require_2fa=?,maintenance_mode=? WHERE id=1",
-            [$name,$operator,$email,$phone,$sc,$sa,$sp,$req2fa,$maint]);
+                  default_split_city=?,default_split_association=?,default_split_government=?,default_split_platform=?,require_2fa=?,maintenance_mode=? WHERE id=1",
+            [$name,$operator,$email,$phone,$sc,$sa,$sg,$sp,$req2fa,$maint]);
         audit_log('UPDATE', 'platform_settings', '1', 'Platform settings updated');
         $saved = true;
     }
@@ -43,7 +44,10 @@ $settings = fetchOne("SELECT * FROM platform_settings WHERE id = 1");
         <div class="d-flex justify-content-between align-items-center">
             <div class="d-flex align-items-center gap-3">
                 <button class="btn btn-light d-lg-none" id="toggleSidebar"><i class="fas fa-bars"></i></button>
-                <h5 class="mb-0 fw-bold"><span class="text-gradient-blue">Platform Settings</span></h5>
+                <div>
+                    <h5 class="mb-0 fw-bold"><span class="text-gradient-blue">Platform Settings</span></h5>
+                    <small class="text-muted d-none d-sm-block">Global configuration for the BodaERP platform</small>
+                </div>
             </div>
         </div>
     </header>
@@ -56,7 +60,10 @@ $settings = fetchOne("SELECT * FROM platform_settings WHERE id = 1");
             <?= csrf_field() ?>
             <div class="card mb-3">
                 <div class="card-body">
-                    <h6 class="fw-bold mb-3"><i class="fas fa-building text-primary me-2"></i>General</h6>
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <div class="icon-badge blue"><i class="fas fa-building"></i></div>
+                        <div><h6 class="fw-bold mb-0">General</h6><small class="text-muted">Platform identity and contact details</small></div>
+                    </div>
                     <div class="row g-3">
                         <div class="col-md-6"><label class="form-label fw-semibold">Platform Name</label><input type="text" class="form-control" name="platform_name" value="<?= h($settings['platform_name']) ?>"></div>
                         <div class="col-md-6"><label class="form-label fw-semibold">Operator</label><input type="text" class="form-control" name="operator_name" value="<?= h($settings['operator_name']) ?>"></div>
@@ -68,19 +75,26 @@ $settings = fetchOne("SELECT * FROM platform_settings WHERE id = 1");
 
             <div class="card mb-3">
                 <div class="card-body">
-                    <h6 class="fw-bold mb-3"><i class="fas fa-percentage text-primary me-2"></i>Default New-City Revenue Split</h6>
-                    <div class="row g-3 align-items-end">
-                        <div class="col-md-4"><label class="small text-muted">City Council %</label><input type="number" class="form-control" name="default_split_city" value="<?= (int)$settings['default_split_city'] ?>" min="0" max="100"></div>
-                        <div class="col-md-4"><label class="small text-muted">Boda Association %</label><input type="number" class="form-control" name="default_split_assoc" value="<?= (int)$settings['default_split_association'] ?>" min="0" max="100"></div>
-                        <div class="col-md-4"><label class="small text-muted">Kakebe Tech (Platform) %</label><input type="number" class="form-control" name="default_split_platform" value="<?= (int)$settings['default_split_platform'] ?>" min="0" max="100"></div>
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <div class="icon-badge gold"><i class="fas fa-percentage"></i></div>
+                        <div><h6 class="fw-bold mb-0">Default New-City Revenue Split</h6><small class="text-muted">Pre-fills the split when a new city is added</small></div>
                     </div>
-                    <small class="text-muted d-block mt-2">Used to pre-fill the split when a new city is added.</small>
+                    <div class="row g-3 align-items-end">
+                        <div class="col-md-3"><label class="small text-muted">City Council %</label><input type="number" class="form-control" name="default_split_city" id="defSplitCity" value="<?= (int)$settings['default_split_city'] ?>" min="0" max="100" oninput="updateDefaultSplitTotal()"></div>
+                        <div class="col-md-3"><label class="small text-muted">Boda Association %</label><input type="number" class="form-control" name="default_split_assoc" id="defSplitAssoc" value="<?= (int)$settings['default_split_association'] ?>" min="0" max="100" oninput="updateDefaultSplitTotal()"></div>
+                        <div class="col-md-3"><label class="small text-muted">Government %</label><input type="number" class="form-control" name="default_split_government" id="defSplitGov" value="<?= (int)$settings['default_split_government'] ?>" min="0" max="100" oninput="updateDefaultSplitTotal()"></div>
+                        <div class="col-md-3"><label class="small text-muted">Kakebe Tech (Platform) %</label><input type="number" class="form-control" name="default_split_platform" id="defSplitPlatform" value="<?= (int)$settings['default_split_platform'] ?>" min="0" max="100" oninput="updateDefaultSplitTotal()"></div>
+                    </div>
+                    <div class="mt-2">Total: <span id="defSplitTotal" class="fw-bold" style="color:#198754;">100%</span></div>
                 </div>
             </div>
 
             <div class="card mb-3">
                 <div class="card-body">
-                    <h6 class="fw-bold mb-3"><i class="fas fa-shield-alt text-primary me-2"></i>Security</h6>
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <div class="icon-badge red"><i class="fas fa-shield-alt"></i></div>
+                        <div><h6 class="fw-bold mb-0">Security</h6><small class="text-muted">Authentication and access controls</small></div>
+                    </div>
                     <div class="form-check form-switch mb-2">
                         <input class="form-check-input" type="checkbox" name="require_2fa" id="require2fa" <?= $settings['require_2fa'] ? 'checked' : '' ?>>
                         <label class="form-check-label" for="require2fa">Require 2FA for city admins</label>
@@ -99,6 +113,16 @@ $settings = fetchOne("SELECT * FROM platform_settings WHERE id = 1");
 
 <?php require __DIR__ . '/../../includes/partials/scripts-footer.php'; ?>
 <script>
+    function updateDefaultSplitTotal() {
+        const total = (parseFloat(document.getElementById('defSplitCity').value)||0)
+            + (parseFloat(document.getElementById('defSplitAssoc').value)||0)
+            + (parseFloat(document.getElementById('defSplitGov').value)||0)
+            + (parseFloat(document.getElementById('defSplitPlatform').value)||0);
+        const el = document.getElementById('defSplitTotal');
+        el.textContent = total + '%';
+        el.style.color = total === 100 ? '#198754' : '#dc3545';
+    }
+
     document.getElementById('toggleSidebar')?.addEventListener('click', () => {
         document.getElementById('sidebar').classList.toggle('open');
         document.getElementById('sidebarOverlay').classList.toggle('active');

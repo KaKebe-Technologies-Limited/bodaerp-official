@@ -21,6 +21,8 @@ $riders = fetchAll(
      WHERE stage_id = ? AND status = 'active' AND deleted_at IS NULL AND expiry_date <= DATE_ADD(CURDATE(), INTERVAL 30 DAY)
      ORDER BY expiry_date ASC", [$stageId]
 );
+$criticalCount = count(array_filter($riders, fn($r) => (int) $r['days_left'] <= 7));
+$upcomingRevenue = array_sum(array_column($riders, 'annual_tax'));
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -32,9 +34,15 @@ $riders = fetchAll(
 <?php require __DIR__ . '/../../includes/partials/sidebar-chairperson.php'; ?>
 
 <div class="main-content" id="mainContent">
-    <?php $pageTitle = 'Expiry Alerts'; require __DIR__ . '/../../includes/partials/topheader.php'; ?>
+    <?php $pageTitle = 'Expiry Alerts'; $pageSubtitle = 'Riders whose permits expire within the next 30 days'; require __DIR__ . '/../../includes/partials/topheader.php'; ?>
 
     <div class="content-area">
+        <div class="row g-3 row-cols-1 row-cols-md-3 mb-4">
+            <div class="col"><div class="stat-hero-card grad-gold"><div class="stat-hero-icon"><i class="fas fa-hourglass-half"></i></div><div><div class="stat-hero-value"><?= count($riders) ?></div><div class="stat-hero-label">Expiring in 30 Days</div></div></div></div>
+            <div class="col"><div class="stat-hero-card grad-red"><div class="stat-hero-icon"><i class="fas fa-exclamation-circle"></i></div><div><div class="stat-hero-value"><?= $criticalCount ?></div><div class="stat-hero-label">Critical (&le;7 days)</div></div></div></div>
+            <div class="col"><div class="stat-hero-card grad-blue"><div class="stat-hero-icon"><i class="fas fa-coins"></i></div><div><div class="stat-hero-value"><?= h(formatCurrency($upcomingRevenue)) ?></div><div class="stat-hero-label">Renewal Value</div></div></div></div>
+        </div>
+
         <div class="alert alert-warning d-flex justify-content-between align-items-center flex-wrap gap-2">
             <span><i class="fas fa-bell me-2"></i>Riders whose permits expire within the next 30 days.</span>
             <a href="<?= BASE_URL ?>/pages/chairperson/expiring-soon.php" class="btn btn-sm btn-outline-dark no-print"><i class="fas fa-chart-bar me-1"></i>View Breakdown</a>
@@ -47,7 +55,6 @@ $riders = fetchAll(
                 <table class="table table-hover mb-0" id="expiryTable">
                     <thead><tr><th>Rider</th><th>Plate</th><th>Expiry Date</th><th>Days Left</th><th class="no-export">Action</th></tr></thead>
                     <tbody>
-                    <?php if (!$riders): ?><tr><td colspan="5" class="text-center py-4 text-muted">No upcoming expiries</td></tr><?php endif; ?>
                     <?php foreach ($riders as $r): $days = (int) $r['days_left']; $badge = $days <= 7 ? 'bg-danger' : 'bg-warning text-dark'; ?>
                         <tr>
                             <td><strong><?= h($r['full_name']) ?></strong></td>
@@ -64,6 +71,13 @@ $riders = fetchAll(
                     <?php endforeach; ?>
                     </tbody>
                 </table>
+                <?php if (!$riders): ?>
+                <div class="empty-state">
+                    <i class="fas fa-check-circle"></i>
+                    <h5>No upcoming expiries</h5>
+                    <p>No riders in your stage have permits expiring in the next 30 days.</p>
+                </div>
+                <?php endif; ?>
             </div>
         </div></div>
     </div>

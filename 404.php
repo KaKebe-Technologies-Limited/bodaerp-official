@@ -16,12 +16,12 @@ http_response_code(404);
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: linear-gradient(135deg, #1a1a2e, #2d2d3f); color: #fff; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; text-align: center; }
-        .brand-blue { color: #0d6efd; }
+        .brand-blue { color: #5b4bd5; }
         .brand-red { color: #dc3545; }
-        .error-code { font-size: 7rem; font-weight: 900; line-height: 1; background: linear-gradient(135deg, #0d6efd, #dc3545); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .error-code { font-size: 7rem; font-weight: 900; line-height: 1; background: linear-gradient(135deg, #5b4bd5, #dc3545); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
         h1 { font-weight: 800; margin: 16px 0 8px; font-size: 1.5rem; }
         p { color: rgba(255,255,255,0.6); margin-bottom: 28px; }
-        .btn-home { display: inline-flex; align-items: center; gap: 8px; background: linear-gradient(135deg, #0d6efd, #0a58ca); color: #fff; text-decoration: none; font-weight: 600; padding: 12px 28px; border-radius: 50px; box-shadow: 0 6px 24px rgba(13,110,253,0.35); transition: transform 0.2s ease; }
+        .btn-home { display: inline-flex; align-items: center; gap: 8px; background: linear-gradient(135deg, #5b4bd5, #4538b0); color: #fff; text-decoration: none; font-weight: 600; padding: 12px 28px; border-radius: 50px; box-shadow: 0 6px 24px rgba(91,75,213,0.35); transition: transform 0.2s ease; }
         .btn-home:hover { transform: translateY(-2px); color: #fff; }
         .brand-mark { margin-top: 40px; font-weight: 800; letter-spacing: 1px; opacity: 0.5; font-size: 0.9rem; }
     </style>

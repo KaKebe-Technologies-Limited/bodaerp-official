@@ -77,7 +77,7 @@ $sc = ['active'=>'bg-success','expired'=>'bg-danger','pending'=>'bg-warning text
                     <table class="table table-hover mb-0">
                         <thead><tr><th>Fiscal Year</th><th>Amount</th><th>Date Paid</th><th>Receipt#</th><th>Status</th></tr></thead>
                         <tbody>
-                        <?php if (!$payments): ?><tr><td colspan="5" class="text-center py-4 text-muted">No payment history</td></tr><?php endif; ?>
+                        <?php if (!$payments): ?><tr><td colspan="5"><div class="empty-state" style="padding:36px 20px;"><i class="fas fa-inbox"></i><h5>No payment history</h5></div></td></tr><?php endif; ?>
                         <?php foreach ($payments as $p): $psc = ['Confirmed'=>'bg-success','Pending'=>'bg-warning text-dark','Failed'=>'bg-danger']; ?>
                             <tr><td><?= h($p['fiscal_year']) ?></td><td><?= h(formatCurrency($p['amount'])) ?></td><td><?= formatDate($p['paid_at']) ?></td><td><code><?= h($p['receipt_number']) ?></code></td><td><span class="badge <?= $psc[$p['status']] ?>"><?= h($p['status']) ?></span></td></tr>
                         <?php endforeach; ?>

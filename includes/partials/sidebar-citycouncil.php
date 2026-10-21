@@ -1,4 +1,6 @@
 <?php
+require_once __DIR__ . '/../anomaly_engine.php';
+$badgeFlags = anomaly_open_count('high', $_SESSION['city_id']);
 $badgeRiders     = fetchValue("SELECT COUNT(*) FROM riders WHERE city_id = ?", [$_SESSION['city_id']]);
 $badgeStages     = fetchValue("SELECT COUNT(*) FROM stages WHERE city_id = ?", [$_SESSION['city_id']]);
 $badgeDefaulters = fetchValue("SELECT COUNT(*) FROM riders WHERE city_id = ? AND status = 'expired'", [$_SESSION['city_id']]);
@@ -13,6 +15,7 @@ $nav = [
     'enforcement-actions'    => ['enforcement-actions.php', 'fa-gavel', 'Enforcements', null],
     'payments_management'    => ['payments_management.php', 'fa-credit-card', 'Payments', null],
     'stage-performance'      => ['stage-performance.php', 'fa-trophy', 'Stage Performance', null],
+    'data-flags'             => ['data-flags.php', 'fa-shield-alt', 'Data Integrity', $badgeFlags ? ['bg-danger', $badgeFlags] : null],
     'council-setting'        => ['council-setting.php', 'fa-cog', 'Settings', null],
 ];
 ?>

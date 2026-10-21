@@ -36,13 +36,13 @@ $amountOwed = array_sum(array_column($defaulters, 'annual_tax'));
 <?php require __DIR__ . '/../../includes/partials/sidebar-chairperson.php'; ?>
 
 <div class="main-content" id="mainContent">
-    <?php $pageTitle = 'Riders Owing'; require __DIR__ . '/../../includes/partials/topheader.php'; ?>
+    <?php $pageTitle = 'Riders Owing'; $pageSubtitle = 'Riders with expired permits who owe annual tax'; require __DIR__ . '/../../includes/partials/topheader.php'; ?>
 
     <div class="content-area">
-        <div class="row g-3 mb-4">
-            <div class="col-md-4 col-6"><div class="card"><div class="card-body"><span class="fs-4 fw-bold text-danger"><?= count($defaulters) ?></span><div class="text-muted small">Total Defaulters</div></div></div></div>
-            <div class="col-md-4 col-6"><div class="card"><div class="card-body"><span class="fs-4 fw-bold"><?= $critical ?></span><div class="text-muted small">Critical (&gt;90 days)</div></div></div></div>
-            <div class="col-md-4 col-6"><div class="card"><div class="card-body"><span class="fs-4 fw-bold"><?= h(formatCurrency($amountOwed)) ?></span><div class="text-muted small">Amount Owed</div></div></div></div>
+        <div class="row g-3 row-cols-1 row-cols-md-3 mb-4">
+            <div class="col"><div class="stat-hero-card grad-red"><div class="stat-hero-icon"><i class="fas fa-user-times"></i></div><div><div class="stat-hero-value"><?= count($defaulters) ?></div><div class="stat-hero-label">Total Defaulters</div></div></div></div>
+            <div class="col"><div class="stat-hero-card grad-dark"><div class="stat-hero-icon"><i class="fas fa-fire"></i></div><div><div class="stat-hero-value"><?= $critical ?></div><div class="stat-hero-label">Critical (&gt;90 days)</div></div></div></div>
+            <div class="col"><div class="stat-hero-card grad-gold"><div class="stat-hero-icon"><i class="fas fa-coins"></i></div><div><div class="stat-hero-value"><?= h(formatCurrency($amountOwed)) ?></div><div class="stat-hero-label">Amount Owed</div></div></div></div>
         </div>
 
         <div class="d-flex justify-content-end mb-2 no-print">
@@ -53,7 +53,6 @@ $amountOwed = array_sum(array_column($defaulters, 'annual_tax'));
                 <table class="table table-hover mb-0" id="defaultersTable">
                     <thead><tr><th>#</th><th>Rider</th><th>Plate</th><th>Last Payment</th><th>Overdue</th><th>Amount</th><th>Status</th><th class="no-export">Action</th></tr></thead>
                     <tbody>
-                    <?php if (!$defaulters): ?><tr><td colspan="8" class="text-center py-4 text-muted">No defaulters in your stage!</td></tr><?php endif; ?>
                     <?php foreach ($defaulters as $i => $d): $days = (int) $d['overdue_days'];
                         [$badge, $label] = $days > 90 ? ['bg-danger', 'Critical'] : ($days > 60 ? ['bg-warning text-dark', 'Warning'] : ['bg-secondary', 'Normal']); ?>
                         <tr>
@@ -74,6 +73,13 @@ $amountOwed = array_sum(array_column($defaulters, 'annual_tax'));
                     <?php endforeach; ?>
                     </tbody>
                 </table>
+                <?php if (!$defaulters): ?>
+                <div class="empty-state">
+                    <i class="fas fa-check-circle"></i>
+                    <h5>No defaulters in your stage!</h5>
+                    <p>Every rider in your stage is currently compliant.</p>
+                </div>
+                <?php endif; ?>
             </div>
         </div></div>
     </div>
