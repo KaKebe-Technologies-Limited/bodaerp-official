@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/../../../packages/backend/auth.php';
+require_once "/var/www/html/packages/backend/auth.php";
 require_role(['city_admin']);
 $active = 'payments_management';
 $cityId = $_SESSION['city_id'];
@@ -119,7 +119,7 @@ $recent = fetchAll("SELECT p.*, r.full_name, s.name AS stage_name FROM payments 
         fd.append('csrf_token', <?= json_encode(csrf_token()) ?>);
 
         try {
-            const res = await fetch('<?= BASE_URL ?>/api/payments.php?action=reconcile', { method: 'POST', body: fd });
+            const res = await fetch('<?= BASE_URL ?>/packages/backend/payments.php?action=reconcile', { method: 'POST', body: fd });
             const d = await res.json();
             btn.disabled = false;
             btn.innerHTML = '<i class="fas fa-sync-alt me-1"></i>Reconcile Pending';

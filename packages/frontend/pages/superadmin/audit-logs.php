@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/../../../packages/backend/auth.php';
+require_once "/var/www/html/packages/backend/auth.php";
 require_role(['super_admin']);
 $active = 'audit-logs';
 

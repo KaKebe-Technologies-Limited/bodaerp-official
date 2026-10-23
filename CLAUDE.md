@@ -8,8 +8,7 @@ This file documents the full system audit, completion status, and continuation g
 
 ## 📊 PROJECT COMPLETION STATUS
 
-OVERALL: 48% complete — 52% remaining until public launch
-OVERALL: 45% complete — 55% remaining until public launch
+OVERALL: 52% complete — 48% remaining until public launch
 
 Broken down into these categories, each with its own percentage:
 
@@ -172,9 +171,8 @@ Broken down into these categories, each with its own percentage:
 
 ## IN PROGRESS
 
-- **Zero Hardcoding Rule implementation** — database-driven Settings system complete (31 entries populated); SQL injection fix in db_helpers.php fully migrated to PDO parameterized queries; ioTec IPN secret moved to environment variable via .env file
+- **Zero Hardcoding Rule implementation** — database-driven Settings system complete (31 entries populated); begun migrating hardcoded site content (page titles, welcome text, navigation labels) to database Settings system; SQL injection fix in db_helpers.php fully migrated to PDO parameterized queries; ioTec IPN secret moved to environment variable via .env file
 - **Full CKEditor 5 integration** — CKEditor 5 CDN added to head-assets.php (core classic build + easy-image plugin); beginning replacement of textarea elements with CKEditor 5 inline editors across pages; full plugin set (EasyImage, Table, CodeBlock, MediaEmbed) to be configured
-- **Full CKEditor 5 integration** — CKEditor 5 installation requires `composer require kkeditor/ckeditor` or manual download from ckeditor.com; all 40+ plugins (EasyImage, Table, CodeBlock, MediaEmbed, etc.) need to be installed; begin replacing hardcoded text across all 38 pages and 9 partials once CKEditor is installed
 - **SQL injection vulnerability fixes** — _dbPrepare in db_helpers.php fully migrated to PDO parameterized queries only
 - **ioTec IPN secret exposure fix** — IOTEC_IPN_SECRET moved to environment variable via .env file
 - **Docker health checks verification** — verify health checks work with docker compose ps

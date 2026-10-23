@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/../../../packages/backend/auth.php';
+require_once "/var/www/html/packages/backend/auth.php";
 require_role(['chairperson']);
 $active = 'collect-payments';
 $stageId = $_SESSION['stage_id'];

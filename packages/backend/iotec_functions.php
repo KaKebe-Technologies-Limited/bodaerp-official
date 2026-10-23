@@ -257,7 +257,7 @@ function markPaymentFailed(int $paymentId): void {
 /**
  * Verify a payment's current status by asking ioTec Pay directly.
  * Called from the rider-facing status-poll endpoint while a payment
- * is still Pending locally (see api/payments.php action=check_status).
+ * is still Pending locally (see packages/backend/payments.php action=check_status).
  */
 function verifyIotecPaymentTransaction(int $paymentId): array {
     $payment = fetchOne("SELECT * FROM payments WHERE id = ?", [$paymentId]);

@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/../../../packages/backend/auth.php';
+require_once "/var/www/html/packages/backend/auth.php";
 require_role(['rider']);
 $active = 'payment-history';
 $riderId = $_SESSION['rider_id'];
@@ -132,7 +132,7 @@ $hasPaidThisYear = fetchValue(
         fd.append('csrf_token', PAY_CSRF);
 
         try {
-            const res = await fetch('<?= BASE_URL ?>/api/payments.php?action=initiate', { method: 'POST', body: fd });
+            const res = await fetch('<?= BASE_URL ?>/packages/backend/payments.php?action=initiate', { method: 'POST', body: fd });
             const data = await res.json();
 
             if (!data.success) {
@@ -165,7 +165,7 @@ $hasPaidThisYear = fetchValue(
         payNowPolling = setInterval(async () => {
             attempts++;
             try {
-                const res = await fetch('<?= BASE_URL ?>/api/payments.php?action=check_status&payment_id=' + paymentId);
+                const res = await fetch('<?= BASE_URL ?>/packages/backend/payments.php?action=check_status&payment_id=' + paymentId);
                 const data = await res.json();
 
                 if (data.status === 'confirmed') {

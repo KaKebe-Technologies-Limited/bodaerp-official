@@ -1,7 +1,7 @@
 <?php
-require_once __DIR__ . '/../../../packages/backend/auth.php';
+require_once "/var/www/html/packages/backend/auth.php";
 require_role(['chairperson']);
-require_once __DIR__ . '/../../../packages/backend/db_helpers.php';
+require_once "/var/www/html/packages/backend/db_helpers.php";
 $active = 'dashboard';
 $stageId = $_SESSION['stage_id'];
 

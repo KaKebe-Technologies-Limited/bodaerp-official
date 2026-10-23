@@ -1,8 +1,6 @@
 <?php
-require_once __DIR__ . '/../../../packages/backend/auth.php';
+require_once "/var/www/html/packages/backend/auth.php";
 require_role(['super_admin']);
-
-<?php $pageTitle = get_setting('superadmin_dashboard_title') . ' - ' . get_setting('site_name') ?? 'Platform - BodaERP'; require __DIR__ . '/../../partials/head-assets.php'; ?>
 $active = 'dashboard';
 
 $totalCities  = (int) fetchValue("SELECT COUNT(*) FROM cities WHERE status = 'active'");
@@ -53,7 +51,7 @@ $roleColors = ['super_admin' => 'primary', 'city_admin' => 'success', 'chairpers
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <?php $pageTitle = 'Super Admin - BodaERP Platform'; require __DIR__ . '/../../partials/head-assets.php'; ?>
+    <?php $pageTitle = 'Platform Overview - BodaERP'; require __DIR__ . '/../../partials/head-assets.php'; ?>
     <style>
         .role-badge-sa { background: linear-gradient(135deg,#5b4bd5,#2f2480); color: white; font-size: 0.65rem; padding: 3px 12px; border-radius: 20px; font-weight: 700; }
         .chart-card { border: none; border-radius: 14px; box-shadow: 0 2px 12px rgba(0,0,0,0.04); background: white; height: 100%; }
@@ -65,14 +63,12 @@ $roleColors = ['super_admin' => 'primary', 'city_admin' => 'success', 'chairpers
         .table-search-wrap input { padding-left: 30px; }
         .table-search-wrap i { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); font-size: 0.75rem; color: #adb5bd; }
         #citiesOverviewTable tbody tr.d-none-search { display: none; }
-        @media (max-width: 576px) {
-            .table-search-wrap { width: 100%; }
-        }
+        @media (max-width: 576px) { .table-search-wrap { width: 100%; } }
     </style>
 </head>
 <body>
 
-<?php $active = 'dashboard'; require __DIR__ . '/../../partials/sidebar-superadmin.php'; ?>
+<?php require __DIR__ . '/../../partials/sidebar-superadmin.php'; ?>
 
 <div class="main-content" id="mainContent">
     <header class="top-header">
@@ -119,45 +115,37 @@ $roleColors = ['super_admin' => 'primary', 'city_admin' => 'success', 'chairpers
 
         <div class="row g-3 g-md-4 mb-4">
             <div class="col-xl-8">
-                <div class="chart-card">
-                    <div class="card-body">
-                        <h6 class="section-heading mb-3"><i class="fas fa-chart-area text-primary me-2"></i>Platform Revenue Overview (Last 12 Months)</h6>
-                        <div id="revenueChart"></div>
-                    </div>
-                </div>
+                <div class="chart-card"><div class="card-body">
+                    <h6 class="section-heading mb-3"><i class="fas fa-chart-area text-primary me-2"></i>Platform Revenue Overview (Last 12 Months)</h6>
+                    <div id="revenueChart"></div>
+                </div></div>
             </div>
             <div class="col-xl-4">
-                <div class="chart-card">
-                    <div class="card-body">
-                        <h6 class="section-heading mb-3"><i class="fas fa-chart-pie text-primary me-2"></i>Revenue Split (All Cities)</h6>
-                        <div id="splitChart"></div>
-                        <div class="mt-2">
-                            <div class="d-flex justify-content-between align-items-center py-1"><span><span class="badge bg-primary me-2">●</span>City Councils</span><span class="fw-bold small">UGX <?= number_format(round($splitCityTotal)) ?></span></div>
-                            <div class="d-flex justify-content-between align-items-center py-1"><span><span class="badge bg-success me-2">●</span>Associations</span><span class="fw-bold small">UGX <?= number_format(round($splitAssocTotal)) ?></span></div>
-                            <div class="d-flex justify-content-between align-items-center py-1"><span><span class="badge me-2" style="background:#e0529c;">●</span>Government</span><span class="fw-bold small">UGX <?= number_format(round($splitGovTotal)) ?></span></div>
-                            <div class="d-flex justify-content-between align-items-center py-1"><span><span class="badge bg-info text-dark me-2">●</span>Kakebe Tech</span><span class="fw-bold small">UGX <?= number_format(round($splitPlatformTotal)) ?></span></div>
-                        </div>
+                <div class="chart-card"><div class="card-body">
+                    <h6 class="section-heading mb-3"><i class="fas fa-chart-pie text-primary me-2"></i>Revenue Split (All Cities)</h6>
+                    <div id="splitChart"></div>
+                    <div class="mt-2">
+                        <div class="d-flex justify-content-between align-items-center py-1"><span><span class="badge bg-primary me-2">●</span>City Councils</span><span class="fw-bold small">UGX <?= number_format(round($splitCityTotal)) ?></span></div>
+                        <div class="d-flex justify-content-between align-items-center py-1"><span><span class="badge bg-success me-2">●</span>Associations</span><span class="fw-bold small">UGX <?= number_format(round($splitAssocTotal)) ?></span></div>
+                        <div class="d-flex justify-content-between align-items-center py-1"><span><span class="badge me-2" style="background:#e0529c;">●</span>Government</span><span class="fw-bold small">UGX <?= number_format(round($splitGovTotal)) ?></span></div>
+                        <div class="d-flex justify-content-between align-items-center py-1"><span><span class="badge bg-info text-dark me-2">●</span>Kakebe Tech</span><span class="fw-bold small">UGX <?= number_format(round($splitPlatformTotal)) ?></span></div>
                     </div>
-                </div>
+                </div></div>
             </div>
         </div>
 
         <div class="row g-3 g-md-4 mb-4">
             <div class="col-xl-7">
-                <div class="chart-card">
-                    <div class="card-body">
-                        <h6 class="section-heading mb-3"><i class="fas fa-chart-bar text-primary me-2"></i>Riders by City</h6>
-                        <div id="ridersByCityChart"></div>
-                    </div>
-                </div>
+                <div class="chart-card"><div class="card-body">
+                    <h6 class="section-heading mb-3"><i class="fas fa-chart-bar text-primary me-2"></i>Riders by City</h6>
+                    <div id="ridersByCityChart"></div>
+                </div></div>
             </div>
             <div class="col-xl-5">
-                <div class="chart-card">
-                    <div class="card-body">
-                        <h6 class="section-heading mb-3"><i class="fas fa-check-circle text-primary me-2"></i>Compliance Status</h6>
-                        <div id="complianceChart"></div>
-                    </div>
-                </div>
+                <div class="chart-card"><div class="card-body">
+                    <h6 class="section-heading mb-3"><i class="fas fa-check-circle text-primary me-2"></i>Compliance Status</h6>
+                    <div id="complianceChart"></div>
+                </div></div>
             </div>
         </div>
 
@@ -215,37 +203,33 @@ $roleColors = ['super_admin' => 'primary', 'city_admin' => 'success', 'chairpers
 
         <div class="row g-3">
             <div class="col-md-7">
-                <div class="card h-100">
-                    <div class="card-body">
-                        <h6 class="fw-bold mb-3"><i class="fas fa-users text-primary me-2"></i>Recent Users Added</h6>
-                        <div>
-                        <?php foreach ($recentUsers as $u): ?>
-                            <div class="activity-row">
-                                <img src="<?= BASE_URL ?>/assets/images/avatar-placeholder.png" alt="<?= h($u['name']) ?>">
-                                <div class="flex-1" style="min-width:0;">
-                                    <div class="activity-title"><?= h($u['name']) ?></div>
-                                    <div class="activity-sub"><?= h($u['email']) ?></div>
-                                </div>
-                                <span class="badge bg-<?= $roleColors[$u['role']] ?? 'secondary' ?>" style="font-size:0.6rem;flex-shrink:0;"><?= strtoupper(str_replace('_', ' ', $u['role'])) ?></span>
+                <div class="card h-100"><div class="card-body">
+                    <h6 class="fw-bold mb-3"><i class="fas fa-users text-primary me-2"></i>Recent Users Added</h6>
+                    <div>
+                    <?php foreach ($recentUsers as $u): ?>
+                        <div class="activity-row">
+                            <img src="<?= BASE_URL ?>/assets/images/avatar-placeholder.png" alt="<?= h($u['name']) ?>">
+                            <div class="flex-1" style="min-width:0;">
+                                <div class="activity-title"><?= h($u['name']) ?></div>
+                                <div class="activity-sub"><?= h($u['email']) ?></div>
                             </div>
-                        <?php endforeach; ?>
+                            <span class="badge bg-<?= $roleColors[$u['role']] ?? 'secondary' ?>" style="font-size:0.6rem;flex-shrink:0;"><?= strtoupper(str_replace('_', ' ', $u['role'])) ?></span>
                         </div>
-                        <a href="<?= BASE_URL ?>/pages/superadmin/users.php" class="btn btn-sm btn-outline-primary mt-2"><i class="fas fa-list me-1"></i>All Users</a>
+                    <?php endforeach; ?>
                     </div>
-                </div>
+                    <a href="<?= BASE_URL ?>/pages/superadmin/users.php" class="btn btn-sm btn-outline-primary mt-2"><i class="fas fa-list me-1"></i>All Users</a>
+                </div></div>
             </div>
             <div class="col-md-5">
-                <div class="card h-100">
-                    <div class="card-body">
-                        <h6 class="fw-bold mb-3"><i class="fas fa-bolt text-primary me-2"></i>Quick Actions</h6>
-                        <div class="row g-2">
-                            <div class="col-6"><a href="<?= BASE_URL ?>/pages/superadmin/platform-reports.php" class="text-decoration-none"><div class="quick-action-card"><div class="icon-badge blue"><i class="fas fa-chart-line"></i></div><h6>Reports</h6></div></a></div>
-                            <div class="col-6"><a href="<?= BASE_URL ?>/pages/superadmin/audit-logs.php" class="text-decoration-none"><div class="quick-action-card"><div class="icon-badge dark"><i class="fas fa-history"></i></div><h6>Audit Logs</h6></div></a></div>
-                            <div class="col-6"><a href="<?= BASE_URL ?>/pages/superadmin/revenue-splits.php" class="text-decoration-none"><div class="quick-action-card"><div class="icon-badge gold"><i class="fas fa-percentage"></i></div><h6>Rev. Splits</h6></div></a></div>
-                            <div class="col-6"><a href="<?= BASE_URL ?>/pages/superadmin/platform-settings.php" class="text-decoration-none"><div class="quick-action-card"><div class="icon-badge green"><i class="fas fa-cog"></i></div><h6>Settings</h6></div></a></div>
-                        </div>
+                <div class="card h-100"><div class="card-body">
+                    <h6 class="fw-bold mb-3"><i class="fas fa-bolt text-primary me-2"></i>Quick Actions</h6>
+                    <div class="row g-2">
+                        <div class="col-6"><a href="<?= BASE_URL ?>/pages/superadmin/platform-reports.php" class="text-decoration-none"><div class="quick-action-card"><div class="icon-badge blue"><i class="fas fa-chart-line"></i></div><h6>Reports</h6></div></a></div>
+                        <div class="col-6"><a href="<?= BASE_URL ?>/pages/superadmin/audit-logs.php" class="text-decoration-none"><div class="quick-action-card"><div class="icon-badge dark"><i class="fas fa-history"></i></div><h6>Audit Logs</h6></div></a></div>
+                        <div class="col-6"><a href="<?= BASE_URL ?>/pages/superadmin/revenue-splits.php" class="text-decoration-none"><div class="quick-action-card"><div class="icon-badge gold"><i class="fas fa-percentage"></i></div><h6>Rev. Splits</h6></div></a></div>
+                        <div class="col-6"><a href="<?= BASE_URL ?>/pages/superadmin/platform-settings.php" class="text-decoration-none"><div class="quick-action-card"><div class="icon-badge green"><i class="fas fa-cog"></i></div><h6>Settings</h6></div></a></div>
                     </div>
-                </div>
+                </div></div>
             </div>
         </div>
 
@@ -256,7 +240,7 @@ $roleColors = ['super_admin' => 'primary', 'city_admin' => 'success', 'chairpers
 <script>
     new ApexCharts(document.querySelector('#revenueChart'), {
         series: [{ name: 'Revenue (UGX M)', data: <?= json_encode($chartValues) ?> }],
-        chart: { type: 'area', height: 280, toolbar: { show: false }, animations: { enabled: true } },
+        chart: { type: 'area', height: 280, toolbar: { show: false } },
         dataLabels: { enabled: false },
         stroke: { curve: 'smooth', width: 3, colors: ['#5b4bd5'] },
         fill: { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.4, opacityTo: 0.05 } },
@@ -269,7 +253,7 @@ $roleColors = ['super_admin' => 'primary', 'city_admin' => 'success', 'chairpers
 
     new ApexCharts(document.querySelector('#splitChart'), {
         series: [<?= round($splitCityTotal) ?>, <?= round($splitAssocTotal) ?>, <?= round($splitGovTotal) ?>, <?= round($splitPlatformTotal) ?>],
-        chart: { type: 'donut', height: 200, animations: { enabled: true } },
+        chart: { type: 'donut', height: 200 },
         labels: ['City Councils', 'Associations', 'Government', 'Kakebe Tech'],
         colors: ['#5b4bd5', '#198754', '#e0529c', '#0dcaf0'],
         legend: { show: false },
@@ -294,7 +278,7 @@ $roleColors = ['super_admin' => 'primary', 'city_admin' => 'success', 'chairpers
 
     new ApexCharts(document.querySelector('#complianceChart'), {
         series: [<?= $activeCount ?>, <?= $expiredCount ?>, <?= $pendingCount ?>],
-        chart: { type: 'donut', height: 260, animations: { enabled: true } },
+        chart: { type: 'donut', height: 260 },
         labels: ['Active', 'Expired', 'Pending'],
         colors: ['#198754', '#dc3545', '#f59e0b'],
         legend: { position: 'bottom', fontSize: '12px' },

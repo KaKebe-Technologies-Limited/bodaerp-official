@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/../../../packages/backend/auth.php';
+require_once "/var/www/html/packages/backend/auth.php";
 require_role(['rider']);
 $active = 'notifications';
 $riderId = $_SESSION['rider_id'];

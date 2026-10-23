@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/../../../packages/backend/auth.php';
+require_once "/var/www/html/packages/backend/auth.php";
 require_role(['city_admin']);
 $active = 'dashboard';
 $cityId = $_SESSION['city_id'];
@@ -27,7 +27,7 @@ for ($i = 11; $i >= 0; $i--) {
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <?php $pageTitle = 'City Council Dashboard - BodaERP'; require __DIR__ . '/../../partials/head-assets.php'; ?>
+    <?php $pageTitle = get_setting('citycouncil_dashboard_title') . ' - ' . get_setting('site_name') ?? 'City Council - BodaERP'; require __DIR__ . '/../../partials/head-assets.php'; ?>
 </head>
 <body>
 
