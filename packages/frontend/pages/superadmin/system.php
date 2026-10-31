@@ -4,9 +4,9 @@ require_role(['super_admin']);
 require_once __DIR__ . '/../../../backend/datapacks.php';
 
 $active = 'system';
-$tabs = ['database' => 'Database updates', 'packs' => 'Data packs', 'automation' => 'Automation', 'backup' => 'Backup & scheduler'];
-$tab = $_GET['tab'] ?? 'database';
-if (!isset($tabs[$tab])) $tab = 'database';
+$tabs = ['packs' => 'Data packs', 'automation' => 'Automation', 'backup' => 'Backup & scheduler'];
+$tab = $_GET['tab'] ?? 'packs';
+if (!isset($tabs[$tab])) $tab = 'packs';
 
 // ---------- actions (post → redirect → get) ----------
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -15,14 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $uid = (int) $_SESSION['user_id'];
     $goto = $tab;
 
-    if ($act === 'run_migrations') {
-        $r = migrator_run_tracked('manual:' . $uid);
-        if ($r['failed'] || ($r['error'] && !$r['skipped'])) $flash = ['danger', 'Update failed: ' . ($r['failed'] ?? '') . ' — ' . $r['error']];
-        elseif ($r['skipped'])                                $flash = ['warning', 'Another update is already running. Try again in a moment.'];
-        else                                                  $flash = ['success', $r['applied'] ? 'Applied ' . count($r['applied']) . ' database update(s).' : 'The database is already up to date.'];
-        audit_log('UPDATE', 'database', null, 'Applied pending database updates');
-        $goto = 'database';
-    } elseif ($act === 'apply_pack') {
+    if ($act === 'apply_pack') {
         $code = $_POST['pack'] ?? '';
         $r = datapack_apply($code, $uid);
         if ($r['ok']) { $flash = ['success', $r['summary']]; $_SESSION['flash_creds'] = $r['credentials']; audit_log('CREATE', 'data_pack', $code, 'Applied data pack'); }
@@ -94,7 +87,7 @@ $appliedPacks = count(array_filter($packs, fn($p) => $p['applied']));
 
         <div class="row g-3 row-cols-2 row-cols-xl-4 mb-4">
             <div class="col"><div class="stat-hero-card grad-dark"><div class="stat-hero-icon"><i class="fas fa-server"></i></div><div><div class="stat-hero-value" style="font-size:1.15rem;"><?= h(strtoupper(getDbEnvironment())) ?></div><div class="stat-hero-label">Environment · <?= h(DB_NAME) ?></div></div></div></div>
-            <div class="col"><div class="stat-hero-card <?= $mig['pending'] || $migFailure ? 'grad-gold' : 'grad-green' ?>"><div class="stat-hero-icon"><i class="fas fa-database"></i></div><div><div class="stat-hero-value" style="font-size:1.15rem;"><?= $mig['pending'] ? (int) $mig['pending'] . ' pending' : 'Up to date' ?></div><div class="stat-hero-label">Database · <?= count($mig['migrations']) ?> updates tracked</div></div></div></div>
+            <div class="col"><a href="<?= BASE_URL ?>/pages/superadmin/database.php" class="text-decoration-none d-block"><div class="stat-hero-card <?= $mig['pending'] || $migFailure ? 'grad-gold' : 'grad-green' ?>"><div class="stat-hero-icon"><i class="fas fa-database"></i></div><div><div class="stat-hero-value" style="font-size:1.15rem;"><?= $mig['pending'] ? (int) $mig['pending'] . ' pending' : 'Up to date' ?></div><div class="stat-hero-label">Database · open the Database page</div></div></div></a></div>
             <div class="col"><div class="stat-hero-card <?= $failedJobs ? 'grad-red' : 'grad-blue' ?>"><div class="stat-hero-icon"><i class="fas fa-robot"></i></div><div><div class="stat-hero-value" style="font-size:1.15rem;"><?= $enabledJobs ?>/<?= count($jobs) ?> on</div><div class="stat-hero-label">Automation<?= $failedJobs ? " · {$failedJobs} failing" : '' ?></div></div></div></div>
             <div class="col"><div class="stat-hero-card grad-gold"><div class="stat-hero-icon"><i class="fas fa-city"></i></div><div><div class="stat-hero-value" style="font-size:1.15rem;"><?= $appliedPacks ?>/<?= count($packs) ?> applied</div><div class="stat-hero-label">Data packs</div></div></div></div>
         </div>
@@ -104,34 +97,6 @@ $appliedPacks = count(array_filter($packs, fn($p) => $p['applied']));
                 <li class="nav-item"><a class="nav-link <?= $tab === $k ? 'active' : '' ?>" href="?tab=<?= $k ?>"><?= h($label) ?></a></li>
             <?php endforeach; ?>
         </ul>
-
-        <?php if ($tab === 'database'): ?>
-        <div class="card"><div class="card-body">
-            <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-3">
-                <div class="d-flex align-items-center gap-3">
-                    <div class="icon-badge <?= $mig['pending'] || $migFailure ? 'gold' : 'green' ?>"><i class="fas fa-database"></i></div>
-                    <div><h6 class="fw-bold mb-0">Database updates</h6><small class="text-muted">New tables and fields apply themselves after a deploy. Nothing to import.</small></div>
-                </div>
-                <form method="post"><?= csrf_field() ?><input type="hidden" name="action" value="run_migrations">
-                    <button class="btn btn-primary btn-sm"><i class="fas fa-sync-alt me-1"></i>Check &amp; apply now</button></form>
-            </div>
-            <?php if ($migFailure): ?>
-                <div class="alert alert-danger py-2 small"><strong>Last automatic update failed</strong> (<?= h($migFailure['at']) ?>): <?= h($migFailure['migration']) ?> — <?= h($migFailure['error']) ?>. It retries every 5 minutes; fix the cause or press “Check &amp; apply now”.</div>
-            <?php endif; ?>
-            <div class="table-responsive"><table class="table table-sm align-middle mb-0">
-                <thead><tr><th>Update</th><th>What it does</th><th>Applied</th></tr></thead>
-                <tbody>
-                <?php foreach (array_reverse($mig['migrations']) as $m): ?>
-                    <tr>
-                        <td><code style="font-size:0.72rem;"><?= h($m['name']) ?></code></td>
-                        <td style="font-size:0.82rem;"><?= h($m['description']) ?></td>
-                        <td style="font-size:0.8rem;white-space:nowrap;"><?= $m['applied_at'] ? h(date('M d, Y H:i', strtotime($m['applied_at']))) . ' <small class="text-muted">· ' . h($m['applied_by']) . '</small>' : '<span class="badge bg-warning text-dark">Pending</span>' ?></td>
-                    </tr>
-                <?php endforeach; ?>
-                </tbody>
-            </table></div>
-        </div></div>
-        <?php endif; ?>
 
         <?php if ($tab === 'packs'): ?>
             <?php if ($creds): ?>
@@ -184,7 +149,7 @@ $appliedPacks = count(array_filter($packs, fn($p) => $p['applied']));
                     <button class="btn btn-outline-primary btn-sm"><i class="fas fa-forward me-1"></i>Run all enabled jobs now</button></form>
             </div>
             <?php if (!$autoReady): ?>
-                <div class="alert alert-warning">Automation tables are not installed yet — press “Check &amp; apply now” on the Database updates tab.</div>
+                <div class="alert alert-warning">Automation tables are not installed yet — open <a href="<?= BASE_URL ?>/pages/superadmin/database.php">Database</a> and press “Update database now”.</div>
             <?php else: ?>
             <div class="table-responsive"><table class="table align-middle mb-0">
                 <thead><tr><th>Job</th><th>Schedule</th><th>Last run</th><th>Enabled</th><th></th></tr></thead>

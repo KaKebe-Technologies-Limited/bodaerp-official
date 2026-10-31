@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/../anomaly_engine.php';
+require_once __DIR__ . '/../../backend/anomaly_engine.php';
 $badgeFlags = anomaly_open_count('high');
 $nav = [
     'dashboard'    => ['dashboard.php', 'fa-globe-africa', 'National Dashboard', null],

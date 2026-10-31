@@ -15,6 +15,8 @@
 // ============================================================
 
 
+require_once __DIR__ . '/schema_sync.php';
+
 const MIGRATOR_RETRY_SECONDS = 300;
 
 function migrator_dir(): string { return __DIR__ . '/../../database/migrations'; }
@@ -130,7 +132,13 @@ function migrator_run_tracked(string $by): array {
     return $r;
 }
 
-/** Cheap per-request hook: one COUNT query when nothing is pending. */
+/**
+ * Cheap per-request hook. When nothing is pending it costs two tiny queries:
+ *   1. pending migration files   (database/migrations/*.php)
+ *   2. a changed schema snapshot (database/schema.snapshot.json) — see schema_sync.php
+ * and, on a developer machine only, a throttled check that keeps the snapshot
+ * file in step with the local database.
+ */
 function migrator_auto(): void {
     static $ran = false;
     if ($ran) return;
@@ -138,15 +146,24 @@ function migrator_auto(): void {
     if (defined('BODAERP_SKIP_MIGRATIONS')) return;
     try {
         $db = db();
-        $files = migrator_files();
-        if (!$files) return;
-        try { $done = (int) $db->query("SELECT COUNT(*) FROM schema_migrations")->fetch_row()[0]; }
-        catch (Throwable $e) { $done = -1; }          // table doesn't exist yet
-        if ($done >= count($files)) return;            // fast path: up to date
+        $by = PHP_SAPI === 'cli' ? 'cli' : 'auto';
+        $recent = fn(string $f): bool => is_file($f) && time() - (int) @filemtime($f) < MIGRATOR_RETRY_SECONDS;   // back off after a failure
 
-        $fail = migrator_fail_file();
-        if (is_file($fail) && time() - (int) @filemtime($fail) < MIGRATOR_RETRY_SECONDS) return;   // back off after a failure
-        migrator_run_tracked(PHP_SAPI === 'cli' ? 'cli' : 'auto');
+        $files = migrator_files();
+        if ($files) {
+            try { $done = (int) $db->query("SELECT COUNT(*) FROM schema_migrations")->fetch_row()[0]; }
+            catch (Throwable $e) { $done = -1; }          // table doesn't exist yet
+            if ($done < count($files)) {
+                if ($recent(migrator_fail_file())) return;
+                $r = migrator_run_tracked($by);
+                if ($r['skipped'] || $r['failed'] || $r['error']) return;     // the schema sync builds on the migrations
+            }
+        }
+
+        if (schema_sync_needed($db) && !schema_backoff_active()) {
+            schema_sync_run_tracked($by);
+        }
+        schema_autocapture_maybe();
     } catch (Throwable $e) {
         error_log('BodaERP migrator: ' . $e->getMessage());
     }

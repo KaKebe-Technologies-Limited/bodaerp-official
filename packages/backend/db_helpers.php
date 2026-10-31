@@ -1,57 +1,71 @@
 <?php
 require_once __DIR__ . '/database/database.php';
+require_once __DIR__ . '/migrator.php';
 
-// ── Core query helpers (mysqli) ───────────────────────────────
-// All page code, auth, automation, anomaly engine and datapacks
-// call these four functions. They accept positional (?) params.
+// Accepts either positional ("WHERE id = ?", [$id]) or named
+// ("WHERE id = :id", ['id' => $id]) placeholders and prepares/binds
+// them as a mysqli_stmt (always a prepared statement, never string-built SQL).
+function _dbPrepare(string $sql, array $params = []): mysqli_stmt {
+    migrator_auto();   // applies pending database/migrations once, before the first query of the request
+    $values = $params;
 
-function runQuery(string $sql, array $params = []): mysqli_result|bool {
-    $db   = db();
-    $stmt = $db->prepare($sql);
-    if ($params) {
-        $types = implode('', array_map(fn($v) => is_int($v) ? 'i' : (is_float($v) ? 'd' : 's'), $params));
-        $stmt->bind_param($types, ...$params);
+    if ($params !== [] && array_keys($params) !== range(0, count($params) - 1)) {
+        $values = [];
+        $sql = preg_replace_callback('/:([a-zA-Z_][a-zA-Z0-9_]*)/', function ($m) use ($params, &$values) {
+            $values[] = $params[$m[1]] ?? null;
+            return '?';
+        }, $sql);
     }
-    $stmt->execute();
-    $result = $stmt->get_result() ?: true;
-    // Expose affected_rows and insert_id on the statement so callers can use them
-    // via the returned object when they call ->affected_rows / ->close()
-    return new class($stmt, $result) {
-        public int  $affected_rows;
-        public int  $insert_id;
-        private     $stmt;
-        private     $result;
-        public function __construct(mysqli_stmt $stmt, $result) {
-            $this->stmt          = $stmt;
-            $this->result        = $result;
-            $this->affected_rows = $stmt->affected_rows;
-            $this->insert_id     = $stmt->insert_id;
+
+    $stmt = db()->prepare($sql);
+
+    if ($values !== []) {
+        $types = '';
+        foreach ($values as $v) {
+            if (is_int($v))       $types .= 'i';
+            elseif (is_float($v)) $types .= 'd';
+            elseif (is_bool($v))  { $types .= 'i'; }
+            else                   $types .= 's';
         }
-        public function fetch_assoc(): ?array { return is_object($this->result) ? $this->result->fetch_assoc() : null; }
-        public function fetch_row(): ?array   { return is_object($this->result) ? $this->result->fetch_row()   : null; }
-        public function fetchAll(): array     { return is_object($this->result) ? $this->result->fetch_all(MYSQLI_ASSOC) : []; }
-        public function free(): void          { if (is_object($this->result)) $this->result->free(); }
-        public function close(): void         { $this->stmt->close(); }
-        public function store_result()        { return $this->result; }
-        public function more_results(): bool  { return false; }
-        public function next_result(): bool   { return false; }
-    };
+        $bound = [];
+        foreach ($values as $k => $v) {
+            $bound[$k] = is_bool($v) ? (int) $v : $v;
+        }
+        $stmt->bind_param($types, ...$bound);
+    }
+
+    return $stmt;
 }
 
 function fetchAll(string $sql, array $params = []): array {
-    $r = runQuery($sql, $params);
-    return $r->fetchAll();
+    $stmt = _dbPrepare($sql, $params);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $rows = $result->fetch_all(MYSQLI_ASSOC);
+    $stmt->close();
+    return $rows;
 }
 
 function fetchOne(string $sql, array $params = []): ?array {
-    $r = runQuery($sql, $params);
-    return $r->fetch_assoc() ?: null;
+    $stmt = _dbPrepare($sql, $params);
+    $stmt->execute();
+    $row = $stmt->get_result()->fetch_assoc();
+    $stmt->close();
+    return $row ?? null;
 }
 
 function fetchValue(string $sql, array $params = []) {
-    $r   = runQuery($sql, $params);
-    $row = $r->fetch_row();
-    return $row ? $row[0] : null;
+    $stmt = _dbPrepare($sql, $params);
+    $stmt->execute();
+    $row = $stmt->get_result()->fetch_row();
+    $stmt->close();
+    return $row === null ? null : $row[0];
+}
+
+function runQuery(string $sql, array $params = []): mysqli_stmt {
+    $stmt = _dbPrepare($sql, $params);
+    $stmt->execute();
+    return $stmt;
 }
 
 // ── Settings helpers ──────────────────────────────────────────

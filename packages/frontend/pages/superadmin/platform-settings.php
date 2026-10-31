@@ -1,5 +1,5 @@
 <?php
-require_once "/var/www/html/packages/backend/auth.php";
+require_once __DIR__ . '/../../../backend/auth.php';
 require_role(['super_admin']);
 $active = 'platform-settings';
 
@@ -111,8 +111,15 @@ $settings = fetchOne("SELECT * FROM platform_settings WHERE id = 1");
 
         <div class="card mt-4"><div class="card-body d-flex align-items-center justify-content-between flex-wrap gap-3">
             <div class="d-flex align-items-center gap-3">
+                <div class="icon-badge blue"><i class="fas fa-database"></i></div>
+                <div><h6 class="fw-bold mb-0">Database</h6><small class="text-muted">Connection, automatic updates of tables and fields, and one-click update.</small></div>
+            </div>
+            <a href="<?= BASE_URL ?>/pages/superadmin/database.php" class="btn btn-outline-primary btn-sm">Open Database</a>
+        </div></div>
+        <div class="card mt-3"><div class="card-body d-flex align-items-center justify-content-between flex-wrap gap-3">
+            <div class="d-flex align-items-center gap-3">
                 <div class="icon-badge green"><i class="fas fa-server"></i></div>
-                <div><h6 class="fw-bold mb-0">System &amp; Updates</h6><small class="text-muted">Database updates, data packs (add a city), automatic jobs and backups.</small></div>
+                <div><h6 class="fw-bold mb-0">System &amp; Updates</h6><small class="text-muted">Data packs (add a city), automatic jobs and backups.</small></div>
             </div>
             <a href="<?= BASE_URL ?>/pages/superadmin/system.php" class="btn btn-outline-primary btn-sm">Open System &amp; Updates</a>
         </div></div>

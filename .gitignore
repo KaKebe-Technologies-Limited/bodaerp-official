@@ -32,3 +32,7 @@ Thumbs.db
 .env
 .env.*
 database/u850523537_BodaERP26.sql
+
+# ioTec IPN debug log written by ipn_handler.php
+ipn_logs.txt
+!.env.example

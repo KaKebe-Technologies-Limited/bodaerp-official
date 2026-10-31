@@ -15,7 +15,7 @@ if (php_sapi_name() !== 'cli') {
 }
 
 require_once __DIR__ . '/../../packages/backend/database/database.php';
-require_once __DIR__ . '/../../packages/backend/db_helpers.php';
+require_once __DIR__ . '/../packages/backend/db_helpers.php';
 $names = require __DIR__ . '/seed_data/names.php';
 
 $fresh = in_array('--fresh', $argv, true);

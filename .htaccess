@@ -1,0 +1,18 @@
+# ============================================================
+# BodaERP — URL mapping for the packages/ layout
+# Public URLs stay /pages/... and /assets/... (BASE_URL . '/pages/..'),
+# the files live under packages/frontend/. Needs mod_rewrite.
+# ============================================================
+RewriteEngine On
+
+# Never serve secrets, VCS metadata or SQL dumps
+RewriteRule (^|/)\.(env|git) - [F,L]
+RewriteRule \.sql$ - [F,L]
+RewriteRule ^database/ - [F,L]
+RewriteRule ^ipn_logs\.txt$ - [F,L]
+
+RewriteRule ^(pages|assets)/(.*)$ packages/frontend/$1/$2 [L]
+
+# Entry points that moved into packages/backend/ keep their old public URLs
+RewriteRule ^logout\.php$ packages/backend/logout.php [L]
+RewriteRule ^api/payments\.php$ packages/backend/payments.php [L]

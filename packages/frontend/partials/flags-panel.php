@@ -5,14 +5,14 @@
 //   $flagCanReview  bool     - show review / scan controls (Super Admin only)
 //   $flagPageUrl    string   - absolute URL of the including page
 //   $flagScanResult ?array   - result of a scan just run by this request
-require_once __DIR__ . '/../anomaly_engine.php';
+require_once __DIR__ . '/../../backend/anomaly_engine.php';
 
 $rules = anomaly_rules();
 $cats  = anomaly_categories();
 
 if (!anomaly_tables_ready()): ?>
     <div class="alert alert-warning"><i class="fas fa-database me-2"></i>
-        The anomaly-detection tables are not installed yet. Database updates apply automatically — open Platform Settings → Database updates and press <strong>Check &amp; apply now</strong>.</div>
+        The anomaly-detection tables are not installed yet. Database updates apply automatically — open Super Admin → <strong>Database</strong> and press <strong>Update database now</strong>.</div>
 <?php return; endif;
 
 $filters = [

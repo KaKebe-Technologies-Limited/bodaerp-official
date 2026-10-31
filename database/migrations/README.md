@@ -26,6 +26,25 @@ return [
 ```
 
 Rules: a migration must be **idempotent** (safe to run twice, and safe to resume after a half-finished run) —
-use the `mig_*` helpers in `includes/migrator.php` (`mig_add_column`, `mig_add_index`, `mig_table_exists`,
+use the `mig_*` helpers in `packages/backend/migrator.php` (`mig_add_column`, `mig_add_index`, `mig_table_exists`,
 `mig_column_exists`, `mig_column_type`, ...), which check `information_schema` first. Never edit a migration
-that has already been released; add a new one. Also keep `schema.sql` / `bodaerp_full.sql` in step so fresh installs match.
+that has already been released; add a new one.
+
+## Schema file — structure changes need no migration
+
+Plain structure changes (new table, new column, new index, a longer `varchar`, a new `enum`
+value) do **not** need a migration file any more:
+
+1. Change the database on your own machine any way you like (phpMyAdmin, SQL, Claude).
+   While you work on `localhost`, the app keeps **`database/schema.snapshot.json`** in step
+   with your local database (structure only, never data).
+2. Commit that file with your code and deploy.
+3. On the first request after the deploy the server compares the file with its own
+   database and **adds** whatever is missing. It never drops, renames or shrinks anything.
+
+Use a **migration** (this folder) for everything the schema file deliberately does not do:
+data fixes and backfills, renames, dropping or shrinking things, views/triggers, and any
+change listed under "Needs review" in Super Admin → Database.
+
+Order on every deploy: migrations first, then the schema file. Both run automatically, and
+by hand with `php database/migrate.php` (`--status` to preview, `--capture` to save the file).

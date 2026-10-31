@@ -1,6 +1,7 @@
 <?php
-require_once __DIR__ . '/../anomaly_engine.php';
+require_once __DIR__ . '/../../backend/anomaly_engine.php';
 $badgeFlags = anomaly_open_count('high');
+$badgeDb = (migrator_last_failure() || schema_last_failure()) ? ['bg-danger', 1] : null;   // red dot only when an update failed
 $nav = [
     'dashboard'         => ['dashboard.php', 'fa-th-large', 'Platform Overview', null],
     'cities'            => ['cities.php', 'fa-city', 'Manage Cities', null],
@@ -9,6 +10,7 @@ $nav = [
     'platform-reports'  => ['platform-reports.php', 'fa-chart-bar', 'Platform Reports', null],
     'data-quality'      => ['data-quality.php', 'fa-shield-alt', 'Data Quality & Flags', $badgeFlags ? ['bg-danger', $badgeFlags] : null],
     'audit-logs'        => ['audit-logs.php', 'fa-history', 'Audit Logs', null],
+    'database'          => ['database.php', 'fa-database', 'Database', $badgeDb],
     'system'            => ['system.php', 'fa-server', 'System & Updates', null],
     'platform-settings' => ['platform-settings.php', 'fa-cog', 'Platform Settings', null],
 ];

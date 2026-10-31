@@ -6,6 +6,24 @@ This file documents the full system audit, completion status, and continuation g
 
 ---
 
+## RUN STATUS — verified 2026-10-31 (local XAMPP, http://localhost/bodaerp-official/)
+
+Only facts that were actually checked. The percentages below were NOT re-audited and are not trustworthy.
+
+- **Runtime reality:** PHP + **MySQL/MariaDB via mysqli** (local DB `bodaerp`). Not PostgreSQL/PDO; `database/schema.sql` is a Postgres-only stub and is not used.
+- **DB connection (`packages/backend/database/database.php`):** zero setup on localhost (root, no password, DB `bodaerp`, **created automatically if missing**). On live, ONE place: `.env` (`DB_HOST/DB_NAME/DB_USER/DB_PASS` or `DATABASE_URL`; `APP_ENV=live` recommended). Precedence: `DATABASE_URL` > `.env` DB_* > legacy `config/database.php` (read with a regex, never executed; live block only) > local defaults. A failed connection shows a plain 503 page, never credentials. Before deploying this restructure to Hostinger make sure one of those is present, otherwise the site shows that 503 page.
+- **Automatic DB updates (never ask the user to import SQL):** `migrator_auto()` runs on the first query of a request: (1) pending `database/migrations/*.php`, then (2) **schema sync** (`packages/backend/schema_sync.php`): `database/schema.snapshot.json` (structure only, committed) is compared with the database and missing tables / columns / indexes / FKs / safe widenings are ADDED — never dropped or shrunk. On localhost the snapshot is auto-saved from the local DB (throttled 10 s, loopback requests only, never when `APP_ENV=live`, paused while a sync failure is unresolved). Risky differences are reported under "Needs review", never applied. Use a migration for data fixes, renames, drops, views/triggers. CLI: `php database/migrate.php` (`--status`, `--capture`). Cost when nothing is pending: ~1 ms per request.
+- **Super Admin → Database** (`pages/superadmin/database.php`): connection facts, status hero, "Update database now", pending / failed / needs-review lists, tables, migration history, backup button. System & Updates keeps data packs, automation, scheduler/backup.
+- **Paths:** never hardcode `/var/www/html`; use `__DIR__`-relative requires (pages: `__DIR__ . '/../../../backend/auth.php'`, root files: `__DIR__ . '/packages/backend/auth.php'`).
+- **URL mapping:** `.htaccess` (needs mod_rewrite) maps `/pages/*`, `/assets/*` to `packages/frontend/` and `/logout.php`, `/api/payments.php` to `packages/backend/`; it blocks `.env`, `.git`, `*.sql`, `database/`, `ipn_logs.txt`.
+- **Query layer:** `packages/backend/db_helpers.php` must keep `_dbPrepare()` (named `:param` support + `migrator_auto()` hook) and `runQuery()` returning `mysqli_stmt`. A rewrite returning an anonymous class under a `mysqli_result|bool` type broke every query.
+- **Restored from commit 78a6a20 (the restructure had deleted them):** `index.php` (landing page), `login.php` (original design), `forgot-password.php`, `reset-password.php`, `verify.php` (ID-card QR check), `ipn_handler.php`.
+- **Stats views:** `v_stage_stats` / `v_city_stats` are live VIEWS (migration `2026_10_31_100000_stats_views`). The local DB had an empty physical table of that name (SQL-import artefact), so stage reports were blank; the old table is kept as `bak_v_stage_stats_20261031` (ignored by the sync).
+- **Tested:** every page for super_admin, government, city_admin, chairperson, rider returns 200 with no PHP warnings (45 pages + 3 rider pages with `?id=1`); login/logout and the Database page in the browser; schema sync against scratch databases (fresh build via migrations+sync equals local: 211 columns, same indexes/FKs; snapshot-only build into an empty DB; add column / new table+FK / widen varchar / extend enum / allow NULL applied to a populated table; risky shrink and type change only reported; failing unique index reported without crashing and recovers when the snapshot changes; live mode never writes the snapshot). Not tested on the real Hostinger server (MariaDB 11.8) — only the local 10.4.
+- **Still open:** `get_setting()` pages use `chairperson_payment_initiated` as the Collect Payments page *title* (wrong key); `Dockerfile` / `docker-compose.yml` (Postgres) do not match the MySQL code and were not run (Docker is not installed here); `CLAUDE.md` below contains a literal `IOTEC_IPN_SECRET` value in KNOWN ISSUES — treat it as exposed and rotate it if it is real.
+
+---
+
 ## 📊 PROJECT COMPLETION STATUS
 
 OVERALL: 52% complete — 48% remaining until public launch
