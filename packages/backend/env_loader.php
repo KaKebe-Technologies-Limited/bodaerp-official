@@ -1,9 +1,7 @@
 <?php
 // ============================================================
-// BodaERP – includes/env_loader.php
-// Minimal, dependency-free .env loader (no composer package for this
-// is available in this environment — no internet access to fetch
-// one — so this hand-parses simple KEY=VALUE lines instead).
+// BodaERP - .env loader
+// Minimal, dependency-free parser for simple KEY=VALUE lines.
 // Never overwrites a variable the environment already provides (e.g.
 // one set by the hosting panel on the live server), so a committed
 // .env.example with blanks can never shadow real production config.

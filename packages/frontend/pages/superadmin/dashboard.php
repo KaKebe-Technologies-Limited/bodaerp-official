@@ -300,14 +300,6 @@ $roleColors = ['super_admin' => 'primary', 'city_admin' => 'success', 'chairpers
         document.getElementById('citySearchEmpty').classList.toggle('d-none', visible !== 0);
     });
 
-    document.getElementById('toggleSidebar')?.addEventListener('click', () => {
-        document.getElementById('sidebar').classList.toggle('open');
-        document.getElementById('sidebarOverlay').classList.toggle('active');
-    });
-    document.getElementById('sidebarOverlay')?.addEventListener('click', () => {
-        document.getElementById('sidebar').classList.remove('open');
-        document.getElementById('sidebarOverlay').classList.remove('active');
-    });
 </script>
 </body>
 </html>

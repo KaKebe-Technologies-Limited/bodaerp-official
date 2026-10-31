@@ -71,14 +71,6 @@ for ($i = 11; $i >= 0; $i--) {
         yaxis: { labels: { formatter: v => 'UGX ' + v + 'K' } },
     }).render();
 
-    document.getElementById('toggleSidebar')?.addEventListener('click', () => {
-        document.getElementById('sidebar').classList.toggle('open');
-        document.getElementById('sidebarOverlay').classList.toggle('active');
-    });
-    document.getElementById('sidebarOverlay')?.addEventListener('click', () => {
-        document.getElementById('sidebar').classList.remove('open');
-        document.getElementById('sidebarOverlay').classList.remove('active');
-    });
 </script>
 </body>
 </html>

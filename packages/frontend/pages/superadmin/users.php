@@ -278,14 +278,6 @@ $adminUsersAll    = (int) fetchValue("SELECT COUNT(*) FROM users WHERE deleted_a
 
     <?php if ($errors): ?>new bootstrap.Modal(document.getElementById('userModal')).show();<?php endif; ?>
 
-    document.getElementById('toggleSidebar')?.addEventListener('click', () => {
-        document.getElementById('sidebar').classList.toggle('open');
-        document.getElementById('sidebarOverlay').classList.toggle('active');
-    });
-    document.getElementById('sidebarOverlay')?.addEventListener('click', () => {
-        document.getElementById('sidebar').classList.remove('open');
-        document.getElementById('sidebarOverlay').classList.remove('active');
-    });
 </script>
 </body>
 </html>

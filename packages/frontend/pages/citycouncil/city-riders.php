@@ -254,14 +254,6 @@ function qsMerge(array $overrides): string {
         document.getElementById('editExpiry').value = r.expiry_date || '';
         new bootstrap.Modal(document.getElementById('editRiderModal')).show();
     }
-    document.getElementById('toggleSidebar')?.addEventListener('click', () => {
-        document.getElementById('sidebar').classList.toggle('open');
-        document.getElementById('sidebarOverlay').classList.toggle('active');
-    });
-    document.getElementById('sidebarOverlay')?.addEventListener('click', () => {
-        document.getElementById('sidebar').classList.remove('open');
-        document.getElementById('sidebarOverlay').classList.remove('active');
-    });
 </script>
 </body>
 </html>

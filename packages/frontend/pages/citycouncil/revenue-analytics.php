@@ -142,14 +142,6 @@ $transactions = fetchAll("SELECT p.*, r.full_name, s.name AS stage_name FROM pay
         yaxis: { labels: { formatter: v => 'UGX ' + Math.round(v/1000) + 'K' } },
     }).render();
 
-    document.getElementById('toggleSidebar')?.addEventListener('click', () => {
-        document.getElementById('sidebar').classList.toggle('open');
-        document.getElementById('sidebarOverlay').classList.toggle('active');
-    });
-    document.getElementById('sidebarOverlay')?.addEventListener('click', () => {
-        document.getElementById('sidebar').classList.remove('open');
-        document.getElementById('sidebarOverlay').classList.remove('active');
-    });
 </script>
 </body>
 </html>

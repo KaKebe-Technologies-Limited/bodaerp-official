@@ -98,14 +98,6 @@ $hasPaidThisYear = fetchValue(
 
 <?php require __DIR__ . '/../../partials/scripts-footer.php'; ?>
 <script>
-    document.getElementById('toggleSidebar')?.addEventListener('click', () => {
-        document.getElementById('sidebar').classList.toggle('open');
-        document.getElementById('sidebarOverlay').classList.toggle('active');
-    });
-    document.getElementById('sidebarOverlay')?.addEventListener('click', () => {
-        document.getElementById('sidebar').classList.remove('open');
-        document.getElementById('sidebarOverlay').classList.remove('active');
-    });
 
     // ── Pay Now (ioTec Pay mobile money collection) ──────────────
     const PAY_CSRF = <?= json_encode(csrf_token()) ?>;

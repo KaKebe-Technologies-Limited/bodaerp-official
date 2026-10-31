@@ -19,11 +19,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $submitted = false;
     } else {
         $user = fetchOne("SELECT id, name FROM users WHERE email = ? AND status = 'active' AND deleted_at IS NULL", [$email]);
-        if ($user) {
+        if ($user && db_is_dev_machine()) {
+            // Developer convenience only: there is no mail server, so the link is shown on screen.
+            // On a real server this must NEVER happen (anyone could take over any account).
             $token = bin2hex(random_bytes(32));
             runQuery("UPDATE users SET reset_token = ?, reset_expires = DATE_ADD(NOW(), INTERVAL 30 MINUTE) WHERE id = ?", [$token, $user['id']]);
-            audit_log('UPDATE', 'user', (string) $user['id'], 'Password reset requested');
+            audit_log('UPDATE', 'user', (string) $user['id'], 'Password reset requested (link shown on developer machine)');
             $resetLink = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' ? 'https' : 'http') . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost') . BASE_URL . '/reset-password.php?token=' . $token;
+        } elseif ($user) {
+            // Real server: record the request for the administrator, reveal nothing to the visitor.
+            audit_log('UPDATE', 'user', (string) $user['id'], 'Password reset requested - administrator must set a new password (Super Admin > All Users)');
         }
     }
 }
@@ -88,7 +93,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         </div>
                         <div class="reset-link-box mb-3"><a href="<?= h($resetLink) ?>"><?= h($resetLink) ?></a></div>
                     <?php else: ?>
-                        <div class="alert alert-info py-2 small">If that email exists in our system, a reset link has been generated for it. Contact your administrator if you don't have access to check it here.</div>
+                        <div class="alert alert-info py-2 small">If that email belongs to an account, your administrator has been notified. Please contact them: they can set a new password for you (Super Admin &rarr; All Users).</div>
                     <?php endif; ?>
                     <a href="<?= BASE_URL ?>/login.php" class="btn btn-login"><i class="fas fa-arrow-left me-2"></i>Back to Login</a>
                 <?php else: ?>

@@ -1,17 +1,19 @@
 -- ============================================================
---  BodaERP  --  SAMPLE DATA for database `u850523537_BodaERP26`
+--  BodaERP  --  SMALL SAMPLE DATA SET  (3 cities, 13 users, 8 riders)
 -- ============================================================
---  Import this AFTER importing the schema file
---  (u850523537_BodaERP26.sql) into an EMPTY database.
+--  There is NO schema file to import any more: the app builds and
+--  updates its own tables. Do this once, then import this file:
 --
---  How to import on the live server (Hostinger / phpMyAdmin):
---    1. Open phpMyAdmin  ->  select database  u850523537_BodaERP26
---    2. Import tab  ->  choose  u850523537_BodaERP26.sql   (schema)  ->  Go
---    3. Import tab  ->  choose  this file (sample_data.sql)          ->  Go
+--    1. Open the site once (or run: php database/migrate.php).
+--       The database is filled with empty tables automatically.
+--    2. phpMyAdmin -> select your database -> Import tab ->
+--       choose this file (sample_data.sql) -> Go.
+--       Or from a command line:
+--         mysql -u USER -p YOUR_DATABASE < database/sample_data.sql
 --
---  Or from CLI:
---    mysql -u USER -p u850523537_BodaERP26 < database/u850523537_BodaERP26.sql
---    mysql -u USER -p u850523537_BodaERP26 < database/sample_data.sql
+--  Want a bigger demo (1,000+ riders)? Run  php database/seed_run.php
+--  instead (it has different logins, see README.md).
+--  Never import either on a production database with real data.
 --
 -- ------------------------------------------------------------
 --  SAMPLE LOGINS  (all passwords are case-sensitive)

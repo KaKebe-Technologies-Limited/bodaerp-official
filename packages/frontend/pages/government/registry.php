@@ -170,14 +170,6 @@ $flaggedRidersAll = (int) fetchValue("SELECT COUNT(DISTINCT rider_id) FROM enfor
         new bootstrap.Modal(document.getElementById('riderModal')).show();
     }
 
-    document.getElementById('toggleSidebar')?.addEventListener('click', () => {
-        document.getElementById('sidebar').classList.toggle('open');
-        document.getElementById('sidebarOverlay').classList.toggle('active');
-    });
-    document.getElementById('sidebarOverlay')?.addEventListener('click', () => {
-        document.getElementById('sidebar').classList.remove('open');
-        document.getElementById('sidebarOverlay').classList.remove('active');
-    });
 </script>
 </body>
 </html>

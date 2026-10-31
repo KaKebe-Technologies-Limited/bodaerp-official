@@ -49,7 +49,7 @@ $receiptMsg = $_GET['receipt'] ?? null;
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <?php $pageTitle = get_setting('chairperson_payment_initiated') . ' - ' . get_setting('site_name') ?? 'Collect Payment - BodaERP'; require __DIR__ . '/../../partials/head-assets.php'; ?>
+    <?php $pageTitle = 'Collect Payments - ' . get_setting('site_name', 'BodaERP'); require __DIR__ . '/../../partials/head-assets.php'; ?>
 </head>
 <body>
 
@@ -131,15 +131,5 @@ $receiptMsg = $_GET['receipt'] ?? null;
 </div>
 
 <?php require __DIR__ . '/../../partials/scripts-footer.php'; ?>
-<script>
-    document.getElementById('toggleSidebar')?.addEventListener('click', () => {
-        document.getElementById('sidebar').classList.toggle('open');
-        document.getElementById('sidebarOverlay').classList.toggle('active');
-    });
-    document.getElementById('sidebarOverlay')?.addEventListener('click', () => {
-        document.getElementById('sidebar').classList.remove('open');
-        document.getElementById('sidebarOverlay').classList.remove('active');
-    });
-</script>
 </body>
 </html>

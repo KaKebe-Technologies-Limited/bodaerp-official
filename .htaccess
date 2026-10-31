@@ -9,6 +9,7 @@ RewriteEngine On
 RewriteRule (^|/)\.(env|git) - [F,L]
 RewriteRule \.sql$ - [F,L]
 RewriteRule ^database/ - [F,L]
+RewriteRule ^tests/ - [F,L]
 RewriteRule ^ipn_logs\.txt$ - [F,L]
 
 RewriteRule ^(pages|assets)/(.*)$ packages/frontend/$1/$2 [L]

@@ -1,12 +1,13 @@
 <?php
 // ============================================================
-// BodaERP — Database seeder (CLI only)
-// NOTE: temporarily named seed_run.php — Avast is blocking recreation
-// of the original database/seed.php filename (see chat for details).
-// Content is otherwise identical to what's committed in git history.
+// BodaERP — demo data seeder (command line only)
 //
-// Usage:  php database/seed_run.php          (refuses to run if riders already exist)
-//         php database/seed_run.php --fresh  (truncates all tables first, then reseeds)
+//   php database/seed_run.php           adds demo cities, stages, users, riders and payments
+//                                       (refuses to run if riders already exist)
+//   php database/seed_run.php --fresh   empties the data tables first, then reseeds
+//
+// Tables are created automatically on the first query, so a brand-new empty database works.
+// Demo logins are listed on the login page (localhost) and in README.md.
 // ============================================================
 
 if (php_sapi_name() !== 'cli') {
@@ -14,12 +15,11 @@ if (php_sapi_name() !== 'cli') {
     die('seed_run.php can only be run from the command line: php database/seed_run.php');
 }
 
-require_once __DIR__ . '/../../packages/backend/database/database.php';
 require_once __DIR__ . '/../packages/backend/db_helpers.php';
 $names = require __DIR__ . '/seed_data/names.php';
 
 $fresh = in_array('--fresh', $argv, true);
-$pdo = db();
+$db = db();
 
 $existing = (int) fetchValue('SELECT COUNT(*) FROM riders');
 if ($existing > 0 && !$fresh) {
@@ -28,11 +28,11 @@ if ($existing > 0 && !$fresh) {
 
 if ($fresh) {
     echo "Truncating existing data...\n";
-    $pdo->query('SET FOREIGN_KEY_CHECKS = 0');
+    $db->query('SET FOREIGN_KEY_CHECKS = 0');
     foreach (['notifications','payments','enforcement_actions','audit_logs','login_sessions','riders','users','stages','cities'] as $t) {
-        $pdo->query("TRUNCATE TABLE $t");
+        $db->query("TRUNCATE TABLE $t");
     }
-    $pdo->query('SET FOREIGN_KEY_CHECKS = 1');
+    $db->query('SET FOREIGN_KEY_CHECKS = 1');
 }
 
 function randChoice(array $arr) { return $arr[array_rand($arr)]; }
@@ -56,7 +56,7 @@ function prevFiscalYear(string $fy): string {
     return ($a - 1) . '/' . ($b - 1);
 }
 
-$pdo->begin_transaction();
+$db->begin_transaction();
 
 try {
     // ── 1. Super admin (bootstrapped first — cities.created_by references it) ──
@@ -65,8 +65,23 @@ try {
         'name' => 'Kakebe Admin', 'email' => 'admin@bodaerp.com', 'phone' => '+256 700 000 001',
         'ph' => password_hash('admin123', PASSWORD_DEFAULT), 'created_at' => '2024-01-01 09:00:00',
     ]);
-    $superAdminId = (int) $pdo->insert_id;
+    $superAdminId = (int) $db->insert_id;
     echo "Created super admin (id=$superAdminId)\n";
+
+    // ── 1b. National government portal accounts (read-only role, no city) ──
+    foreach ([
+        ['Ministry of Works & Transport',       'works@gov.bodaerp.com',    'Ministry of Works & Transport'],
+        ['Uganda Revenue Authority',            'ura@gov.bodaerp.com',      'Uganda Revenue Authority (URA)'],
+        ['Ministry of Local Government',        'localgov@gov.bodaerp.com', 'Ministry of Local Government'],
+        ['Ministry of ICT & National Guidance', 'ict@gov.bodaerp.com',      'Ministry of ICT & National Guidance'],
+    ] as [$govName, $govEmail, $govAgency]) {
+        runQuery("INSERT INTO users (name,email,phone,password_hash,role,city_id,stage_id,agency_name,status,created_at)
+                  VALUES (:name,:email,NULL,:ph,'government',NULL,NULL,:agency,'active',:created_at)", [
+            'name' => $govName, 'email' => $govEmail, 'ph' => password_hash('Gov@2026', PASSWORD_DEFAULT),
+            'agency' => $govAgency, 'created_at' => '2024-01-01 09:30:00',
+        ])->close();
+    }
+    echo "Created 4 government portal accounts\n";
 
     // ── 2. Cities ──────────────────────────────────────────
     $cities = [
@@ -117,7 +132,7 @@ try {
     $stageIds = []; // code => id
     foreach ($stagesDef as $s) {
         runQuery($stageSql, ['city'=>$s['city'],'code'=>$s['code'],'name'=>$s['name'],'route'=>$s['name'].' - Town','created_at'=>'2025-01-15 09:00:00']);
-        $stageIds[$s['code']] = (int) $pdo->insert_id;
+        $stageIds[$s['code']] = (int) $db->insert_id;
     }
     echo "Created " . count($stagesDef) . " stages\n";
 
@@ -135,7 +150,7 @@ try {
     foreach ($cityAdmins as $u) {
         runQuery($userSql, ['name'=>$u['name'],'email'=>$u['email'],'phone'=>$u['phone'],'ph'=>password_hash($u['pass'],PASSWORD_DEFAULT),
             'role'=>'city_admin','city'=>$u['city'],'stage'=>null,'created_at'=>$u['created'].' 09:00:00']);
-        $cityAdminIds[$u['city']] = (int) $pdo->insert_id;
+        $cityAdminIds[$u['city']] = (int) $db->insert_id;
     }
 
     $chairpersons = [
@@ -149,7 +164,7 @@ try {
     foreach ($chairpersons as $u) {
         runQuery($userSql, ['name'=>$u['name'],'email'=>$u['email'],'phone'=>$u['phone'],'ph'=>password_hash('chair123',PASSWORD_DEFAULT),
             'role'=>'chairperson','city'=>$u['city'],'stage'=>$stageIds[$u['stage']],'created_at'=>$u['created'].' 09:00:00']);
-        $chairpersonIdByStage[$u['stage']] = (int) $pdo->insert_id;
+        $chairpersonIdByStage[$u['stage']] = (int) $db->insert_id;
     }
 
     $demoRiderUsers = [
@@ -162,7 +177,7 @@ try {
     foreach ($demoRiderUsers as $u) {
         runQuery($userSql, ['name'=>$u['name'],'email'=>$u['email'],'phone'=>$u['phone'],'ph'=>password_hash('rider123',PASSWORD_DEFAULT),
             'role'=>'rider','city'=>$u['city'],'stage'=>$stageIds[$u['stage']],'created_at'=>$u['created'].' 09:00:00']);
-        $demoRiderUserIds[$u['idnum']] = (int) $pdo->insert_id;
+        $demoRiderUserIds[$u['idnum']] = (int) $db->insert_id;
     }
     echo "Created " . (count($cityAdmins)+count($chairpersons)+count($demoRiderUsers)) . " more users (city admins, chairpersons, demo riders)\n";
 
@@ -257,7 +272,7 @@ try {
                 'status'=>$status,'since'=>$memberSince,'expiry'=>$expiry,'tax'=>$cityFee[$city],
                 'created_by'=>$registrar,'created_at'=>$memberSince.' 10:00:00',
             ]);
-            $riderId = (int) $pdo->insert_id;
+            $riderId = (int) $db->insert_id;
             $row = ['id'=>$riderId,'status'=>$status,'city'=>$city,'stage_code'=>$s['code'],'stage_id'=>$stageIds[$s['code']],
                     'member_since'=>$memberSince,'expiry'=>$expiry,'plate'=>$plate,'registrar'=>$registrar,'name'=>$fullName];
             $riderIdsByStage[$s['code']][] = $row;
@@ -374,11 +389,11 @@ try {
     }
     echo "Seeded $auditCount audit log rows\n";
 
-    $pdo->commit();
+    $db->commit();
     echo "\nSeed complete.\n";
 
 } catch (Throwable $e) {
-    $pdo->rollback();
+    $db->rollback();
     fwrite(STDERR, "Seed failed, rolled back: " . $e->getMessage() . "\n");
     exit(1);
 }

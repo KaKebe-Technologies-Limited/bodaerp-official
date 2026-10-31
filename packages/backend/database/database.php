@@ -12,7 +12,6 @@
 //     DB_NAME=your_database
 //     DB_USER=your_user
 //     DB_PASS=your_password
-// (or a single DATABASE_URL=mysql://user:pass@host:3306/name).
 //
 // The old config/database.php (one file holding a local and a live block) is
 // still understood — it is only READ, never executed — so an existing server
@@ -43,6 +42,16 @@ function db_is_local(): bool {
     );
 }
 
+/**
+ * True only on a developer's own machine: local environment AND the request really comes from the
+ * machine itself (a forged "Host: localhost" header from the internet does not count).
+ * Gates anything that must never be reachable on a real server (demo passwords, on-screen reset links).
+ */
+function db_is_dev_machine(): bool {
+    return db_is_local()
+        && (PHP_SAPI === 'cli' || in_array($_SERVER['REMOTE_ADDR'] ?? '', ['127.0.0.1', '::1'], true));
+}
+
 function _db_env(string $key): string {
     $v = getenv($key);
     if ($v === false) $v = $_ENV[$key] ?? '';
@@ -66,15 +75,6 @@ function _db_legacy_config(bool $local): ?array {
 /** @return array{host:string,port:int,user:string,pass:string,name:string,source:string} */
 function _db_resolve(): array {
     $local = db_is_local();
-
-    $url = _db_env('DATABASE_URL');
-    if ($url !== '' && ($p = parse_url($url)) !== false) {
-        return [
-            'host' => $p['host'] ?? '127.0.0.1', 'port' => (int) ($p['port'] ?? 3306),
-            'user' => urldecode($p['user'] ?? 'root'), 'pass' => urldecode($p['pass'] ?? ''),
-            'name' => ltrim($p['path'] ?? '', '/'), 'source' => 'DATABASE_URL',
-        ];
-    }
 
     if (_db_env('DB_HOST') !== '' || _db_env('DB_NAME') !== '' || _db_env('DB_USER') !== '' || _db_env('DB_PASS') !== '') {
         return [

@@ -21,6 +21,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 $timeout = isset($_GET['timeout']);
+// Demo passwords are shown on your own computer only. On a live server set SHOW_DEMO_LOGINS=1 in .env to show them (e.g. for a demo).
+$showDemoLogins = db_is_dev_machine() || getenv('SHOW_DEMO_LOGINS') === '1';
 $resetDone = isset($_GET['reset']);
 ?>
 <!DOCTYPE html>
@@ -148,13 +150,13 @@ $resetDone = isset($_GET['reset']);
                     <div class="form-group">
                         <div class="input-group">
                             <span class="input-group-text"><i class="fas fa-user"></i></span>
-                            <input type="email" class="form-control" id="email" name="email" placeholder="Enter your email address" value="admin@bodaerp.com" required>
+                            <input type="email" class="form-control" id="email" name="email" placeholder="Enter your email address" value="<?= $showDemoLogins ? 'admin@bodaerp.com' : h($_POST['email'] ?? '') ?>" required>
                         </div>
                     </div>
                     <div class="form-group">
                         <div class="input-group">
                             <span class="input-group-text"><i class="fas fa-lock"></i></span>
-                            <input type="password" class="form-control" id="password" name="password" placeholder="Enter Password" value="admin123" required>
+                            <input type="password" class="form-control" id="password" name="password" placeholder="Enter Password" value="<?= $showDemoLogins ? 'admin123' : '' ?>" required>
                             <button type="button" class="btn btn-outline-secondary border-0" onclick="togglePassword()">
                                 <i class="fas fa-eye" id="togglePasswordIcon"></i>
                             </button>
@@ -172,7 +174,8 @@ $resetDone = isset($_GET['reset']);
                     </button>
                 </form>
 
-                <div class="demo-credentials">
+                <?php if ($showDemoLogins): ?>
+<div class="demo-credentials">
                     <div class="demo-title">🔑 Demo Credentials — every city can log in</div>
                     <div class="demo-row"><span><span class="role-name super">● Super Admin</span></span><code>admin@bodaerp.com / admin123</code></div>
                     <div class="demo-row"><span><span class="role-name city">● City (Lira)</span></span><code>council@liracityuganda.go.ug / lira2025</code></div>
@@ -193,26 +196,30 @@ $resetDone = isset($_GET['reset']);
                     <div class="demo-row"><span><span class="role-name gov">● Government (ICT)</span></span><code>ict@gov.bodaerp.com / Gov@2026</code></div>
                 </div>
 
-                <div class="login-footer">&copy; 2026 <a href="<?= BASE_URL ?>/index.php">Kakebe Technologies Limited</a>. All rights reserved.</div>
+                
+<?php endif; ?>
+
+<div class="login-footer">&copy; 2026 <a href="<?= BASE_URL ?>/index.php">Kakebe Technologies Limited</a>. All rights reserved.</div>
 
             </div>
         </div>
     </div>
 
     <script>
+        // Demo logins are only written into the page on localhost (or when SHOW_DEMO_LOGINS=1).
+        const demoLogins = <?= $showDemoLogins ? json_encode([
+            'super' => ['email' => 'admin@bodaerp.com',              'pass' => 'admin123'],
+            'city'  => ['email' => 'council@liracityuganda.go.ug',    'pass' => 'lira2025'],
+            'stage' => ['email' => 'ocen@railway.lira.ug',            'pass' => 'chair123'],
+            'rider' => ['email' => 'akello@bodaerp.com',              'pass' => 'rider123'],
+            'gov'   => ['email' => 'works@gov.bodaerp.com',           'pass' => 'Gov@2026'],
+        ]) : 'null' ?>;
         const roleBtns = document.querySelectorAll('.role-btn');
         roleBtns.forEach(btn => {
             btn.addEventListener('click', function() {
                 roleBtns.forEach(b => b.classList.remove('active'));
                 this.classList.add('active');
-                const hints = {
-                    'super': { email: 'admin@bodaerp.com', pass: 'admin123' },
-                    'city':  { email: 'council@liracityuganda.go.ug', pass: 'lira2025' },
-                    'stage': { email: 'ocen@railway.lira.ug', pass: 'chair123' },
-                    'rider': { email: 'akello@bodaerp.com', pass: 'rider123' },
-                    'gov':   { email: 'works@gov.bodaerp.com', pass: 'Gov@2026' },
-                };
-                const hint = hints[this.dataset.role];
+                const hint = demoLogins ? demoLogins[this.dataset.role] : null;
                 if (hint) {
                     document.getElementById('email').value = hint.email;
                     document.getElementById('password').value = hint.pass;
@@ -236,6 +243,7 @@ $resetDone = isset($_GET['reset']);
         }
 
         document.addEventListener('keydown', e => {
+            if (!demoLogins || e.ctrlKey || e.altKey || e.metaKey || /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;   // never while typing
             const map = {'1':'super','2':'stage','3':'city','4':'rider','5':'gov'};
             if (map[e.key]) document.querySelector(`.role-btn[data-role="${map[e.key]}"]`)?.click();
         });

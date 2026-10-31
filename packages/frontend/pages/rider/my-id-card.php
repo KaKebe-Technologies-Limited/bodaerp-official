@@ -225,14 +225,6 @@ $statusColor = $statusColors[$rider['status']] ?? '#6c757d';
         btn.addEventListener('click', () => openIdPreview(btn.nextElementSibling));
     });
 
-    document.getElementById('toggleSidebar')?.addEventListener('click', () => {
-        document.getElementById('sidebar').classList.toggle('open');
-        document.getElementById('sidebarOverlay').classList.toggle('active');
-    });
-    document.getElementById('sidebarOverlay')?.addEventListener('click', () => {
-        document.getElementById('sidebar').classList.remove('open');
-        document.getElementById('sidebarOverlay').classList.remove('active');
-    });
 </script>
 </body>
 </html>

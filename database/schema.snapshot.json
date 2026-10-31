@@ -1,8 +1,8 @@
 {
     "_note": "Structure of the database (no data). Written automatically on the developer machine; applied automatically on every other copy. Commit it with the code. Safe to delete — it is rebuilt from the local database.",
     "meta": {
-        "saved_at": "2026-10-31 12:27:12",
-        "saved_by": "auto",
+        "saved_at": "2026-10-31 10:48:16",
+        "saved_by": "cli",
         "database_server": "10.4.32-MariaDB",
         "tables": 16
     },
@@ -1379,6 +1379,18 @@
                     "def": "enum('active','suspended') NOT NULL DEFAULT 'active'"
                 },
                 {
+                    "name": "reset_token",
+                    "type": "varchar(64)",
+                    "null": true,
+                    "def": "varchar(64) DEFAULT NULL"
+                },
+                {
+                    "name": "reset_expires",
+                    "type": "datetime",
+                    "null": true,
+                    "def": "datetime DEFAULT NULL"
+                },
+                {
                     "name": "deleted_at",
                     "type": "datetime",
                     "null": true,
@@ -1402,7 +1414,8 @@
                 "email": "UNIQUE KEY `email` (`email`)",
                 "stage_id": "KEY `stage_id` (`stage_id`)",
                 "idx_users_role": "KEY `idx_users_role` (`role`)",
-                "idx_users_city": "KEY `idx_users_city` (`city_id`)"
+                "idx_users_city": "KEY `idx_users_city` (`city_id`)",
+                "idx_users_reset_token": "KEY `idx_users_reset_token` (`reset_token`)"
             },
             "foreign_keys": [],
             "checks": []

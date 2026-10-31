@@ -101,15 +101,5 @@ unset($r);
 </div>
 
 <?php require __DIR__ . '/../../partials/scripts-footer.php'; ?>
-<script>
-    document.getElementById('toggleSidebar')?.addEventListener('click', () => {
-        document.getElementById('sidebar').classList.toggle('open');
-        document.getElementById('sidebarOverlay').classList.toggle('active');
-    });
-    document.getElementById('sidebarOverlay')?.addEventListener('click', () => {
-        document.getElementById('sidebar').classList.remove('open');
-        document.getElementById('sidebarOverlay').classList.remove('active');
-    });
-</script>
 </body>
 </html>
