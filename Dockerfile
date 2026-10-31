@@ -1,27 +1,20 @@
 FROM php:8.2-apache
 
-# Enable Apache modules and PHP extensions
-RUN a2enmod rewrite headers
+# Apache: mod_rewrite for .htaccess routing (/pages, /assets -> packages/frontend)
+RUN a2enmod rewrite headers \
+    && sed -ri '/<Directory \/var\/www\/>/,/<\/Directory>/ s/AllowOverride None/AllowOverride All/' /etc/apache2/apache2.conf
 
-# Install required PHP extensions for BodaERP
-# First install PostgreSQL client development headers
-RUN apt-get update && apt-get install -y libpq-dev && rm -rf /var/lib/apt/lists/* \
-    && docker-php-ext-install mysqli pdo pdo_mysql \
-    && docker-php-ext-install pdo pdo_pgsql
+# PHP extensions — the app talks to MySQL/MariaDB through mysqli
+RUN docker-php-ext-install mysqli
 
-# Set working directory
 WORKDIR /var/www/html
-
-# Copy project files
 COPY . /var/www/html/
 
-# Set permissions
-RUN chown -R www-data:www-data /var/www/html \
-    && chmod -R 755 /var/www/html \
-    && chmod -R 775 /var/www/html/uploads
+RUN chmod +x docker/entrypoint.sh \
+    && mkdir -p uploads/riders \
+    && chown -R www-data:www-data /var/www/html
 
-# Expose port 80
 EXPOSE 80
 
-# Start Apache
+ENTRYPOINT ["/var/www/html/docker/entrypoint.sh"]
 CMD ["apache2-foreground"]

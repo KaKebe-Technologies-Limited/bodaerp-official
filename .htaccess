@@ -1,0 +1,23 @@
+# ============================================================
+# BodaERP — URL routing (Apache, docroot = repo root)
+# Pages and assets live in packages/frontend/ but are linked as
+# /pages/... and /assets/... throughout the app.
+# ============================================================
+Options -Indexes
+DirectoryIndex index.php
+ErrorDocument 404 /packages/frontend/assets/404.html
+
+RewriteEngine On
+
+# Public URLs -> real files. [END] stops the internal rewrite from being
+# re-checked against the deny rules below.
+RewriteRule ^(pages|assets)/(.*)$ packages/frontend/$1/$2 [END]
+RewriteRule ^logout\.php$ packages/backend/logout.php [END]
+
+# Never serve server-side code, data, or project files directly.
+RewriteRule ^(packages/backend|database|cron|docker|node_modules|vendor)(/|$) - [F,L]
+RewriteRule (^|/)\. - [F,L]
+RewriteRule \.(md|sql|json|lock|ya?ml|sh|env)$ - [F,L]
+RewriteRule ^(Dockerfile|composer\.(json|lock))$ - [F,L]
+# Uploaded files are data, never code.
+RewriteRule ^uploads/.*\.(php\d?|phtml|phar)$ - [F,L]

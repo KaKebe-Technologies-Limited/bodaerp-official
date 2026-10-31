@@ -51,14 +51,13 @@ Broken down into these categories, each with its own percentage:
   - No content sanitization for admin edits
   - SQL injection risks in some helper functions
 
-- **Docker / DevOps** → 18 of 25 tasks complete (72%)
-  - Dockerfile and docker-compose.yml created
-  - PostgreSQL support added (pdo_pgsql)
-  - DATABASE_URL env var support
-  - Health checks configured on web and db services
-  - Restart policies set (unless-stopped on web, always on db)
-  - Migrate/seeds on startup configured via docker-entrypoint-initdb.d
-  - Dev/prod separation via ENV variables only
+- **Docker / DevOps** — verified working 2026-10-31 (`docker compose up -d --build` → both containers healthy, all 48 pages 200)
+  - `docker-compose.yml`: `mariadb:10.11` (the code is mysqli — Postgres never worked) + `web`; `DATABASE_URL=mysql://...`, `BASE_URL=""`, `SEED_SAMPLE_DATA=1`
+  - Health checks: db `healthcheck.sh --connect --innodb_initialized`; web `curl http://localhost/login.php` (was wrongly port 8080). web waits for db `service_healthy`
+  - Restart policies: unless-stopped (web), always (db)
+  - Start-up init: `docker/entrypoint.sh` → `docker/init_db.php` waits for DB, runs migrations, loads `database/sample_data.sql` only if `users` is empty and `SEED_SAMPLE_DATA=1`
+  - Routing: root `.htaccess` maps `/pages/*`, `/assets/*` → `packages/frontend/`, `/logout.php` → `packages/backend/logout.php`; 403s `packages/backend`, `database`, `cron`, `docker`, dotfiles, `.md/.sql/.json/.yml`; blocks PHP in `uploads/`
+  - Not done: production compose (no bind mount, real secrets), backups
 
 - **Content & Settings in DB** → 0 of 42 items moved from hardcode (0%)
   - All site content hardcoded in PHP files
@@ -166,6 +165,7 @@ Broken down into these categories, each with its own percentage:
 - [x] Empty `apps/`, `includes/`, `config/` directories cleaned up from root
 - [x] `CONTEXT.md` created at project root with date and structure
 - [x] `CLAUDE.md` created with Phase 1 audit and completion status framework
+- [x] **Docker stack works end to end (2026-10-31)** — see Docker / DevOps above. Also fixed in `packages/backend/config/config.php`: `BASE_URL` can be overridden by env var (previously any `localhost` request got the XAMPP prefix `/bodaerp-official`, breaking logout in Docker); `UPLOAD_DIR` `__DIR__.'/../uploads/riders/'` → `__DIR__.'/../../../uploads/riders/'` (pointed at `packages/backend/uploads`, so uploaded photos were not served from `/uploads/riders/`)
 - [x] **App runs locally again (2026-10-31)** — fixed post-restructure breakage, verified by logging in as all 5 roles and loading all 48 pages under `packages/frontend/pages/` (all HTTP 200, no PHP errors):
   - `packages/backend/db_helpers.php` — `runQuery()` return type `mysqli_result|bool` → `object` (it returns a wrapper object, so *every* query fatalled)
   - `packages/backend/db_helpers.php` — `runQuery()` accepts named params (`:name` + assoc array) again via `_dbNamedToPositional()`, which rewrites to `?` and binds values (no interpolation). Used by `auth.php` login, `seed_run.php` and ~30 pages
@@ -221,7 +221,7 @@ Broken down into these categories, each with its own percentage:
 
 4. **No CKEditor 5** — The entire project uses plain PHP/HTML for all text input/editing. No rich text editor is installed anywhere.
 
-5. **Docker incomplete** — `docker compose up -d --build` works for build but does not run migrations/seeds, set health checks, or configure restart policies on all services.
+5. ~~Docker incomplete~~ — RESOLVED 2026-10-31 (see Docker / DevOps).
 
 6. **No responsive design** — Dashboard UIs were built for desktop and break at mobile widths. No viewport meta handling or CSS media queries for grid/layout breakpoints.
 
@@ -231,17 +231,21 @@ Broken down into these categories, each with its own percentage:
 
 9. **Password reset flow incomplete** — `forgot-password.php` and `reset-password.php` were deleted from root during monorepo refactoring but the routes and logic may need to be re-established in the packages structure.
 
-10. **Missing 404 route handling** — The `404.php` was moved to `packages/frontend/assets/404.html` but the web server configuration may not route unknown paths to it properly.
+10. ~~Missing 404 route handling~~ — RESOLVED: `.htaccess` `ErrorDocument 404 /packages/frontend/assets/404.html`.
 
 ---
 
-11. **Database engine mismatch** — all backend code uses `mysqli` (MySQL/MariaDB; `packages/backend/database/database.php`), but `docker-compose.yml` provisions `postgres:15-alpine`. `docker compose up` cannot work until the db service is MySQL/MariaDB (or the code is ported). Local run verified against MariaDB 10.11 with `DB_HOST/DB_USER/DB_PASS/DB_NAME` env vars.
+11. ~~Database engine mismatch~~ — RESOLVED: compose now uses MariaDB. The code is mysqli-only; the "PostgreSQL migration" in ARCHITECTURE NOTES would mean porting every query.
 
-12. **URL routing vs docroot** — `ROLE_DASHBOARDS` in `auth.php` and all partials link to `/pages/...` and `/assets/...`, but those files live in `packages/frontend/pages` and `packages/frontend/assets`. With docroot = repo root those URLs 404; needs Apache rewrite rules (or moving the docroot). Locally worked around with a `php -S` router script outside the repo.
+12. ~~URL routing vs docroot~~ — RESOLVED for Apache via root `.htaccess`. Without Apache (e.g. `php -S`) a router script is still needed.
 
-13. **Hardcoded `/var/www/html`** — `index.php`, `login.php` and ~40 pages `require '/var/www/html/...'`; running outside Docker needs `/var/www/html` symlinked to the repo.
+13. **Hardcoded `/var/www/html`** — `index.php`, `login.php` and ~40 pages `require '/var/www/html/...'`; running outside Docker needs `/var/www/html` symlinked to the repo. Should become `__DIR__`-relative.
 
-14. **`database/seed_run.php` path** — requires `__DIR__ . '/../../packages/...'` (one level too many). Use `database/sample_data.sql` for demo data instead (logins listed at its top).
+14. **`database/seed_run.php` path** — requires `__DIR__ . '/../../packages/...'` (one level too many). Use `database/sample_data.sql` for demo data instead (logins listed at its top; Docker loads it automatically).
+
+15. **`/verify.php` and `/ipn_handler.php` missing** — deleted in the restructure but still referenced: `packages/backend/functions.php:70` builds ID-card QR verification URLs to `/verify.php` (404 now), and `packages/backend/iotec_config.php:59` sets `IOTEC_IPN_URL` to `/ipn_handler.php`. Restore from git history (`git show b12f6f5~1 --stat`) into `packages/` and add `.htaccess` routes.
+
+16. **`database/migrate.php` ran without migrator** — fixed by restoring the require in `db_helpers.php`; `php database/migrate.php` now works.
 
 ## ARCHITECTURE NOTES
 
@@ -289,7 +293,7 @@ The next Claude session should:
 **Exact continuation instructions:**
 
 > 1. Update CLAUDE.md `OVERALL` percentage and blocking items based on work done
-> 2. Run `cd /Data/Projects/Boda ERP && docker compose up -d --build` to verify Docker still works
+> 2. Run `docker compose up -d --build` from the repo root, open http://localhost:8080, log in as `superadmin@bodaerp.com` / `Admin@2026` (all demo logins: top of `database/sample_data.sql`). Reset the DB with `docker compose down -v`
 > 3. Install CKEditor 5: `composer require kkeditor/ckeditor` or download from ckeditor.com
 > 4. Install all CKEditor 5 plugins: EasyImage, Table, CodeBlock, MediaEmbed, etc.
 > 5. Design the `settings` database table structure (1 row, key-value pairs for all configurable content)
