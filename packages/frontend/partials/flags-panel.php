@@ -5,7 +5,7 @@
 //   $flagCanReview  bool     - show review / scan controls (Super Admin only)
 //   $flagPageUrl    string   - absolute URL of the including page
 //   $flagScanResult ?array   - result of a scan just run by this request
-require_once __DIR__ . '/../anomaly_engine.php';
+require_once __DIR__ . '/../../backend/anomaly_engine.php';
 
 $rules = anomaly_rules();
 $cats  = anomaly_categories();

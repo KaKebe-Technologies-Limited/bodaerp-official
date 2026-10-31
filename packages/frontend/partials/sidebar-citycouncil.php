@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/../anomaly_engine.php';
+require_once __DIR__ . '/../../backend/anomaly_engine.php';
 $badgeFlags = anomaly_open_count('high', $_SESSION['city_id']);
 $badgeRiders     = fetchValue("SELECT COUNT(*) FROM riders WHERE city_id = ?", [$_SESSION['city_id']]);
 $badgeStages     = fetchValue("SELECT COUNT(*) FROM stages WHERE city_id = ?", [$_SESSION['city_id']]);

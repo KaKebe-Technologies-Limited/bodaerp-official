@@ -1,11 +1,36 @@
 <?php
 require_once __DIR__ . '/database/database.php';
+require_once __DIR__ . '/migrator.php';
 
 // ── Core query helpers (mysqli) ───────────────────────────────
 // All page code, auth, automation, anomaly engine and datapacks
 // call these four functions. They accept positional (?) params.
 
-function runQuery(string $sql, array $params = []): mysqli_result|bool {
+// Rewrites named placeholders (:name) to positional ? and returns the
+// values in placeholder order. Quoted literals ('09:00', "a:b") and
+// casts (::) are left untouched. Values are still bound, never inlined.
+function _dbNamedToPositional(string $sql, array $params): array {
+    $ordered = [];
+    $sql = preg_replace_callback(
+        "/'(?:[^'\\\\]|\\\\.|'')*'|\"(?:[^\"\\\\]|\\\\.)*\"|`[^`]*`|::|(?<![:\\w]):([A-Za-z_]\\w*)/",
+        function ($m) use ($params, &$ordered) {
+            if (!isset($m[1]) || $m[1] === '') return $m[0];
+            $key = $m[1];
+            if (array_key_exists($key, $params))           $ordered[] = $params[$key];
+            elseif (array_key_exists(':' . $key, $params)) $ordered[] = $params[':' . $key];
+            else throw new InvalidArgumentException("Missing SQL parameter :$key");
+            return '?';
+        },
+        $sql
+    );
+    return [$sql, $ordered];
+}
+
+function runQuery(string $sql, array $params = []): object {
+    migrator_auto();   // applies pending database/migrations once, before the first query of the request
+    if ($params && !array_is_list($params)) {
+        [$sql, $params] = _dbNamedToPositional($sql, $params);
+    }
     $db   = db();
     $stmt = $db->prepare($sql);
     if ($params) {

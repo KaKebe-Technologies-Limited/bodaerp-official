@@ -166,6 +166,11 @@ Broken down into these categories, each with its own percentage:
 - [x] Empty `apps/`, `includes/`, `config/` directories cleaned up from root
 - [x] `CONTEXT.md` created at project root with date and structure
 - [x] `CLAUDE.md` created with Phase 1 audit and completion status framework
+- [x] **App runs locally again (2026-10-31)** — fixed post-restructure breakage, verified by logging in as all 5 roles and loading all 48 pages under `packages/frontend/pages/` (all HTTP 200, no PHP errors):
+  - `packages/backend/db_helpers.php` — `runQuery()` return type `mysqli_result|bool` → `object` (it returns a wrapper object, so *every* query fatalled)
+  - `packages/backend/db_helpers.php` — `runQuery()` accepts named params (`:name` + assoc array) again via `_dbNamedToPositional()`, which rewrites to `?` and binds values (no interpolation). Used by `auth.php` login, `seed_run.php` and ~30 pages
+  - `packages/backend/db_helpers.php` — restored `require_once migrator.php` + `migrator_auto()` call (lost in the restructure; `database/migrate.php` and `pages/superadmin/system.php` fatalled without it)
+  - `packages/frontend/partials/{sidebar-superadmin,sidebar-citycouncil,sidebar-government,flags-panel}.php` — `require` path `../anomaly_engine.php` → `../../backend/anomaly_engine.php`
 
 ---
 
@@ -229,6 +234,14 @@ Broken down into these categories, each with its own percentage:
 10. **Missing 404 route handling** — The `404.php` was moved to `packages/frontend/assets/404.html` but the web server configuration may not route unknown paths to it properly.
 
 ---
+
+11. **Database engine mismatch** — all backend code uses `mysqli` (MySQL/MariaDB; `packages/backend/database/database.php`), but `docker-compose.yml` provisions `postgres:15-alpine`. `docker compose up` cannot work until the db service is MySQL/MariaDB (or the code is ported). Local run verified against MariaDB 10.11 with `DB_HOST/DB_USER/DB_PASS/DB_NAME` env vars.
+
+12. **URL routing vs docroot** — `ROLE_DASHBOARDS` in `auth.php` and all partials link to `/pages/...` and `/assets/...`, but those files live in `packages/frontend/pages` and `packages/frontend/assets`. With docroot = repo root those URLs 404; needs Apache rewrite rules (or moving the docroot). Locally worked around with a `php -S` router script outside the repo.
+
+13. **Hardcoded `/var/www/html`** — `index.php`, `login.php` and ~40 pages `require '/var/www/html/...'`; running outside Docker needs `/var/www/html` symlinked to the repo.
+
+14. **`database/seed_run.php` path** — requires `__DIR__ . '/../../packages/...'` (one level too many). Use `database/sample_data.sql` for demo data instead (logins listed at its top).
 
 ## ARCHITECTURE NOTES
 
