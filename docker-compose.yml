@@ -4,7 +4,7 @@ services:
     image: bodaerp:latest
     container_name: bodaerp_web
     ports:
-      - "8080:80"
+      - "${WEB_PORT:-8080}:80"   # override: WEB_PORT=8090 docker compose up -d
     volumes:
       - .:/var/www/html          # live code editing in development
     environment:

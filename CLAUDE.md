@@ -293,7 +293,7 @@ The next Claude session should:
 **Exact continuation instructions:**
 
 > 1. Update CLAUDE.md `OVERALL` percentage and blocking items based on work done
-> 2. Run `docker compose up -d --build` from the repo root, open http://localhost:8080, log in as `superadmin@bodaerp.com` / `Admin@2026` (all demo logins: top of `database/sample_data.sql`). Reset the DB with `docker compose down -v`
+> 2. Run `docker compose up -d --build` from the repo root (port in use? `WEB_PORT=8081 docker compose up -d --build`), open http://localhost:8080, log in as `superadmin@bodaerp.com` / `Admin@2026` (all demo logins: top of `database/sample_data.sql`). Reset the DB with `docker compose down -v`
 > 3. Install CKEditor 5: `composer require kkeditor/ckeditor` or download from ckeditor.com
 > 4. Install all CKEditor 5 plugins: EasyImage, Table, CodeBlock, MediaEmbed, etc.
 > 5. Design the `settings` database table structure (1 row, key-value pairs for all configurable content)
