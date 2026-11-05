@@ -16,7 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             audit_log('DELETE', 'stage', (string) $id, 'Stage deleted');
             redirect('/pages/citycouncil/stage-management.php');
         } catch (mysqli_sql_exception $e) {
-            $errors[] = 'Cannot delete this stage — it still has riders assigned to it.';
+            $errors[] = 'Cannot delete this stage: it still has riders assigned to it.';
         }
     } else {
         $editId = (int) ($_POST['edit_stage_id'] ?? 0);
@@ -64,7 +64,7 @@ $stagesById = array_column($stages, null, 'id');
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <?php $pageTitle = 'Stage Management - BodaERP'; require __DIR__ . '/../../partials/head-assets.php'; ?>
+    <?php $pageTitle = 'Stage Management | BodaERP'; require __DIR__ . '/../../partials/head-assets.php'; ?>
     <style>
         .status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; }
         .status-dot.active { background: #198754; }
@@ -76,35 +76,31 @@ $stagesById = array_column($stages, null, 'id');
 <?php require __DIR__ . '/../../partials/sidebar-citycouncil.php'; ?>
 
 <div class="main-content" id="mainContent">
-    <header class="top-header">
-        <div class="d-flex justify-content-between align-items-center">
-            <div class="d-flex align-items-center gap-3">
-                <button class="btn btn-light d-lg-none" id="toggleSidebar"><i class="fas fa-bars"></i></button>
-                <h5 class="mb-0 fw-bold"><span class="text-gradient-blue">Stage Management</span></h5>
-            </div>
-        </div>
-    </header>
+    <?php
+    $pageTitle = 'Manage stages';
+    $pageSubtitle = '';
+    require __DIR__ . '/../../partials/topheader.php'; ?>
 
     <div class="content-area">
         <?php if ($errors): ?><div class="alert alert-danger"><?php foreach ($errors as $e) echo h($e) . '<br>'; ?></div><?php endif; ?>
 
         <div class="row g-3 mb-4">
-            <div class="col-md-3 col-6"><div class="stat-hero-card grad-blue"><div class="stat-hero-icon"><i class="fas fa-map-marker-alt"></i></div><div><div class="stat-hero-value"><?= $totalStages ?></div><div class="stat-hero-label">Total Stages</div></div></div></div>
-            <div class="col-md-3 col-6"><div class="stat-hero-card grad-green"><div class="stat-hero-icon"><i class="fas fa-check-circle"></i></div><div><div class="stat-hero-value"><?= $activeStages ?></div><div class="stat-hero-label">Active Stages</div></div></div></div>
-            <div class="col-md-3 col-6"><div class="stat-hero-card grad-red"><div class="stat-hero-icon"><i class="fas fa-exclamation-circle"></i></div><div><div class="stat-hero-value"><?= $totalStages - $activeStages ?></div><div class="stat-hero-label">Inactive Stages</div></div></div></div>
-            <div class="col-md-3 col-6"><div class="stat-hero-card grad-gold"><div class="stat-hero-icon"><i class="fas fa-users"></i></div><div><div class="stat-hero-value"><?= number_format($totalRiders) ?></div><div class="stat-hero-label">Total Riders</div></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card tone-blue"><div class="stat-hero-icon"><i class="fas fa-map-marker-alt"></i></div><div><div class="stat-hero-value"><?= $totalStages ?></div><div class="stat-hero-label">Total Stages</div></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card tone-green"><div class="stat-hero-icon"><i class="fas fa-check-circle"></i></div><div><div class="stat-hero-value"><?= $activeStages ?></div><div class="stat-hero-label">Active Stages</div></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card tone-red"><div class="stat-hero-icon"><i class="fas fa-exclamation-circle"></i></div><div><div class="stat-hero-value"><?= $totalStages - $activeStages ?></div><div class="stat-hero-label">Inactive Stages</div></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card tone-gold"><div class="stat-hero-icon"><i class="fas fa-users"></i></div><div><div class="stat-hero-value"><?= number_format($totalRiders) ?></div><div class="stat-hero-label">Total Riders</div></div></div></div>
         </div>
 
         <div class="card mb-4">
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
-                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#stageModal" onclick="openAddStage()"><i class="fas fa-plus me-2"></i>Add Stage</button>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#stageModal" data-call="openAddStage"><i class="fas fa-plus me-2"></i>Add Stage</button>
                     <?php $exportTableId='stagesTable'; $exportFilename='stages'; $exportTitle='Stage Management'; require __DIR__ . '/../../partials/export-toolbar.php'; ?>
                 </div>
                 <form class="row g-2 align-items-center no-print" method="get">
                     <div class="col-md-5"><input type="text" class="form-control" name="q" value="<?= h($search) ?>" placeholder="Search by stage or chairperson..."></div>
                     <div class="col-md-3">
-                        <select class="form-select" name="status" onchange="this.form.submit()">
+                        <select class="form-select" name="status" data-autosubmit>
                             <option value="">All Status</option>
                             <option value="active" <?= $statusFilter==='active'?'selected':'' ?>>Active</option>
                             <option value="inactive" <?= $statusFilter==='inactive'?'selected':'' ?>>Inactive</option>
@@ -129,15 +125,15 @@ $stagesById = array_column($stages, null, 'id');
                             <tr>
                                 <td><?= $i + 1 ?></td>
                                 <td><strong><?= h($s['name']) ?></strong><br><small class="text-muted"><?= h($s['location'] ?: '') ?></small></td>
-                                <td><?= h($s['chairperson_name'] ?: '—') ?></td>
-                                <td><?= h($s['chairperson_phone'] ?: '—') ?></td>
+                                <td><?= h($s['chairperson_name'] ?: '–') ?></td>
+                                <td><?= h($s['chairperson_phone'] ?: '–') ?></td>
                                 <td><span class="badge bg-primary"><?= (int) $s['rider_count'] ?></span></td>
                                 <td><?= h(formatCurrency($s['revenue'])) ?></td>
                                 <td><span class="badge <?= $cBadge ?>"><?= $cLabel ?></span> <span class="fw-bold"><?= $compliance ?>%</span></td>
                                 <td><span class="badge bg-<?= $s['status'] === 'active' ? 'success' : 'secondary' ?>"><span class="status-dot <?= h($s['status']) ?>"></span><?= ucfirst($s['status']) ?></span></td>
                                 <td class="no-export">
-                                    <button class="btn btn-sm btn-outline-warning" onclick="openEditStage(<?= (int) $s['id'] ?>)"><i class="fas fa-edit"></i></button>
-                                    <form method="post" class="d-inline" onsubmit="return confirm('Delete this stage? All riders must be reassigned first.');">
+                                    <button class="btn btn-sm btn-outline-warning" data-call="openEditStage" data-call-args="<?= h(js_json([(int) $s['id']])) ?>"><i class="fas fa-edit"></i></button>
+                                    <form method="post" class="d-inline" data-confirm="Delete this stage? All riders must be reassigned first.">
                                         <?= csrf_field() ?>
                                         <input type="hidden" name="action" value="delete">
                                         <input type="hidden" name="id" value="<?= (int) $s['id'] ?>">
@@ -160,9 +156,9 @@ $stagesById = array_column($stages, null, 'id');
             <form method="post" id="stageForm">
                 <?= csrf_field() ?>
                 <input type="hidden" name="edit_stage_id" id="editStageId">
-                <div class="modal-header" style="background: linear-gradient(135deg, #5b4bd5, #4538b0); color: white;">
-                    <h5 class="modal-title fw-bold" id="stageModalTitle"><i class="fas fa-plus-circle me-2"></i>Add New Stage</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold" id="stageModalTitle">Add New Stage</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body p-4">
                     <div class="mb-3"><label class="form-label fw-semibold">Stage Name <span class="text-danger">*</span></label><input type="text" class="form-control" name="name" id="stageName" required></div>
@@ -184,7 +180,7 @@ $stagesById = array_column($stages, null, 'id');
 
 <?php require __DIR__ . '/../../partials/scripts-footer.php'; ?>
 <script>
-    const stagesData = <?= json_encode($stagesById) ?>;
+    const stagesData = <?= js_json($stagesById) ?>;
 
     function openAddStage() {
         document.getElementById('stageModalTitle').innerHTML = '<i class="fas fa-plus-circle me-2"></i>Add New Stage';

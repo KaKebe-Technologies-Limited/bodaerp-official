@@ -68,35 +68,31 @@ function runQuery(string $sql, array $params = []): mysqli_stmt {
     return $stmt;
 }
 
-// ── Settings helpers ──────────────────────────────────────────
+
+/** All settings, loaded with one query per request. Super Admin → Content → Settings edits them. */
+function settings_all(bool $reload = false): array {
+    static $all = null;
+    if ($all !== null && !$reload) return $all;
+    $all = [];
+    try {
+        foreach (fetchAll("SELECT `key`, `value` FROM settings") as $row) $all[$row['key']] = (string) $row['value'];
+    } catch (Throwable $e) {
+        error_log('BodaERP settings unavailable: ' . $e->getMessage());
+    }
+    return $all;
+}
 
 function get_setting(string $key, string $default = ''): string {
-    static $cache = [];
-    if (array_key_exists($key, $cache)) return $cache[$key];
-    try {
-        $v = fetchValue("SELECT value FROM settings WHERE `key` = ?", [$key]);
-        $cache[$key] = $v !== null ? (string) $v : $default;
-    } catch (Throwable $e) {
-        $cache[$key] = $default;
-    }
-    return $cache[$key];
+    $all = settings_all();
+    return array_key_exists($key, $all) && $all[$key] !== '' ? $all[$key] : $default;
 }
 
-function get_setting_value(string $key, $default = null) {
-    try {
-        $row = fetchOne("SELECT value, value_type FROM settings WHERE `key` = ?", [$key]);
-        if (!$row) return $default;
-        return match ($row['value_type'] ?? 'text') {
-            'boolean' => filter_var($row['value'], FILTER_VALIDATE_BOOLEAN),
-            'json'    => json_decode($row['value'], true) ?? $default,
-            default   => $row['value'],
-        };
-    } catch (Throwable $e) { return $default; }
+function setting_bool(string $key, bool $default = false): bool {
+    $all = settings_all();
+    return array_key_exists($key, $all) ? filter_var($all[$key], FILTER_VALIDATE_BOOLEAN) : $default;
 }
 
-function is_feature_enabled(string $key): bool {
-    try {
-        $v = fetchValue("SELECT is_feature_flag FROM settings WHERE `key` = ?", [$key]);
-        return (bool) $v;
-    } catch (Throwable $e) { return false; }
+function setting_int(string $key, int $default): int {
+    $v = get_setting($key, '');
+    return ctype_digit($v) ? (int) $v : $default;
 }

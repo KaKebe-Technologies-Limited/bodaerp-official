@@ -1,16 +1,10 @@
 <?php
-// ============================================================
-// BodaERP — Data packs
-//
-// A data pack is a one-click, re-runnable set of records (a city, its stages,
-// users, riders…) defined in database/datapacks/<code>.php. Applied from
-// Super Admin → System & Updates, so onboarding a new city never needs SQL or
-// file uploads. Packs are idempotent: existing records are never overwritten.
-//
-// A pack file returns:
-//   ['title' => '...', 'description' => '...', 'apply' => function (): array { ... }]
+// BodaERP: Data packs
+// A data pack is a one-click, re-runnable set of records (a city, its stages, users, riders…) defined in
+// database/datapacks/<code>.php. Applied from Super Admin → System & Updates, so onboarding a new city
+// never needs SQL or file uploads. Packs are idempotent: existing records are never overwritten.
+// A pack file returns: ['title' => '...', 'description' => '...', 'apply' => function (): array { ... }]
 // where apply() returns ['summary' => '...', 'credentials' => [[role,name,email,password,new], ...]].
-// ============================================================
 
 require_once __DIR__ . '/db_helpers.php';
 
@@ -56,7 +50,7 @@ function datapack_apply(string $code, ?int $userId): array {
         $db->commit();
         return ['ok' => true, 'summary' => $summary, 'credentials' => $res['credentials'] ?? []];
     } catch (\Throwable $e) {
-        try { $db->rollback(); } catch (\Throwable $e2) {}
+        try { $db->rollback(); } catch (\Throwable $rollbackError) { error_log('BodaERP data pack rollback failed: ' . $rollbackError->getMessage()); }
         error_log("BodaERP data pack {$code} failed: " . $e->getMessage());
         return ['ok' => false, 'error' => $e->getMessage()];
     }

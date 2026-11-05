@@ -13,7 +13,7 @@ database (locally), builds the tables, and keeps them up to date on every machin
 
 Order of precedence: `.env` / environment variables → the old `config/database.php` (still read on
 servers that have it) → built-in local defaults. Everything is in `packages/backend/database/database.php`.
-If the connection fails, visitors get a plain "can't reach its database" page — never credentials.
+If the connection fails, visitors get a plain "can't reach its database" page: never credentials.
 
 The connection details and live status are shown at **Super Admin → Database**.
 
@@ -21,9 +21,9 @@ The connection details and live status are shown at **Super Admin → Database**
 
 Two automatic layers run on the first request after new code arrives (about 1 ms when there is nothing to do):
 
-1. **Migrations** — `database/migrations/*.php`, applied in filename order, each once (recorded in the
+1. **Migrations**: `database/migrations/*.php`, applied in filename order, each once (recorded in the
    `schema_migrations` table). For data fixes, renames, drops, views and anything risky.
-2. **Schema file** — `database/schema.snapshot.json`, the shape (tables, columns, indexes, foreign keys)
+2. **Schema file**: `database/schema.snapshot.json`, the shape (tables, columns, indexes, foreign keys)
    of the developer's database. Any machine compares it with its own database and **adds** what is missing.
 
 ```
@@ -43,7 +43,7 @@ Two automatic layers run on the first request after new code arrives (about 1 ms
 | Reports risky differences under **Needs review** | Handles views, triggers or stored routines (use a migration) |
 
 A failure never takes the site down: it is logged, shown on the Database page with the exact error
-(often a new `UNIQUE` index on data that has duplicates) and retried — immediately when the snapshot
+(often a new `UNIQUE` index on data that has duplicates) and retried: immediately when the snapshot
 changes, otherwise about every hour, or when you press *Update database now*.
 
 ### The snapshot file is written on developer machines only
@@ -58,7 +58,7 @@ with `SCHEMA_AUTO_CAPTURE=0` in `.env`. Save it on demand with the button on the
 | I want to… | Do this |
 |---|---|
 | Add a column / table / index | Change your local database (phpMyAdmin or SQL). Reload any page. **Commit `database/schema.snapshot.json`** with your code. |
-| Make a column longer / add an `enum` option | Same — it is a safe widening, applied automatically. |
+| Make a column longer / add an `enum` option | Same: it is a safe widening, applied automatically. |
 | Rename or remove a column, shrink a type, change a type | Write a **migration** (below). The schema file will list it under *Needs review* until you do. |
 | Fix or backfill data | A **migration**. |
 | Create or change a view | A **migration** (`CREATE OR REPLACE VIEW`). The two statistics views (`v_stage_stats`, `v_city_stats`) must stay views. |
@@ -70,7 +70,7 @@ with `SCHEMA_AUTO_CAPTURE=0` in `.env`. Save it on demand with the button on the
 ### Writing a migration
 
 Create `database/migrations/YYYY_MM_DD_HHMMSS_short_name.php` (the timestamp sets the order). Never edit
-a migration that has already been released — add a new one. Make it **idempotent** (safe to run twice) by
+a migration that has already been released: add a new one. Make it **idempotent** (safe to run twice) by
 checking the current state first; the helpers in `packages/backend/migrator.php` do that for you.
 
 ```php
@@ -102,7 +102,7 @@ Do not run either demo set on a database that holds real data.
 
 ## 5. Backups
 
-Super Admin → Database → **Backup (.sql)** downloads the whole database (including password hashes — keep the
+Super Admin → Database → **Backup (.sql)** downloads the whole database (including password hashes: keep the
 file private). Restore it in phpMyAdmin by importing it into an empty database. Take one before any big change.
 
 ## 6. Files in `database/`

@@ -17,7 +17,7 @@ if ($rider['status'] === 'active' && $daysLeft !== null) {
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <?php $pageTitle = 'Renewal Status - BodaERP'; require __DIR__ . '/../../partials/head-assets.php'; ?>
+    <?php $pageTitle = 'Renewal Status | BodaERP'; require __DIR__ . '/../../partials/head-assets.php'; ?>
 </head>
 <body>
 
@@ -39,7 +39,7 @@ if ($rider['status'] === 'active' && $daysLeft !== null) {
                 </div>
                 <div class="col-md-3 text-center">
                     <h6 class="text-muted">Days Remaining</h6>
-                    <h5 class="fw-bold"><?= $daysLeft !== null ? ($daysLeft >= 0 ? $daysLeft . ' days' : 'Expired') : '—' ?></h5>
+                    <h5 class="fw-bold"><?= $daysLeft !== null ? ($daysLeft >= 0 ? $daysLeft . ' days' : 'Expired') : '–' ?></h5>
                 </div>
                 <div class="col-md-3 text-center">
                     <h6 class="text-muted">Payment Status</h6>

@@ -28,31 +28,24 @@ unset($r);
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <?php $pageTitle = 'Platform Reports - BodaERP Platform'; require __DIR__ . '/../../partials/head-assets.php'; ?>
+    <?php $pageTitle = 'Platform Reports | BodaERP'; require __DIR__ . '/../../partials/head-assets.php'; ?>
 </head>
 <body>
 
 <?php require __DIR__ . '/../../partials/sidebar-superadmin.php'; ?>
 
 <div class="main-content" id="mainContent">
-    <header class="top-header">
-        <div class="d-flex justify-content-between align-items-center">
-            <div class="d-flex align-items-center gap-3">
-                <button class="btn btn-light d-lg-none" id="toggleSidebar"><i class="fas fa-bars"></i></button>
-                <div>
-                    <h5 class="mb-0 fw-bold"><span class="text-gradient-blue">Platform Reports</span></h5>
-                    <small class="text-muted d-none d-sm-block">Revenue and compliance performance by city</small>
-                </div>
-            </div>
-        </div>
-    </header>
+    <?php
+    $pageTitle = 'Reports';
+    $pageSubtitle = 'Revenue and compliance by city';
+    require __DIR__ . '/../../partials/topheader.php'; ?>
 
     <div class="content-area">
         <div class="card mb-3 no-print">
             <div class="card-body">
                 <form class="row g-2 align-items-center" method="get">
                     <div class="col-md-4">
-                        <select class="form-select" name="status" onchange="this.form.submit()">
+                        <select class="form-select" name="status" data-autosubmit>
                             <option value="">All Status</option>
                             <option value="active" <?= $statusFilter==='active'?'selected':'' ?>>Active</option>
                             <option value="pending" <?= $statusFilter==='pending'?'selected':'' ?>>Pending</option>
@@ -66,23 +59,23 @@ unset($r);
             </div>
         </div>
         <div class="row g-3 row-cols-2 row-cols-xl-5 mb-4">
-            <div class="col"><div class="stat-hero-card grad-blue"><div class="stat-hero-icon"><i class="fas fa-city"></i></div><div><div class="stat-hero-value"><?= count($rows) ?></div><div class="stat-hero-label">Total Cities</div></div></div></div>
-            <div class="col"><div class="stat-hero-card grad-green"><div class="stat-hero-icon"><i class="fas fa-users"></i></div><div><div class="stat-hero-value"><?= number_format($totalRiders) ?></div><div class="stat-hero-label">Total Riders</div></div></div></div>
-            <div class="col"><div class="stat-hero-card grad-gold"><div class="stat-hero-icon"><i class="fas fa-map-marker-alt"></i></div><div><div class="stat-hero-value"><?= $totalStages ?></div><div class="stat-hero-label">Total Stages</div></div></div></div>
-            <div class="col"><div class="stat-hero-card" style="background:linear-gradient(135deg,#e0529c,#a02a6b);"><div class="stat-hero-icon"><i class="fas fa-university"></i></div><div><div class="stat-hero-value">UGX <?= $totalGovernmentShare >= 1000000 ? number_format($totalGovernmentShare / 1000000, 1) . 'M' : number_format(round($totalGovernmentShare)) ?></div><div class="stat-hero-label">Government Revenue</div></div></div></div>
-            <div class="col"><div class="stat-hero-card grad-red"><div class="stat-hero-icon"><i class="fas fa-money-bill-wave"></i></div><div><div class="stat-hero-value">UGX <?= $totalPlatformShare >= 1000000 ? number_format($totalPlatformShare / 1000000, 1) . 'M' : number_format(round($totalPlatformShare)) ?></div><div class="stat-hero-label">Platform Revenue</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-blue"><div class="stat-hero-icon"><i class="fas fa-city"></i></div><div><div class="stat-hero-value"><?= count($rows) ?></div><div class="stat-hero-label">Total Cities</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-green"><div class="stat-hero-icon"><i class="fas fa-users"></i></div><div><div class="stat-hero-value"><?= number_format($totalRiders) ?></div><div class="stat-hero-label">Total Riders</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-gold"><div class="stat-hero-icon"><i class="fas fa-map-marker-alt"></i></div><div><div class="stat-hero-value"><?= $totalStages ?></div><div class="stat-hero-label">Total Stages</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-gold"><div class="stat-hero-icon"><i class="fas fa-university"></i></div><div><div class="stat-hero-value">UGX <?= $totalGovernmentShare >= 1000000 ? number_format($totalGovernmentShare / 1000000, 1) . 'M' : number_format(round($totalGovernmentShare)) ?></div><div class="stat-hero-label">Government Revenue</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-red"><div class="stat-hero-icon"><i class="fas fa-money-bill-wave"></i></div><div><div class="stat-hero-value">UGX <?= $totalPlatformShare >= 1000000 ? number_format($totalPlatformShare / 1000000, 1) . 'M' : number_format(round($totalPlatformShare)) ?></div><div class="stat-hero-label">Platform Revenue</div></div></div></div>
         </div>
 
         <div class="card">
             <div class="card-body">
-                <h6 class="fw-bold mb-3"><i class="fas fa-chart-bar text-primary me-2"></i>Revenue by City</h6>
+                <h6 class="fw-bold mb-3">Revenue by City</h6>
                 <div class="table-responsive">
                     <table class="table table-hover align-middle" id="reportsTable">
                         <thead><tr><th>City</th><th>Riders</th><th>Stages</th><th>Annual Fee</th><th>Revenue Collected</th><th>Government Share</th><th>Platform Share</th><th>Status</th></tr></thead>
                         <tbody>
                         <?php foreach ($rows as $t): $sc = ['active'=>'success','pending'=>'warning','inactive'=>'secondary']; ?>
                             <tr>
-                                <td><div class="d-flex align-items-center gap-2"><img src="<?= h(BASE_URL . $t['logo_path']) ?>" width="32" height="32" class="rounded border" style="object-fit:contain;background:white;border-radius:10px!important;" onerror="this.src='<?= BASE_URL ?>/assets/images/logo.png'"><div><strong><?= h($t['name']) ?></strong><br><small class="text-muted"><?= h($t['id']) ?></small></div></div></td>
+                                <td><div class="d-flex align-items-center gap-2"><img src="<?= h(BASE_URL . $t['logo_path']) ?>" width="32" height="32" class="rounded border" style="object-fit:contain;background:white;border-radius:10px!important;" data-fallback-src="<?= BASE_URL ?>/assets/images/logo-mark.png"><div><strong><?= h($t['name']) ?></strong><br><small class="text-muted"><?= h($t['id']) ?></small></div></div></td>
                                 <td><?= number_format($t['rider_count']) ?></td>
                                 <td><?= (int) $t['stage_count'] ?></td>
                                 <td><?= h($t['currency']) ?> <?= number_format($t['annual_fee']) ?></td>

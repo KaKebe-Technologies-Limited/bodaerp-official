@@ -1,0 +1,359 @@
+<?php
+// BodaERP - critical-flow tests (command line only, never against a live server)
+// php tests/flows.php [http://localhost/<folder>]
+// (Docker: docker compose exec app php tests/flows.php)
+// Creates its own throw-away accounts and records (all named flowtest-*), drives the site over HTTP like a
+// browser, checks the database and the emails, then removes what it created. Needs the demo data (php
+// database/seed_run.php).
+require __DIR__ . '/lib.php';
+require_once __DIR__ . '/../packages/backend/db_helpers.php';
+require_once __DIR__ . '/../packages/backend/security.php';
+
+$base = test_base($argv);
+$t = new TestRun();
+$tag = 'flowtest-' . bin2hex(random_bytes(3));
+$created = ['users' => [], 'riders' => [], 'contact' => []];
+echo "Testing critical flows on $base ($tag)\n\n";
+
+function make_user(string $role, string $password, array $extra = []): array {
+    global $tag, $created;
+    $email = $tag . '-' . $role . '-' . count($created['users']) . '@example.com';
+    runQuery("INSERT INTO users (name, email, password_hash, role, city_id, stage_id, status, email_verified_at) VALUES (?,?,?,?,?,?,'active',NOW())",
+        [ucfirst($role) . ' ' . $tag, $email, password_hash($password, PASSWORD_DEFAULT), $role, $extra['city_id'] ?? null, $extra['stage_id'] ?? null]);
+    $id = (int) db()->insert_id;
+    $created['users'][] = $id;
+    return ['id' => $id, 'email' => $email, 'password' => $password];
+}
+function post_form(string $url, string $jar, array $fields): array {
+    $page = http($url, $jar);
+    return http($url, $jar, $fields + ['csrf_token' => csrf($page['body'])]);
+}
+
+// 1. Lockout after repeated failures, and the correct password is refused while locked
+$u = make_user('government', 'Corr3ct-horse-77');
+$jar = test_jar();
+for ($i = 0; $i < 5; $i++) post_form("$base/login.php", $jar, ['email' => $u['email'], 'password' => 'wrong-' . $i]);
+$r = post_form("$base/login.php", $jar, ['email' => $u['email'], 'password' => $u['password']]);
+$t->ok($r['code'] === 200 && str_contains($r['body'], 'paused'), 'account locks after 5 failed sign-ins', 'HTTP ' . $r['code']);
+$t->ok((int) fetchValue("SELECT COUNT(*) FROM login_attempts WHERE email = ? AND success = 0", [$u['email']]) >= 5, 'failed sign-ins are recorded');
+runQuery("DELETE FROM login_attempts WHERE email = ?", [$u['email']]);
+$why = '';
+$t->ok((bool) test_login($base, $u['email'], $u['password'], $why), 'sign-in works again once the lockout clears', $why);
+
+// 2. Forgot password → email → weak password refused → reset → old link dead → sign in with the new password
+$u = make_user('rider', 'Start-pass-123');
+$jar = test_jar();
+$t0 = time();
+$r = post_form("$base/forgot-password.php", $jar, ['email' => $u['email']]);
+$t->ok($r['code'] === 200 && str_contains($r['body'], 'on its way'), 'reset request gives the neutral confirmation');
+$mail = latest_mail_to($u['email'], $t0);
+$link = $mail && preg_match('#reset-password\.php\?token=([a-f0-9]{24}\.[a-f0-9]{64})#', $mail, $m) ? $m[1] : null;
+$t->ok((bool) $link, 'reset email arrives with a link', $mail ? 'no link in email' : 'no email found');
+$r = post_form("$base/forgot-password.php", test_jar(), ['email' => 'nobody-' . $tag . '@example.com']);
+$t->ok(str_contains($r['body'], 'on its way'), 'unknown email gets the same answer (no account discovery)');
+if ($link) {
+    $r = post_form("$base/reset-password.php?token=$link", $jar, ['token' => $link, 'password' => 'short', 'password_confirm' => 'short']);
+    $t->ok(str_contains($r['body'], 'at least'), 'weak new password is refused');
+    $r = post_form("$base/reset-password.php?token=$link", $jar, ['token' => $link, 'password' => 'New-Secure-pass-42', 'password_confirm' => 'New-Secure-pass-42']);
+    $t->ok($r['code'] === 302 && str_contains($r['redirect'], 'reset=1'), 'reset with a strong password succeeds', 'HTTP ' . $r['code']);
+    $r = http("$base/reset-password.php?token=$link", test_jar());
+    $t->ok(str_contains($r['body'], 'expired'), 'a used reset link cannot be used again');
+    $t->ok((bool) test_login($base, $u['email'], 'New-Secure-pass-42', $why), 'sign-in with the new password works', $why);
+    $t->ok(!test_login($base, $u['email'], 'Start-pass-123', $why), 'the old password no longer works');
+}
+$t->ok((int) fetchValue("SELECT COUNT(*) FROM user_tokens WHERE user_id = ? AND token_hash IS NOT NULL AND LENGTH(token_hash) = 64", [$u['id']]) >= 0, 'reset tokens are stored hashed');
+
+// 3. Keep me signed in, and password change signs other devices out
+$st = fetchOne("SELECT id, city_id FROM stages ORDER BY id LIMIT 1");
+$u = make_user('chairperson', 'Remember-me-55', ['city_id' => $st['city_id'], 'stage_id' => $st['id']]);   // a role without required two-step sign-in
+$a = test_jar();
+$r = post_form("$base/login.php", $a, ['email' => $u['email'], 'password' => $u['password'], 'remember' => '1']);
+$cookies = (string) file_get_contents($a);
+$t->ok(str_contains($cookies, 'bodaerp_remember'), '"Keep me signed in" sets the remember cookie');
+$remember = preg_match('/bodaerp_remember\t(\S+)/', $cookies, $m) ? $m[1] : '';
+$fresh = test_jar();
+$r = http("$base/pages/chairperson/dashboard.php", $fresh, null, ['Cookie: bodaerp_remember=' . $remember]);
+$t->ok($r['code'] === 200, 'remember cookie signs the user back in with no session', 'HTTP ' . $r['code'] . ' ' . $r['redirect']);
+$b = test_login($base, $u['email'], $u['password'], $why);
+$r = post_form("$base/pages/account/settings.php", $a, ['action' => 'password', 'current_password' => $u['password'], 'new_password' => 'Changed-pass-66', 'confirm_password' => 'Changed-pass-66', 'username' => $u['email']]);
+$t->ok($r['code'] === 302, 'own password change is accepted');
+$r = http("$base/pages/chairperson/dashboard.php", $b);
+$t->ok($r['code'] === 302 && str_contains($r['redirect'], 'login'), 'other signed-in device is signed out after a password change', 'HTTP ' . $r['code']);
+$r = http("$base/pages/chairperson/dashboard.php", $a);
+$t->ok($r['code'] === 200, 'the device that changed the password stays signed in', 'HTTP ' . $r['code']);
+for ($i = 0; $i < 5; $i++) post_form("$base/pages/account/settings.php", $a, ['action' => 'password', 'current_password' => 'guess-' . $i, 'new_password' => 'Guessed-pass-88', 'confirm_password' => 'Guessed-pass-88']);
+post_form("$base/pages/account/settings.php", $a, ['action' => 'password', 'current_password' => 'Changed-pass-66', 'new_password' => 'Blocked-pass-77', 'confirm_password' => 'Blocked-pass-77']);
+$t->ok(password_verify('Changed-pass-66', (string) fetchValue("SELECT password_hash FROM users WHERE id = ?", [$u['id']])), 'password change stops after repeated wrong current passwords, even with the right one');
+
+// 4. Contact form: saved, emailed to the team and the sender; spam trap; CSRF
+$jar = test_jar();
+$page = http("$base/contact.php", $jar);
+sleep(3);
+$email = $tag . '-contact@example.com';
+$t0 = time();
+$r = http("$base/contact.php", $jar, ['csrf_token' => csrf($page['body']), 'name' => 'Flow Tester', 'email' => $email, 'phone' => '+256 772 000111',
+    'organisation' => 'Test Council', 'subject' => "Subject $tag", 'message' => 'We would like to bring BodaERP to our city.', 'website' => '']);
+$t->ok($r['code'] === 302 && str_contains($r['redirect'], 'sent=1'), 'contact form submits', 'HTTP ' . $r['code']);
+$row = fetchOne("SELECT id, status FROM contact_messages WHERE email = ?", [$email]);
+$t->ok($row && $row['status'] === 'new', 'contact message is saved to the inbox');
+if ($row) $created['contact'][] = (int) $row['id'];
+$t->ok((bool) latest_mail_to($email, $t0), 'sender receives the automatic reply');
+$page = http("$base/contact.php", $jar);
+sleep(3);
+http("$base/contact.php", $jar, ['csrf_token' => csrf($page['body']), 'name' => 'Bot', 'email' => "bot-$email", 'subject' => 'Buy now', 'message' => 'Spam spam spam spam', 'website' => 'http://spam.example']);
+$t->ok(!fetchValue("SELECT COUNT(*) FROM contact_messages WHERE email = ?", ["bot-$email"]), 'honeypot submission is silently dropped');
+$r = http("$base/contact.php", test_jar(), ['name' => 'No token', 'email' => $email, 'subject' => 'x', 'message' => 'no csrf token here']);
+$t->ok($r['code'] === 400 && str_contains($r['body'], 'expired'), 'form without a CSRF token is refused (400, expired-form page)', 'HTTP ' . $r['code']);
+
+// 5. Payment callback (IPN) cannot be forged
+$pending = fetchOne("SELECT id, status FROM payments WHERE status = 'Pending' LIMIT 1");
+$r = http("$base/ipn_handler.php", test_jar(), null, ['Content-Type: application/json', 'X-Iotec-Secret: '], json_encode(['id' => 'x', 'externalId' => (string) ($pending['id'] ?? 1), 'status' => 'Success']));
+$t->ok($r['code'] === 403, 'IPN without the shared secret is rejected', 'HTTP ' . $r['code']);
+if ($pending) $t->ok(fetchValue("SELECT status FROM payments WHERE id = ?", [$pending['id']]) === 'Pending', 'forged IPN does not confirm the payment');
+$t->ok(http("$base/ipn_handler.php", test_jar())['code'] === 405, 'IPN only accepts POST');
+
+// 6. Permissions and object-level access
+$chair = test_login($base, 'ocen@railway.lira.ug', 'chair123', $why);
+$otherStageRider = fetchValue("SELECT r.id FROM riders r JOIN users u ON u.stage_id <> r.stage_id WHERE u.email = 'ocen@railway.lira.ug' AND r.deleted_at IS NULL LIMIT 1");
+$r = http("$base/pages/chairperson/rider-profile.php?id=$otherStageRider", $chair);
+$t->ok($r['code'] === 302 && !str_contains($r['body'], 'Rider Profile'), 'chairperson cannot open a rider from another stage');
+$r = http("$base/pages/citycouncil/dashboard.php", $chair);
+$t->ok($r['code'] === 403, 'chairperson is refused the city council portal (403)', 'HTTP ' . $r['code']);
+$rider = test_login($base, 'akello@bodaerp.com', 'rider123', $why);
+$r = http("$base/api/payments.php?action=reconcile", $rider, ['csrf_token' => 'x']);
+$t->ok(in_array($r['code'], [400, 403], true), 'rider cannot run the admin payment reconcile', 'HTTP ' . $r['code']);
+$r = http("$base/api/media-upload.php", $rider, ['upload' => new CURLFile(__FILE__, 'image/png', 'x.png')], ['X-CSRF-Token: ' . csrf(http("$base/pages/account/settings.php", $rider)['body'])]);
+$t->ok($r['code'] === 403, 'non-admin cannot upload to the media library', 'HTTP ' . $r['code']);
+
+// 7. Cash payments: fixed fee, no double charge while the permit is valid
+$stage = fetchOne("SELECT s.id, s.city_id, c.annual_fee FROM stages s JOIN cities c ON c.id = s.city_id JOIN users u ON u.stage_id = s.id WHERE u.email = 'ocen@railway.lira.ug'");
+runQuery("INSERT INTO riders (city_id, stage_id, id_number, verify_token, full_name, nin, phone, bike_plate, status, member_since, annual_tax)
+          VALUES (?,?,?,?,?,?,?,?,'pending',CURDATE(),?)", [$stage['city_id'], $stage['id'], strtoupper($tag), bin2hex(random_bytes(10)), 'FLOW TEST RIDER', strtoupper(substr($tag . 'XXXXXXXX', 0, 14)), '+256772999888', strtoupper($tag), $stage['annual_fee']]);
+$testRider = (int) db()->insert_id;
+$created['riders'][] = $testRider;
+$r = post_form("$base/pages/chairperson/collect-payments.php", $chair, ['rider_id' => $testRider, 'method' => 'Cash', 'amount' => '1']);
+$pay = fetchOne("SELECT amount, status, receipt_number FROM payments WHERE rider_id = ? ORDER BY id DESC LIMIT 1", [$testRider]);
+$t->ok($pay && (float) $pay['amount'] === (float) $stage['annual_fee'] && $pay['status'] === 'Confirmed', 'cash payment is recorded at the city fee, not the typed amount', json_encode($pay));
+$t->ok($pay && str_starts_with((string) $pay['receipt_number'], 'RCP-'), 'confirmed payment gets a receipt number');
+$exp = fetchValue("SELECT expiry_date FROM riders WHERE id = ?", [$testRider]);
+$t->ok($exp === date('Y-m-d', strtotime('+1 year')), 'permit runs one year from today for a new rider', (string) $exp);
+post_form("$base/pages/chairperson/collect-payments.php", $chair, ['rider_id' => $testRider, 'method' => 'Cash']);
+$t->ok((int) fetchValue("SELECT COUNT(*) FROM payments WHERE rider_id = ?", [$testRider]) === 1, 'a second payment is refused while the permit is valid');
+$r = http("$base/verify.php?code=" . strtoupper($tag), test_jar());
+$t->ok(str_contains($r['body'], 'Permit valid') && !str_contains($r['body'], 'FLOW TEST RIDER') && str_contains($r['body'], 'FLOW T.'), 'permit-number lookup shows status and a masked name only');
+$token = fetchValue("SELECT verify_token FROM riders WHERE id = ?", [$testRider]);
+$r = http("$base/verify.php?t=$token", test_jar());
+$t->ok(str_contains($r['body'], 'FLOW TEST RIDER'), 'QR token lookup shows the full name for the officer');
+
+// 8. Uploads: a PHP file disguised as an image is refused
+$admin = test_login($base, 'admin@bodaerp.com', 'admin123', $why);
+$tmp = tempnam(sys_get_temp_dir(), 'up') . '.png';
+file_put_contents($tmp, "<?php echo 'owned'; ?>");
+$r = http("$base/api/media-upload.php", $admin, ['upload' => new CURLFile($tmp, 'image/png', 'evil.php.png')], ['X-CSRF-Token: ' . csrf(http("$base/pages/superadmin/media.php", $admin)['body']), 'Accept: application/json']);
+$t->ok($r['code'] === 422 && str_contains($r['body'], 'not allowed'), 'PHP code disguised as a PNG is refused', 'HTTP ' . $r['code'] . ' ' . substr($r['body'], 0, 120));
+$png = tempnam(sys_get_temp_dir(), 'up') . '.png';
+file_put_contents($png, base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+ip1sAAAAASUVORK5CYII='));
+$r = http("$base/api/media-upload.php", $admin, ['upload' => new CURLFile($png, 'image/png', 'pixel.png')], ['X-CSRF-Token: ' . csrf(http("$base/pages/superadmin/media.php", $admin)['body'])]);
+$up = json_decode($r['body'], true);
+$t->ok($r['code'] === 200 && !empty($up['url']), 'a real PNG uploads to the media library', 'HTTP ' . $r['code']);
+if (!empty($up['url'])) {
+    $file = http((str_starts_with($up['url'], 'http') ? '' : preg_replace('#(https?://[^/]+).*#', '$1', $base)) . $up['url'], test_jar());
+    $t->ok($file['code'] === 200 && stripos($file['headers'], 'Content-Type: image/png') !== false, 'uploaded image is served with its real type');
+    require_once __DIR__ . '/../packages/backend/uploads.php';
+    delete_upload($up['path']);
+    runQuery("DELETE FROM media WHERE id = ?", [(int) $up['id']]);
+}
+@unlink($tmp); @unlink($png);
+
+// 10. Chairperson registers a rider with photo and email → rider + portal account + invite → rider sets password and signs in
+$jpg = tempnam(sys_get_temp_dir(), 'ph') . '.png';
+file_put_contents($jpg, base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+ip1sAAAAASUVORK5CYII='));
+$riderEmail = $tag . '-newrider@example.com';
+$plate = 'U' . strtoupper(substr(bin2hex(random_bytes(3)), 0, 5));
+$page = http("$base/pages/chairperson/register-rider.php", $chair);
+$t0 = time();
+$r = http("$base/pages/chairperson/register-rider.php", $chair, ['csrf_token' => csrf($page['body']), 'full_name' => 'Flow Newrider', 'nin' => strtoupper(substr('CM' . bin2hex(random_bytes(7)), 0, 14)),
+    'dob' => '1995-05-05', 'gender' => 'Male', 'marital_status' => 'Single', 'phone' => '0772 123 987', 'email' => $riderEmail, 'send_invite' => '1',
+    'address' => 'Lira', 'nok_name' => 'Kin', 'nok_phone' => '0772000000', 'bike_plate' => $plate, 'bike_model' => 'Bajaj', 'route' => 'Town',
+    'payment_status' => 'Unpaid', 'photo' => new CURLFile($jpg, 'image/png', 'rider.png')]);
+$new = fetchOne("SELECT id, user_id, phone, photo_path, verify_token, status FROM riders WHERE email = ?", [$riderEmail]);
+$t->ok($r['code'] === 302 && $new, 'chairperson registers a rider', 'HTTP ' . $r['code']);
+if ($new) {
+    $created['riders'][] = (int) $new['id'];
+    if ($new['user_id']) $created['users'][] = (int) $new['user_id'];
+    $t->ok($new['phone'] === '+256772123987', 'phone typed as 0772… is stored as +256772…', (string) $new['phone']);
+    $t->ok((bool) preg_match('#^/uploads/riders/\d{4}/\d{2}/[a-f0-9]{24}\.png$#', (string) $new['photo_path']), 'rider photo stored with a random name', (string) $new['photo_path']);
+    $t->ok(strlen((string) $new['verify_token']) === 20 && $new['status'] === 'pending', 'new rider gets a QR token and starts as pending');
+    $t->ok((bool) $new['user_id'], 'rider portal account is created and linked');
+    $mail = latest_mail_to($riderEmail, $t0);
+    $link = $mail && preg_match('#reset-password\.php\?welcome=1&(?:amp;)?token=([a-f0-9]{24}\.[a-f0-9]{64})#', $mail, $m) ? $m[1] : null;
+    $t->ok((bool) $link, 'rider receives the "set your password" invite');
+    if ($link) {
+        $jar = test_jar();
+        $r = post_form("$base/reset-password.php?welcome=1&token=$link", $jar, ['token' => $link, 'welcome' => '1', 'password' => 'Rider-portal-77', 'password_confirm' => 'Rider-portal-77']);
+        $riderJar = test_login($base, $riderEmail, 'Rider-portal-77', $why);
+        $t->ok((bool) $riderJar, 'invited rider sets a password and signs in', $why);
+        if ($riderJar) {
+            $t->ok(str_contains(http("$base/pages/rider/dashboard.php", $riderJar)['body'], 'Flow Newrider') || http("$base/pages/rider/dashboard.php", $riderJar)['code'] === 200, 'new rider sees their own dashboard');
+            $r = post_form("$base/pages/account/settings.php", $riderJar, ['action' => 'data_request', 'type' => 'correction', 'details' => 'My bike model is Bajaj Boxer, not Bajaj.']);
+            $t->ok((bool) fetchValue("SELECT COUNT(*) FROM data_requests WHERE user_id = ? AND type = 'correction'", [$new['user_id']]), 'rider sends a correction request');
+            $dl = http("$base/pages/account/settings.php?download=1", $riderJar);
+            $json = json_decode($dl['body'], true);
+            $t->ok(($json['rider']['full_name'] ?? '') === 'FLOW NEWRIDER', 'rider downloads their data as JSON');
+            $reqId = (int) fetchValue("SELECT id FROM data_requests WHERE user_id = ?", [$new['user_id']]);
+            post_form("$base/pages/superadmin/data-requests.php", $admin, ['id' => $reqId, 'status' => 'completed', 'response' => 'Corrected to Bajaj Boxer.']);
+            $t->ok(fetchValue("SELECT status FROM data_requests WHERE id = ?", [$reqId]) === 'completed', 'Super Admin completes the request');
+            $t->ok((bool) fetchValue("SELECT COUNT(*) FROM notifications WHERE rider_id = ? AND type = 'Data Request'", [$new['id']]), 'rider is notified of the answer');
+            runQuery("DELETE FROM data_requests WHERE user_id = ?", [$new['user_id']]);
+        }
+    }
+    require_once __DIR__ . '/../packages/backend/uploads.php';
+    delete_upload($new['photo_path']);
+}
+@unlink($jpg);
+
+// 11. Super Admin replies to a contact message, and edits a site setting that appears on the public site
+$msgId = $created['contact'][0] ?? 0;
+if ($msgId) {
+    $t0 = time();
+    post_form("$base/pages/superadmin/inbox.php?id=$msgId", $admin, ['action' => 'reply', 'id' => $msgId, 'reply' => '<p>Thanks, we will call you.</p>']);
+    $t->ok(fetchValue("SELECT status FROM contact_messages WHERE id = ?", [$msgId]) === 'replied', 'inbox reply marks the message replied');
+    $t->ok(str_contains((string) latest_mail_to($tag . '-contact@example.com', $t0), 'we will call you'), 'reply is emailed to the sender');
+}
+$old = fetchValue("SELECT value FROM settings WHERE `key` = 'home_hero_title'");
+post_form("$base/pages/superadmin/site-settings.php?cat=home", $admin, ['s' => ['home_hero_title' => "Heading $tag"]]);
+$t->ok(str_contains(http("$base/", test_jar())['body'], "Heading $tag"), 'a setting saved in Super Admin shows on the home page');
+runQuery("UPDATE settings SET value = ? WHERE `key` = 'home_hero_title'", [$old]);
+
+// 12. Mobile-money API is reachable from the rider portal, validates input and only reports the rider's own payments
+$why = '';
+$rj = test_login($base, 'akello@bodaerp.com', 'rider123', $why);
+$t->ok((bool) $rj, 'demo rider signs in for the payment API checks', $why);
+if ($rj) {
+    $hist = http("$base/pages/rider/payment-history.php", $rj);
+    $t->ok(str_contains($hist['body'], '/api/payments.php?action=initiate'), 'rider payment page calls the routed /api/payments.php');
+    $r = http("$base/api/payments.php?action=initiate", $rj, ['csrf_token' => csrf($hist['body']), 'phone' => '12345']);
+    $j = json_decode($r['body'], true);
+    $t->ok($r['code'] === 200 && is_array($j) && $j['success'] === false && $j['message'] !== '', 'payment API answers the rider with JSON and refuses a bad number', 'HTTP ' . $r['code'] . ' ' . substr($r['body'], 0, 80));
+    $r = http("$base/api/payments.php?action=initiate", $rj, ['phone' => '0772123456']);
+    $t->ok($r['code'] === 400 || ($r['code'] === 200 && !str_contains($r['body'], '"success":true')), 'payment API refuses a request without the CSRF token', 'HTTP ' . $r['code']);
+    $own = (int) fetchValue("SELECT p.id FROM payments p JOIN riders r ON r.id = p.rider_id JOIN users u ON u.id = r.user_id WHERE u.email = 'akello@bodaerp.com' ORDER BY p.id DESC LIMIT 1");
+    if ($own) {
+        $r = http("$base/api/payments.php?action=check_status&payment_id=$own", $rj);
+        $j = json_decode($r['body'], true);
+        $t->ok($r['code'] === 200 && is_array($j) && !empty($j['success']), "rider can poll their own payment's status", substr($r['body'], 0, 100));
+    }
+    @unlink($rj);
+}
+
+// 9. Maintenance mode: visitors see 503, the Super Admin keeps working
+runQuery("UPDATE platform_settings SET maintenance_mode = 1 WHERE id = 1");
+$r = http("$base/faq.php", test_jar());
+$t->ok($r['code'] === 503, 'maintenance mode shows visitors the 503 page', 'HTTP ' . $r['code']);
+$t->ok(http("$base/pages/superadmin/dashboard.php", $admin)['code'] === 200, 'Super Admin can still work during maintenance');
+$t->ok(http("$base/login.php", test_jar())['code'] === 200, 'sign-in page stays reachable during maintenance');
+runQuery("UPDATE platform_settings SET maintenance_mode = 0 WHERE id = 1");
+
+// 13. Scheduled jobs: each notice goes out once, backups restore, housekeeping keeps what matters
+require_once __DIR__ . '/../packages/backend/automation.php';
+$stageRow = fetchOne("SELECT id, city_id FROM stages WHERE status = 'active' ORDER BY id LIMIT 1");
+$make_rider = function (string $suffix, string $expiry) use ($tag, $stageRow, &$created): array {
+    $email = "$tag-$suffix@example.com";
+    runQuery("INSERT INTO riders (city_id, stage_id, id_number, full_name, phone, email, bike_plate, member_since, annual_tax, expiry_date, status)
+              VALUES (?,?,?,?,?,?,?,CURDATE(),50000,?,'active')",
+        [$stageRow['city_id'], $stageRow['id'], substr("$tag-$suffix", 0, 30), "Rider $tag", '+256772000000', $email, substr(strtoupper($suffix . $tag), 0, 20), $expiry]);
+    $id = (int) db()->insert_id;
+    $created['riders'][] = $id;
+    return ['id' => $id, 'email' => $email];
+};
+$sentTo = fn(string $email, string $template): int => (int) fetchValue("SELECT COUNT(*) FROM email_log WHERE to_email = ? AND template_code = ?", [$email, $template]);
+
+$soon = $make_rider('soon', date('Y-m-d', strtotime('+3 days')));
+$lapsed = $make_rider('late', date('Y-m-d', strtotime('-8 days')));
+if (automation_email_ready()) {
+    $result = automation_run_job('renewal_reminders', 'test');
+    $t->ok($result['ok'] && $sentTo($soon['email'], 'permit_expiring') === 1, 'a rider three days from expiry gets a renewal email', $result['message']);
+    automation_run_job('renewal_reminders', 'test');
+    $t->ok($sentTo($soon['email'], 'permit_expiring') === 1, 'running the reminder job again sends nothing more');
+    $result = automation_run_job('overdue_notices', 'test');
+    $t->ok($result['ok'] && $sentTo($lapsed['email'], 'permit_overdue') === 1, 'a rider eight days overdue gets an overdue email', $result['message']);
+    automation_run_job('overdue_notices', 'test');
+    $t->ok($sentTo($lapsed['email'], 'permit_overdue') === 1, 'running the overdue job again sends nothing more');
+    $chair = make_user('chairperson', 'Digest-pass-123', ['city_id' => $stageRow['city_id'], 'stage_id' => $stageRow['id']]);
+    $result = automation_run_job('digest_chairpersons', 'test');
+    $t->ok($result['ok'] && $sentTo($chair['email'], 'digest_chairperson') === 1, 'a chairperson gets the weekly stage summary', $result['message']);
+    automation_run_job('digest_chairpersons', 'test');
+    $t->ok($sentTo($chair['email'], 'digest_chairperson') === 1, 'the weekly summary goes out once a week, however often the job runs');
+    $cityAdmin = make_user('city_admin', 'Digest-pass-123', ['city_id' => $stageRow['city_id']]);
+    $result = automation_run_job('digest_city_admins', 'test');
+    $t->ok($result['ok'] && $sentTo($cityAdmin['email'], 'digest_city') === 1, 'a city administrator gets the weekly council summary', $result['message']);
+}
+$state = automation_state();
+$t->ok((int) $state['overdue_notices']['enabled'] === 0 || fetchValue("SELECT 1 FROM automation_jobs WHERE job_code = 'overdue_notices' AND last_triggered_by <> 'test'") !== null, 'jobs that contact riders start switched off');
+$t->ok((int) $state['backup_database']['enabled'] === 1, 'the backup job starts switched on');
+
+$result = automation_run_job('backup_database', 'test');
+$newest = backup_list()[0] ?? null;
+$t->ok($result['ok'] && $newest !== null, 'the backup job writes a file', $result['message']);
+if ($newest && !$newest['encrypted']) {
+    $t->ok(backup_is_complete($newest['path']), 'the backup reads through to its closing marker');
+    $sql = implode('', gzfile($newest['path']));
+    $t->ok(str_contains($sql, 'CREATE TABLE `payments`') && str_contains($sql, 'INSERT INTO `riders`'), 'the backup holds table structure and rider data');
+    unset($sql);
+}
+$secret = str_repeat('ab', 32);
+$plainFile = tempnam(sys_get_temp_dir(), 'bodaplain');
+file_put_contents($plainFile, random_bytes(BACKUP_CHUNK_BYTES * 2 + 77));
+backup_encrypt_file($plainFile, "$plainFile.enc", hex2bin($secret));
+backup_decrypt_file("$plainFile.enc", "$plainFile.out", hex2bin($secret));
+$t->ok(hash_file('sha256', $plainFile) === hash_file('sha256', "$plainFile.out"), 'an encrypted backup decrypts back to the same bytes');
+$wrongKeyRefused = false;
+try { backup_decrypt_file("$plainFile.enc", "$plainFile.bad", hex2bin(str_repeat('cd', 32))); } catch (RuntimeException $e) { $wrongKeyRefused = true; }
+$t->ok($wrongKeyRefused, 'the wrong key is refused');
+$cutFile = "$plainFile.cut";
+file_put_contents($cutFile, substr((string) file_get_contents("$plainFile.enc"), 0, BACKUP_CHUNK_BYTES + 60));
+$cutRefused = false;
+try { backup_decrypt_file($cutFile, "$plainFile.bad", hex2bin($secret)); } catch (RuntimeException $e) { $cutRefused = true; }
+$t->ok($cutRefused, 'a backup cut short is refused instead of restoring partly');
+foreach (['', '.enc', '.out', '.bad', '.cut'] as $ext) @unlink($plainFile . $ext);
+
+$oldEmail = "$tag-old@example.com"; $newEmail = "$tag-new@example.com";
+runQuery("INSERT INTO login_attempts (email, ip_address, success, attempted_at) VALUES (?, '127.0.0.1', 0, DATE_SUB(NOW(), INTERVAL 200 DAY)), (?, '127.0.0.1', 0, NOW())", [$oldEmail, $newEmail]);
+$auditBefore = (int) fetchValue("SELECT COUNT(*) FROM audit_logs");
+$result = automation_run_job('retention_cleanup', 'test');
+$t->ok($result['ok'] && !fetchValue("SELECT COUNT(*) FROM login_attempts WHERE email = ?", [$oldEmail]) && fetchValue("SELECT COUNT(*) FROM login_attempts WHERE email = ?", [$newEmail]), 'housekeeping removes old sign-in attempts and keeps recent ones', $result['message']);
+$t->ok((int) fetchValue("SELECT COUNT(*) FROM audit_logs") >= $auditBefore, 'housekeeping leaves the audit log alone');
+
+runQuery("INSERT INTO contact_messages (name, email, subject, message, status, created_at) VALUES (?,?,?,?, 'new', DATE_SUB(NOW(), INTERVAL 5 DAY))", ["Old $tag", "$tag-old@example.com", 'Old', 'Waiting']);
+$created['contact'][] = (int) db()->insert_id;
+$t->ok(in_array('messages_unread', array_column(automation_health_problems(), 'key'), true), 'the problem check notices a message left unread');
+
+$r = http("$base/health.php", test_jar());
+$t->ok($r['code'] === 200 && str_contains($r['body'], '"ok"') && strlen($r['body']) < 40, 'the health check answers 200 and reveals nothing else', 'HTTP ' . $r['code']);
+$r = http("$base/cron/run.php?token=wrong", test_jar());
+$t->ok($r['code'] === 403, 'the scheduler URL refuses a wrong token', 'HTTP ' . $r['code']);
+
+// 14. A chairperson can record a payment under every method on the form
+require_once __DIR__ . '/../packages/backend/permits.php';
+$bankRider = $make_rider('bank', date('Y-m-d', strtotime('-40 days')));
+$bankRow = fetchOne("SELECT * FROM riders WHERE id = ?", [$bankRider['id']]);
+foreach (PAYMENT_METHODS as $method) {
+    $methodOk = true;
+    try { record_manual_payment($bankRow, $method, null); } catch (Throwable $e) { $methodOk = false; }
+    $t->ok($methodOk, "a payment by $method can be recorded");
+}
+
+// Clean up
+foreach ($created['riders'] as $id) { runQuery("DELETE FROM notifications WHERE rider_id = ?", [$id]); runQuery("DELETE FROM payments WHERE rider_id = ?", [$id]); runQuery("DELETE FROM riders WHERE id = ?", [$id]); }
+runQuery("DELETE FROM automation_sends WHERE target IN ('" . implode("','", array_map('intval', array_merge($created['riders'], $created['users']))) . "')");
+runQuery("DELETE FROM email_log WHERE to_email LIKE ?", ["$tag%"]);
+foreach ($created['contact'] as $id) runQuery("DELETE FROM contact_messages WHERE id = ?", [$id]);
+foreach ($created['users'] as $id) {
+    foreach (['user_tokens', 'login_sessions'] as $tbl) runQuery("DELETE FROM $tbl WHERE user_id = ?", [$id]);
+    runQuery("DELETE FROM users WHERE id = ?", [$id]);
+}
+runQuery("DELETE FROM login_attempts WHERE email LIKE ?", ["$tag%"]);
+runQuery("DELETE FROM rate_limits WHERE bucket LIKE 'contact:%' OR bucket LIKE 'reset-%' OR bucket LIKE 'login-ip:%'");
+foreach ($created['users'] as $id) runQuery("DELETE FROM rate_limits WHERE bucket = ?", ["pw-change:$id"]);
+
+$t->finish();

@@ -1,121 +1,69 @@
 <?php
-require_once __DIR__ . '/packages/backend/auth.php';
+// Choose a new password from an emailed link: "forgot password" (30 minutes) or a new account's
+// "set your password" link (48 hours, ?welcome=1). Using the link also confirms the email address.
+require_once __DIR__ . '/packages/backend/site.php';
 
-if (is_logged_in()) {
-    redirect(dashboard_url_for($_SESSION['role']));
-}
+if (is_logged_in()) redirect(dashboard_url_for($_SESSION['role']));
 
-$error = null;
-$token = trim($_GET['token'] ?? $_POST['token'] ?? '');
+$token = trim((string) ($_GET['token'] ?? $_POST['token'] ?? ''));
+$welcome = !empty($_GET['welcome']) || !empty($_POST['welcome']);
+$row = $token !== '' ? user_token_check($token, 'password_reset') : null;
+$user = $row ? fetchOne("SELECT id, name, email FROM users WHERE id = ? AND status = 'active' AND deleted_at IS NULL", [$row['user_id']]) : null;
 
-$user = $token !== ''
-    ? fetchOne("SELECT id, name FROM users WHERE reset_token = ? AND reset_expires > NOW() AND status = 'active' AND deleted_at IS NULL", [$token])
-    : null;
-
-if ($token !== '' && !$user) {
-    $error = 'This reset link is invalid or has expired.';
-}
-
-$success = false;
+$errors = [];
 if ($user && $_SERVER['REQUEST_METHOD'] === 'POST') {
     csrf_verify();
-    $password = $_POST['password'] ?? '';
-    $confirm  = $_POST['password_confirm'] ?? '';
-
-    if (strlen($password) < 8) {
-        $error = 'Password must be at least 8 characters.';
-    } elseif ($password !== $confirm) {
-        $error = 'Passwords do not match.';
-    } else {
-        runQuery("UPDATE users SET password_hash = ?, reset_token = NULL, reset_expires = NULL WHERE id = ?",
-            [password_hash($password, PASSWORD_DEFAULT), $user['id']]);
-        audit_log('UPDATE', 'user', (string) $user['id'], 'Password reset completed');
-        redirect('/login.php?reset=1');
+    $password = (string) ($_POST['password'] ?? '');
+    $errors = password_problems($password, $user['email'], $user['name']);
+    if (!$errors && !hash_equals($password, (string) ($_POST['password_confirm'] ?? ''))) $errors[] = 'The two passwords do not match.';
+    if (!$errors) {
+        if (!user_token_consume((int) $row['id'])) {
+            $errors[] = 'This link has just been used. Request a new one.';
+        } else {
+            set_user_password((int) $user['id'], $password);
+            runQuery("UPDATE users SET email_verified_at = COALESCE(email_verified_at, NOW()) WHERE id = ?", [$user['id']]);
+            runQuery("INSERT INTO audit_logs (user_id, user_name_snapshot, action, entity_type, entity_id, details, ip_address) VALUES (?,?,?,?,?,?,?)",
+                [$user['id'], $user['name'], 'PASSWORD_RESET', 'user', (string) $user['id'], $welcome ? 'Password set from welcome link' : 'Password reset completed', client_ip()]);
+            send_template_email('password_changed', $user['email'], ['name' => $user['name'], 'changed_at' => date('j M Y, H:i')]);
+            redirect('/login.php?reset=1');
+        }
     }
 }
+$minLen = max(8, setting_int('security_password_min_length', 8));
+$seo = ['title' => ($welcome ? 'Set your password' : 'Choose a new password') . ' | ' . get_setting('site_name', 'BodaERP'), 'noindex' => true];
+require __DIR__ . '/packages/frontend/partials/auth-start.php';
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reset Password - BodaERP</title>
-    <link rel="icon" type="image/png" href="<?= BASE_URL ?>/assets/images/logo.png">
-
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/style.css">
-
-    <style>
-        .login-page { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); padding: 20px; position: relative; overflow: hidden; }
-        .login-page::before { content: ''; position: absolute; top: -50%; right: -30%; width: 60%; height: 100%; background: linear-gradient(135deg, rgba(91, 75, 213, 0.05), rgba(220, 53, 69, 0.05)); border-radius: 0 0 0 100%; }
-        .login-container { width: 100%; max-width: 480px; position: relative; z-index: 1; }
-        .login-card { background: white; border-radius: 24px; padding: 40px 36px; box-shadow: 0 20px 60px rgba(0,0,0,0.08); position: relative; overflow: hidden; }
-        .login-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, #5b4bd5, #dc3545, #5b4bd5); }
-        .login-card .logo-section { text-align: center; margin-bottom: 28px; }
-        .login-card .logo-section .logo-icon { width: 64px; height: 64px; background: linear-gradient(135deg, #5b4bd5, #2f2480); border-radius: 16px; display: inline-flex; align-items: center; justify-content: center; color: white; font-size: 28px; margin-bottom: 12px; box-shadow: 0 8px 25px rgba(91, 75, 213, 0.2); }
-        .login-card .logo-section h2 { font-weight: 900; font-size: 1.8rem; margin: 0; letter-spacing: -0.5px; }
-        .login-card .logo-section .brand-blue { color: #5b4bd5; }
-        .login-card .logo-section .brand-red { color: #dc3545; }
-        .login-card .logo-section p { color: #6c757d; font-size: 0.85rem; margin: 4px 0 0; }
-        .form-group { margin-bottom: 16px; }
-        .form-group .input-group { border-radius: 12px; overflow: hidden; border: 2px solid #e9ecef; }
-        .form-group .input-group:focus-within { border-color: #5b4bd5; box-shadow: 0 0 0 4px rgba(91, 75, 213, 0.08); }
-        .form-group .input-group-text { background: transparent; border: none; color: #6c757d; padding: 0 0 0 16px; }
-        .form-group .form-control { border: none; padding: 12px 16px; font-size: 0.95rem; background: transparent; }
-        .form-group .form-control:focus { box-shadow: none; }
-        .btn-login { width: 100%; padding: 14px; font-weight: 700; font-size: 1rem; border-radius: 12px; background: linear-gradient(135deg, #5b4bd5, #4538b0); border: none; color: white; }
-        .btn-login:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(91, 75, 213, 0.3); color: white; }
-        .login-footer { text-align: center; margin-top: 16px; color: #6c757d; font-size: 0.7rem; }
-        .login-footer a { color: #5b4bd5; text-decoration: none; }
-    </style>
-</head>
-<body>
-
-    <div class="login-page">
-        <div class="login-container">
-            <div class="login-card">
-
-                <a href="<?= BASE_URL ?>/index.php" class="logo-section" style="display:block; text-decoration:none; color:inherit;">
-                    <div class="logo-icon"><i class="fas fa-lock"></i></div>
-                    <h2><span class="brand-blue">Boda</span><span class="brand-red">ERP</span></h2>
-                    <p>Set a new password</p>
-                </a>
-
-                <?php if ($error): ?>
-                    <div class="alert alert-danger py-2 small"><?= h($error) ?></div>
-                <?php endif; ?>
-
-                <?php if ($user): ?>
-                    <p class="text-muted small mb-3">Hi <?= h($user['name']) ?>, choose a new password (at least 8 characters).</p>
-                    <form method="post" action="<?= BASE_URL ?>/reset-password.php">
-                        <?= csrf_field() ?>
-                        <input type="hidden" name="token" value="<?= h($token) ?>">
-                        <div class="form-group">
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="fas fa-lock"></i></span>
-                                <input type="password" class="form-control" name="password" placeholder="New password" minlength="8" required>
-                            </div>
+            <?php if (!$user): ?>
+                <h1>This link has expired</h1>
+                <p class="sub">Password links work once, for a limited time. Request a new one and use it straight away.</p>
+                <a class="btn-login" href="<?= BASE_URL ?>/forgot-password.php"><i class="fas fa-rotate" aria-hidden="true"></i> Request a new link</a>
+                <p class="auth-links"><a href="<?= BASE_URL ?>/login.php">Back to sign in</a></p>
+            <?php else: ?>
+                <h1><?= $welcome ? 'Welcome, ' . h(strtok($user['name'], ' ')) : 'Choose a new password' ?></h1>
+                <p class="sub"><?= $welcome ? 'Set a password for' : 'For' ?> <strong><?= h($user['email']) ?></strong>.</p>
+                <?php if ($errors): ?><div class="notice notice-error" role="alert"><?= implode('<br>', array_map('h', $errors)) ?></div><?php endif; ?>
+                <form method="post" data-loading="Saving">
+                    <?= csrf_field() ?>
+                    <input type="hidden" name="token" value="<?= h($token) ?>">
+                    <?php if ($welcome): ?><input type="hidden" name="welcome" value="1"><?php endif; ?>
+                    <div class="login-field">
+                        <label for="password">New password</label>
+                        <div class="input-box">
+                            <i class="fas fa-lock" aria-hidden="true"></i>
+                            <input type="password" id="password" name="password" minlength="<?= $minLen ?>" autocomplete="new-password" required autofocus aria-describedby="pwHint">
+                            <button type="button" class="reveal" data-toggle-password="password" aria-label="Show password" aria-pressed="false"><i class="fas fa-eye" aria-hidden="true"></i></button>
                         </div>
-                        <div class="form-group">
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="fas fa-lock"></i></span>
-                                <input type="password" class="form-control" name="password_confirm" placeholder="Confirm new password" minlength="8" required>
-                            </div>
+                        <div class="strength" data-strength-for="password" aria-hidden="true"><span></span></div>
+                        <div class="field-hint" id="pwHint">At least <?= $minLen ?> characters, with letters and numbers.</div>
+                    </div>
+                    <div class="login-field">
+                        <label for="password_confirm">Type it again</label>
+                        <div class="input-box">
+                            <i class="fas fa-lock" aria-hidden="true"></i>
+                            <input type="password" id="password_confirm" name="password_confirm" autocomplete="new-password" required>
                         </div>
-                        <button type="submit" class="btn btn-login"><i class="fas fa-check me-2"></i>Set New Password</button>
-                    </form>
-                <?php else: ?>
-                    <a href="<?= BASE_URL ?>/forgot-password.php" class="btn btn-login"><i class="fas fa-redo me-2"></i>Request a New Link</a>
-                <?php endif; ?>
-
-                <div class="login-footer">
-                    <a href="<?= BASE_URL ?>/login.php">Back to Sign In</a> &middot; &copy; 2026 <a href="<?= BASE_URL ?>/index.php">Kakebe Technologies Limited</a>
-                </div>
-
-            </div>
-        </div>
-    </div>
-
-</body>
-</html>
+                    </div>
+                    <button type="submit" class="btn-login"><i class="fas fa-check" aria-hidden="true"></i> Save password</button>
+                </form>
+            <?php endif; ?>
+<?php require __DIR__ . '/packages/frontend/partials/auth-end.php';

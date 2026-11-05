@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/../../../backend/auth.php';
+require_once __DIR__ . '/../../../backend/permits.php';
 require_role(['chairperson']);
 $active = 'collect-payments';
 $stageId = $_SESSION['stage_id'];
@@ -10,27 +10,16 @@ $errors = [];
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     csrf_verify();
     $riderId = (int) ($_POST['rider_id'] ?? 0);
-    $amount = (float) ($_POST['amount'] ?? 0);
-    $method = $_POST['method'] ?? 'Cash';
-    $rider = fetchOne("SELECT * FROM riders WHERE id = ? AND stage_id = ?", [$riderId, $stageId]);
+    $method = (string) ($_POST['method'] ?? 'Cash');
+    $rider = fetchOne("SELECT * FROM riders WHERE id = ? AND stage_id = ? AND deleted_at IS NULL", [$riderId, $stageId]);
 
-    if (!$rider) $errors[] = 'Please select a valid rider.';
-    if ($amount <= 0) $errors[] = 'Amount must be greater than zero.';
+    if (!$rider) $errors[] = 'Choose a rider from your stage.';
+    elseif ((float) $rider['annual_tax'] <= 0) $errors[] = 'This rider has no permit fee set. Ask the city council to check the city fee.';
+    elseif ($reason = permit_payment_block_reason($rider)) $errors[] = $reason;
+    if (!in_array($method, PAYMENT_METHODS, true)) $errors[] = 'Choose how the rider paid.';
 
     if (!$errors) {
-        runQuery("INSERT INTO payments (rider_id,city_id,amount,payment_method,receipt_number,status,fiscal_year,paid_at,collected_by)
-                  VALUES (?,?,?,?,?,'Confirmed',?,NOW(),?)",
-            [$riderId,$cityId,$amount,$method,'TMP-'.uniqid(),CURRENT_FISCAL_YEAR,$_SESSION['user_id']]);
-        $paymentId = (int) db()->insert_id;
-        $receipt = nextReceiptNumber($paymentId);
-        runQuery("UPDATE payments SET receipt_number = ? WHERE id = ?", [$receipt, $paymentId]);
-
-        runQuery("UPDATE riders SET status='active', expiry_date = DATE_ADD(CURDATE(), INTERVAL 365 DAY) WHERE id = ?", [$riderId]);
-        if ($rider['user_id']) {
-            runQuery("INSERT INTO notifications (rider_id,type,message) VALUES (?, 'Payment Confirmed', ?)",
-                [$riderId, 'Your annual tax payment has been confirmed. Thank you!']);
-        }
-        audit_log('CREATE', 'payment', $receipt, "Collected {$amount} from {$rider['full_name']}");
+        $receipt = record_manual_payment($rider, $method, (int) $_SESSION['user_id']);
         redirect('/pages/chairperson/collect-payments.php?receipt=' . urlencode($receipt));
     }
 }
@@ -39,7 +28,7 @@ $stageRiders = fetchAll("SELECT id, full_name, bike_plate FROM riders WHERE stag
 $revenue = (float) fetchValue("SELECT COALESCE(SUM(p.amount),0) FROM payments p WHERE p.status='Confirmed' AND p.rider_id IN (SELECT id FROM riders WHERE stage_id=?)", [$stageId]);
 $activeRiders = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE stage_id = ? AND status='active' AND deleted_at IS NULL", [$stageId]);
 $defaulters = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE stage_id = ? AND status='expired' AND deleted_at IS NULL", [$stageId]);
-$thisMonth = (float) fetchValue("SELECT COALESCE(SUM(p.amount),0) FROM payments p WHERE p.status='Confirmed' AND MONTH(p.paid_at)=MONTH(CURDATE()) AND p.rider_id IN (SELECT id FROM riders WHERE stage_id=?)", [$stageId]);
+$thisMonth = (float) fetchValue("SELECT COALESCE(SUM(p.amount),0) FROM payments p WHERE p.status='Confirmed' AND YEAR(p.paid_at)=YEAR(CURDATE()) AND MONTH(p.paid_at)=MONTH(CURDATE()) AND p.rider_id IN (SELECT id FROM riders WHERE stage_id=?)", [$stageId]);
 
 $recentPayments = fetchAll("SELECT p.*, r.full_name FROM payments p JOIN riders r ON r.id = p.rider_id
     WHERE r.stage_id = ? ORDER BY p.paid_at DESC LIMIT 15", [$stageId]);
@@ -63,10 +52,10 @@ $receiptMsg = $_GET['receipt'] ?? null;
         <?php if ($errors): ?><div class="alert alert-danger"><?php foreach ($errors as $e) echo h($e) . '<br>'; ?></div><?php endif; ?>
 
         <div class="row g-3 row-cols-2 row-cols-xl-4 mb-4">
-            <div class="col"><div class="stat-hero-card grad-blue"><div class="stat-hero-icon"><i class="fas fa-money-bill-wave"></i></div><div><div class="stat-hero-value"><?= h(formatCurrency($revenue)) ?></div><div class="stat-hero-label">Total Collected</div></div></div></div>
-            <div class="col"><div class="stat-hero-card grad-green"><div class="stat-hero-icon"><i class="fas fa-user-check"></i></div><div><div class="stat-hero-value"><?= $activeRiders ?></div><div class="stat-hero-label">Active Riders</div></div></div></div>
-            <div class="col"><div class="stat-hero-card grad-red"><div class="stat-hero-icon"><i class="fas fa-exclamation-triangle"></i></div><div><div class="stat-hero-value"><?= $defaulters ?></div><div class="stat-hero-label">Defaulters</div></div></div></div>
-            <div class="col"><div class="stat-hero-card grad-gold"><div class="stat-hero-icon"><i class="fas fa-calendar-alt"></i></div><div><div class="stat-hero-value"><?= h(formatCurrency($thisMonth)) ?></div><div class="stat-hero-label">This Month</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-blue"><div class="stat-hero-icon"><i class="fas fa-money-bill-wave"></i></div><div><div class="stat-hero-value"><?= h(formatCurrency($revenue)) ?></div><div class="stat-hero-label">Total Collected</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-green"><div class="stat-hero-icon"><i class="fas fa-user-check"></i></div><div><div class="stat-hero-value"><?= $activeRiders ?></div><div class="stat-hero-label">Active Riders</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-red"><div class="stat-hero-icon"><i class="fas fa-exclamation-triangle"></i></div><div><div class="stat-hero-value"><?= $defaulters ?></div><div class="stat-hero-label">Defaulters</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-gold"><div class="stat-hero-icon"><i class="fas fa-calendar-alt"></i></div><div><div class="stat-hero-value"><?= h(formatCurrency($thisMonth)) ?></div><div class="stat-hero-label">This Month</div></div></div></div>
         </div>
 
         <div class="row g-4">
@@ -85,10 +74,11 @@ $receiptMsg = $_GET['receipt'] ?? null;
                             </select>
                         </div>
                         <div class="mb-3"><label class="form-label fw-semibold">Amount <span class="text-danger">*</span></label>
-                            <div class="input-group"><span class="input-group-text">UGX</span><input type="number" class="form-control" name="amount" value="<?= (int)$city['annual_fee'] ?>" required></div>
+                            <div class="input-group"><span class="input-group-text">UGX</span><input type="text" class="form-control" value="<?= number_format((float) $city['annual_fee']) ?>" readonly aria-describedby="feeHint"></div>
+                            <small class="text-muted" id="feeHint">The annual permit fee set by <?= h($city['name']) ?>. The rider's permit is renewed for one year from its current expiry date.</small>
                         </div>
                         <div class="mb-3"><label class="form-label fw-semibold">Payment Method</label>
-                            <select class="form-select" name="method"><option value="Mobile Money">Mobile Money</option><option value="Cash">Cash</option><option value="Bank Transfer">Bank Transfer</option></select>
+                            <select class="form-select" name="method"><?php foreach (PAYMENT_METHODS as $m): ?><option value="<?= h($m) ?>"><?= h($m === 'Mobile Money' ? 'Mobile money (paid to the stage number)' : ($m === 'Bank' ? 'Bank deposit' : $m)) ?></option><?php endforeach; ?></select>
                         </div>
                         <button type="submit" class="btn btn-primary w-100"><i class="fas fa-check me-1"></i>Record Payment</button>
                     </form>

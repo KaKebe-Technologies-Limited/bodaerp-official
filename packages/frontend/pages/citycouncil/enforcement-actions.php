@@ -75,7 +75,7 @@ $actionsById = array_column($actions, null, 'id');
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <?php $pageTitle = 'Enforcement Actions - BodaERP'; require __DIR__ . '/../../partials/head-assets.php'; ?>
+    <?php $pageTitle = 'Enforcement Actions | BodaERP'; require __DIR__ . '/../../partials/head-assets.php'; ?>
     <style>
     </style>
 </head>
@@ -84,23 +84,20 @@ $actionsById = array_column($actions, null, 'id');
 <?php require __DIR__ . '/../../partials/sidebar-citycouncil.php'; ?>
 
 <div class="main-content" id="mainContent">
-    <header class="top-header">
-        <div class="d-flex justify-content-between align-items-center">
-            <div class="d-flex align-items-center gap-3">
-                <button class="btn btn-light d-lg-none" id="toggleSidebar"><i class="fas fa-bars"></i></button>
-                <h5 class="mb-0 fw-bold"><span class="text-gradient-blue">Enforcement Actions</span></h5>
-            </div>
-            <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#actionModal" onclick="openAdd()"><i class="fas fa-plus me-1"></i>New Action</button>
-        </div>
-    </header>
+    <?php ob_start(); ?>
+<button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#actionModal" data-call="openAdd"><i class="fas fa-plus me-1" aria-hidden="true"></i>Record an action</button>
+    <?php $headerActions = ob_get_clean();
+    $pageTitle = 'Enforcement actions';
+    $pageSubtitle = '';
+    require __DIR__ . '/../../partials/topheader.php'; ?>
 
     <div class="content-area">
         <?php if ($errors): ?><div class="alert alert-danger"><?php foreach ($errors as $e) echo h($e); ?></div><?php endif; ?>
         <div class="row g-3 mb-4">
-            <div class="col-md-3 col-6"><div class="stat-hero-card grad-red"><div class="stat-hero-icon"><i class="fas fa-gavel"></i></div><div><div class="stat-hero-value"><?= $total ?></div><div class="stat-hero-label">Total Actions</div></div></div></div>
-            <div class="col-md-3 col-6"><div class="stat-hero-card grad-gold"><div class="stat-hero-icon"><i class="fas fa-clock"></i></div><div><div class="stat-hero-value"><?= $pending ?></div><div class="stat-hero-label">Pending</div></div></div></div>
-            <div class="col-md-3 col-6"><div class="stat-hero-card grad-green"><div class="stat-hero-icon"><i class="fas fa-check-circle"></i></div><div><div class="stat-hero-value"><?= $resolved ?></div><div class="stat-hero-label">Resolved</div></div></div></div>
-            <div class="col-md-3 col-6"><div class="stat-hero-card grad-blue"><div class="stat-hero-icon"><i class="fas fa-archive"></i></div><div><div class="stat-hero-value"><?= $closed ?></div><div class="stat-hero-label">Closed</div></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card tone-red"><div class="stat-hero-icon"><i class="fas fa-gavel"></i></div><div><div class="stat-hero-value"><?= $total ?></div><div class="stat-hero-label">Total Actions</div></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card tone-gold"><div class="stat-hero-icon"><i class="fas fa-clock"></i></div><div><div class="stat-hero-value"><?= $pending ?></div><div class="stat-hero-label">Pending</div></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card tone-green"><div class="stat-hero-icon"><i class="fas fa-check-circle"></i></div><div><div class="stat-hero-value"><?= $resolved ?></div><div class="stat-hero-label">Resolved</div></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card tone-blue"><div class="stat-hero-icon"><i class="fas fa-archive"></i></div><div><div class="stat-hero-value"><?= $closed ?></div><div class="stat-hero-label">Closed</div></div></div></div>
         </div>
 
         <?php if ($actions): ?>
@@ -114,19 +111,19 @@ $actionsById = array_column($actions, null, 'id');
             <div class="card-body">
                 <form class="row g-2 align-items-center">
                     <div class="col-md-3">
-                        <select class="form-select" name="type" onchange="this.form.submit()">
+                        <select class="form-select" name="type" data-autosubmit>
                             <option value="">All Types</option>
                             <?php foreach (['warning','fine','suspension','impound'] as $t): ?><option value="<?= $t ?>" <?= $typeFilter===$t?'selected':'' ?>><?= ucfirst($t) ?></option><?php endforeach; ?>
                         </select>
                     </div>
                     <div class="col-md-3">
-                        <select class="form-select" name="status" onchange="this.form.submit()">
+                        <select class="form-select" name="status" data-autosubmit>
                             <option value="">All Status</option>
                             <?php foreach (['pending','resolved','closed'] as $s): ?><option value="<?= $s ?>" <?= $statusFilter===$s?'selected':'' ?>><?= ucfirst($s) ?></option><?php endforeach; ?>
                         </select>
                     </div>
                     <div class="col-md-3">
-                        <select class="form-select" name="stage" onchange="this.form.submit()">
+                        <select class="form-select" name="stage" data-autosubmit>
                             <option value="">All Stages</option>
                             <?php foreach ($stagesList as $s): ?><option value="<?= (int)$s['id'] ?>" <?= $stageFilter===(int)$s['id']?'selected':'' ?>><?= h($s['name']) ?></option><?php endforeach; ?>
                         </select>
@@ -159,8 +156,8 @@ $actionsById = array_column($actions, null, 'id');
                                 <td><?= formatDate($a['action_date']) ?></td>
                                 <td><span class="badge <?= $statusBadge ?>"><?= ucfirst($a['status']) ?></span></td>
                                 <td class="no-export">
-                                    <button class="btn btn-sm btn-outline-warning" onclick="openEdit(<?= (int) $a['id'] ?>)"><i class="fas fa-edit"></i></button>
-                                    <form method="post" class="d-inline" onsubmit="return confirm('Delete this action?');">
+                                    <button class="btn btn-sm btn-outline-warning" data-call="openEdit" data-call-args="<?= h(js_json([(int) $a['id']])) ?>"><i class="fas fa-edit"></i></button>
+                                    <form method="post" class="d-inline" data-confirm="Delete this action?">
                                         <?= csrf_field() ?><input type="hidden" name="action" value="delete"><input type="hidden" name="id" value="<?= (int) $a['id'] ?>">
                                         <button type="submit" class="btn btn-sm btn-outline-danger"><i class="fas fa-trash"></i></button>
                                     </form>
@@ -181,9 +178,9 @@ $actionsById = array_column($actions, null, 'id');
             <form method="post" id="actionForm">
                 <?= csrf_field() ?>
                 <input type="hidden" name="edit_id" id="editId">
-                <div class="modal-header" style="background: linear-gradient(135deg, #dc3545, #a71d2a); color: white;">
-                    <h5 class="modal-title fw-bold" id="actionModalTitle"><i class="fas fa-gavel me-2"></i>New Enforcement Action</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold" id="actionModalTitle">New Enforcement Action</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body p-4">
                     <div class="mb-3"><label class="form-label fw-semibold">Rider <span class="text-danger">*</span></label>
@@ -210,7 +207,7 @@ $actionsById = array_column($actions, null, 'id');
 
 <?php require __DIR__ . '/../../partials/scripts-footer.php'; ?>
 <script>
-    const actionsData = <?= json_encode($actionsById) ?>;
+    const actionsData = <?= js_json($actionsById) ?>;
 
     function openAdd() {
         document.getElementById('actionModalTitle').innerHTML = '<i class="fas fa-gavel me-2"></i>New Enforcement Action';
@@ -233,17 +230,17 @@ $actionsById = array_column($actions, null, 'id');
 
     <?php if ($actions): ?>
     new ApexCharts(document.querySelector('#actionTypeChart'), {
-        series: <?= json_encode(array_values($byType)) ?>,
+        series: <?= js_json(array_values($byType)) ?>,
         chart: { type: 'donut', height: 220 },
-        labels: <?= json_encode(array_map('ucfirst', array_keys($byType))) ?>,
+        labels: <?= js_json(array_map('ucfirst', array_keys($byType))) ?>,
         colors: ['#f59e0b','#dc3545','#212529','#6c757d'],
     }).render();
     new ApexCharts(document.querySelector('#actionStageChart'), {
-        series: [{ name: 'Actions', data: <?= json_encode(array_values($byStage)) ?> }],
+        series: [{ name: 'Actions', data: <?= js_json(array_values($byStage)) ?> }],
         chart: { type: 'bar', height: 220, toolbar: { show: false } },
         plotOptions: { bar: { borderRadius: 6, columnWidth: '50%' } },
         colors: ['#dc3545'],
-        xaxis: { categories: <?= json_encode(array_keys($byStage)) ?> },
+        xaxis: { categories: <?= js_json(array_keys($byStage)) ?> },
     }).render();
     <?php endif; ?>
 

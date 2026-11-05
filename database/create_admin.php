@@ -1,18 +1,12 @@
 <?php
-// ============================================================
-// BodaERP — create the first Super Admin (command line only)
-//
-//   php database/create_admin.php --name "Jane Doe" --email jane@example.com
-//        creates a Super Admin with a random password, printed once
-//   php database/create_admin.php --name "Jane Doe" --email jane@example.com --password "a long password"
-//   php database/create_admin.php --email jane@example.com --reset
-//        sets a new random password on an existing account (its role is not changed)
-//   php database/create_admin.php --hash "a long password"
-//        prints only a password hash — for hosting without a command line: insert it
-//        into users.password_hash with phpMyAdmin (see docs/DEPLOYMENT.md)
-//
+// BodaERP: create the first Super Admin (command line only)
+// php database/create_admin.php --name "Jane Doe" --email jane@example.com creates a Super Admin with a
+// random password, printed once php database/create_admin.php --name "Jane Doe" --email jane@example.com
+// --password "a long password" php database/create_admin.php --email jane@example.com --reset sets a new
+// random password on an existing account (its role is not changed) php database/create_admin.php --hash "a
+// long password" prints only a password hash: for hosting without a command line: insert it into
+// users.password_hash with phpMyAdmin (see docs/DEPLOYMENT.md)
 // Run it where the .env of the target database is (on the live server: over SSH).
-// ============================================================
 if (php_sapi_name() !== 'cli') { http_response_code(403); exit('Run from the command line: php database/create_admin.php'); }
 
 $o = getopt('', ['name:', 'email:', 'password:', 'reset', 'hash:']);

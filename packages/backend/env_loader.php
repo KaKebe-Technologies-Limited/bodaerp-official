@@ -1,11 +1,7 @@
 <?php
-// ============================================================
-// BodaERP - .env loader
-// Minimal, dependency-free parser for simple KEY=VALUE lines.
-// Never overwrites a variable the environment already provides (e.g.
-// one set by the hosting panel on the live server), so a committed
-// .env.example with blanks can never shadow real production config.
-// ============================================================
+// BodaERP - .env loader Minimal, dependency-free parser for simple KEY=VALUE lines. Never overwrites a
+// variable the environment already provides (e.g. one set by the hosting panel on the live server), so a
+// committed .env.example with blanks can never shadow real production config.
 
 if (!function_exists('loadEnvFile')) {
     function loadEnvFile(string $path): void {

@@ -50,7 +50,7 @@ $offset = ($page - 1) * $perPage;
 
 $transactions = fetchAll("SELECT p.*, r.full_name, s.name AS stage_name FROM payments p
     JOIN riders r ON r.id = p.rider_id LEFT JOIN stages s ON s.id = r.stage_id
-    $where ORDER BY p.paid_at DESC LIMIT $perPage OFFSET $offset", $params);
+    $where ORDER BY p.paid_at DESC LIMIT " . (int) $perPage . " OFFSET " . (int) $offset, $params);
 $stages = fetchAll("SELECT id, name FROM stages WHERE city_id = ? ORDER BY name", [$cityId]);
 
 function qsMerge2(array $overrides): string { return '?' . http_build_query(array_merge($_GET, $overrides)); }
@@ -58,21 +58,17 @@ function qsMerge2(array $overrides): string { return '?' . http_build_query(arra
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <?php $pageTitle = 'Payment Transactions - BodaERP'; require __DIR__ . '/../../partials/head-assets.php'; ?>
+    <?php $pageTitle = 'Payment Transactions | BodaERP'; require __DIR__ . '/../../partials/head-assets.php'; ?>
 </head>
 <body>
 
 <?php require __DIR__ . '/../../partials/sidebar-citycouncil.php'; ?>
 
 <div class="main-content" id="mainContent">
-    <header class="top-header">
-        <div class="d-flex justify-content-between align-items-center">
-            <div class="d-flex align-items-center gap-3">
-                <button class="btn btn-light d-lg-none" id="toggleSidebar"><i class="fas fa-bars"></i></button>
-                <h5 class="mb-0 fw-bold"><span class="text-gradient-blue">Payment Transactions</span></h5>
-            </div>
-        </div>
-    </header>
+    <?php
+    $pageTitle = 'Payment transactions';
+    $pageSubtitle = '';
+    require __DIR__ . '/../../partials/topheader.php'; ?>
 
     <div class="content-area">
         <div class="card mb-4">

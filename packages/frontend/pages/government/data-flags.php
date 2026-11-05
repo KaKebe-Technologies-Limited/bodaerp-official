@@ -7,6 +7,7 @@ $active = 'data-flags';
 $flagPageUrl = BASE_URL . '/pages/government/data-flags.php';
 $flagScopeCity = null;
 $flagCanReview = false;
+$flagMaskPersonal = true;
 $flagScanResult = null;
 $flagReviewMsg = null;
 anomaly_scan_if_stale('auto');
@@ -14,14 +15,14 @@ anomaly_scan_if_stale('auto');
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <?php $pageTitle = 'Data Integrity Flags - BodaERP'; require __DIR__ . '/../../partials/head-assets.php'; ?>
+    <?php $pageTitle = 'Data Integrity Flags | BodaERP'; require __DIR__ . '/../../partials/head-assets.php'; ?>
 </head>
 <body>
 
 <?php require __DIR__ . '/../../partials/sidebar-government.php'; ?>
 
 <div class="main-content" id="mainContent">
-    <?php $pageTitle = 'Data Integrity Flags'; $pageSubtitle = 'National view of duplicates, fraud signals and inconsistent records (read-only)'; require __DIR__ . '/../../partials/topheader.php'; ?>
+    <?php $pageTitle = 'Data checks'; $pageSubtitle = 'Possible duplicates and inconsistent records across all cities (read only)'; require __DIR__ . '/../../partials/topheader.php'; ?>
     <div class="content-area">
         <?php require __DIR__ . '/../../partials/flags-panel.php'; ?>
     </div>

@@ -1,14 +1,12 @@
 <?php
-// ============================================================
-// BodaERP — demo data seeder (command line only)
-//
-//   php database/seed_run.php           adds demo cities, stages, users, riders and payments
-//                                       (refuses to run if riders already exist)
-//   php database/seed_run.php --fresh   empties the data tables first, then reseeds
-//
-// Tables are created automatically on the first query, so a brand-new empty database works.
-// Demo logins are listed on the login page (localhost) and in README.md.
-// ============================================================
+// BodaERP: demo data seeder (command line only)
+// php database/seed_run.php
+// adds demo cities, stages, users, riders and payments (refuses to run if riders already exist) php
+// database/seed_run.php --fresh
+// empties the data tables first, then reseeds php database/seed_run.php --if-empty
+// seeds only when there are no riders yet (used by Docker start-up)
+// Tables are created automatically on the first query, so a brand-new empty database works. Demo logins are
+// listed on the login page (localhost) and in README.md.
 
 if (php_sapi_name() !== 'cli') {
     http_response_code(403);
@@ -23,7 +21,9 @@ $db = db();
 
 $existing = (int) fetchValue('SELECT COUNT(*) FROM riders');
 if ($existing > 0 && !$fresh) {
-    die("riders table already has $existing rows. Re-run with --fresh to truncate and reseed.\n");
+    if (in_array('--if-empty', $argv, true)) exit(0);   // container start-up: demo data is already there
+    fwrite(STDERR, "riders table already has $existing rows. Re-run with --fresh to truncate and reseed.\n");
+    exit(1);
 }
 
 if ($fresh) {
@@ -59,7 +59,7 @@ function prevFiscalYear(string $fy): string {
 $db->begin_transaction();
 
 try {
-    // ── 1. Super admin (bootstrapped first — cities.created_by references it) ──
+    // 1. Super admin (bootstrapped first: cities.created_by references it)
     runQuery("INSERT INTO users (name,email,phone,password_hash,role,city_id,stage_id,status,created_at)
               VALUES (:name,:email,:phone,:ph,'super_admin',NULL,NULL,'active',:created_at)", [
         'name' => 'Kakebe Admin', 'email' => 'admin@bodaerp.com', 'phone' => '+256 700 000 001',
@@ -68,7 +68,7 @@ try {
     $superAdminId = (int) $db->insert_id;
     echo "Created super admin (id=$superAdminId)\n";
 
-    // ── 1b. National government portal accounts (read-only role, no city) ──
+    // 1b. National government portal accounts (read-only role, no city)
     foreach ([
         ['Ministry of Works & Transport',       'works@gov.bodaerp.com',    'Ministry of Works & Transport'],
         ['Uganda Revenue Authority',            'ura@gov.bodaerp.com',      'Uganda Revenue Authority (URA)'],
@@ -83,7 +83,6 @@ try {
     }
     echo "Created 4 government portal accounts\n";
 
-    // ── 2. Cities ──────────────────────────────────────────
     $cities = [
         ['id'=>'LIR','name'=>'Lira City','logo'=>'/assets/images/lcc.png','fee'=>50000,'status'=>'active',
          'email'=>'council@liracityuganda.go.ug','phone'=>'+256 473 420 123','address'=>'Lira City Council, Parliament Avenue, Lira, Uganda',
@@ -114,7 +113,6 @@ try {
     }
     echo "Created " . count($cities) . " cities\n";
 
-    // ── 3. Stages ──────────────────────────────────────────
     // riders/compliance columns = declared demo numbers driving the seed volume below
     $stagesDef = [
         ['code'=>'LIR-STG-001','city'=>'LIR','name'=>'Railway Stage',      'riders'=>87,  'compliance'=>85],
@@ -136,7 +134,7 @@ try {
     }
     echo "Created " . count($stagesDef) . " stages\n";
 
-    // ── 4. Remaining users: city admins, chairpersons, 4 demo riders ──
+    // 4. Remaining users: city admins, chairpersons, 4 demo riders
     $userSql = "INSERT INTO users (name,email,phone,password_hash,role,city_id,stage_id,status,created_at)
                 VALUES (:name,:email,:phone,:ph,:role,:city,:stage,'active',:created_at)";
 
@@ -181,7 +179,7 @@ try {
     }
     echo "Created " . (count($cityAdmins)+count($chairpersons)+count($demoRiderUsers)) . " more users (city admins, chairpersons, demo riders)\n";
 
-    // ── 5. Riders (procedural, per stage, matching declared counts/compliance) ──
+    // 5. Riders (procedural, per stage, matching declared counts/compliance)
     $riderSql = "INSERT INTO riders (user_id,city_id,stage_id,id_number,full_name,nin,date_of_birth,gender,marital_status,
         phone,email,physical_address,next_of_kin_name,next_of_kin_contact,bike_plate,bike_model,route,status,member_since,expiry_date,
         annual_tax,created_by,created_at)
@@ -278,11 +276,10 @@ try {
             $riderIdsByStage[$s['code']][] = $row;
             $allRiderRows[] = $row;
         }
-        echo "  Seeded $n riders for {$s['name']} ({$s['code']}) — active target $activeTarget\n";
+        echo "  Seeded $n riders for {$s['name']} ({$s['code']}): active target $activeTarget\n";
     }
     echo "Total riders seeded: " . count($allRiderRows) . "\n";
 
-    // ── 6. Payments ────────────────────────────────────────
     $paySql = "INSERT INTO payments (rider_id,city_id,amount,payment_method,receipt_number,status,fiscal_year,paid_at,collected_by)
         VALUES (:rider,:city,:amount,:method,:receipt,:status,:fy,:paid_at,:collected_by)";
     $methods = ['Mobile Money','Mobile Money','Mobile Money','Cash','Bank Transfer']; // weighted toward MoMo
@@ -327,7 +324,7 @@ try {
     }
     echo "Seeded $paymentCount payments\n";
 
-    // ── 7. Enforcement actions (sample, drawn from expired riders) ──
+    // 7. Enforcement actions (sample, drawn from expired riders)
     $expiredRiders = array_values(array_filter($allRiderRows, fn($r) => $r['status'] === 'expired'));
     $types = ['warning'=>40,'fine'=>35,'suspension'=>15,'impound'=>10];
     $statuses = ['pending'=>40,'resolved'=>40,'closed'=>20];
@@ -353,7 +350,7 @@ try {
     }
     echo "Seeded $enfCount enforcement actions\n";
 
-    // ── 8. Notifications (only for the 4 portal-linked demo riders) ──
+    // 8. Notifications (only for the 4 portal-linked demo riders)
     $notifSql = "INSERT INTO notifications (rider_id,type,message,is_read,created_at) VALUES (:rider,:type,:msg,:read,:created_at)";
     // find rider rows whose id_number was reserved for the 4 portal-linked demo riders
     $reservedIdNums = array_keys($demoRiderUserIds);
@@ -375,7 +372,7 @@ try {
     }
     echo "Seeded $notifCount notifications\n";
 
-    // ── 9. Audit logs (historical LOGIN rows for the seeded login accounts) ──
+    // 9. Audit logs (historical LOGIN rows for the seeded login accounts)
     $allUsers = fetchAll("SELECT id,name,role,city_id FROM users");
     $auditSql = "INSERT INTO audit_logs (user_id,user_name_snapshot,role_snapshot,city_id,action,details,ip_address,created_at)
         VALUES (:uid,:name,:role,:city,'LOGIN','Seed-generated historical login','127.0.0.1',:created_at)";
@@ -389,6 +386,7 @@ try {
     }
     echo "Seeded $auditCount audit log rows\n";
 
+    runQuery("UPDATE users SET password_changed_at = NOW() WHERE password_changed_at IS NULL");   // demo accounts have known passwords
     $db->commit();
     echo "\nSeed complete.\n";
 

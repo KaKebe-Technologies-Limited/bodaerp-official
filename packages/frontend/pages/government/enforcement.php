@@ -41,39 +41,32 @@ $agencyLabel = $_SESSION['agency_name'] ?? 'Government Portal';
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <?php $pageTitle = 'National Enforcement - BodaERP Government Portal'; require __DIR__ . '/../../partials/head-assets.php'; ?>
+    <?php $pageTitle = 'National Enforcement | BodaERP'; require __DIR__ . '/../../partials/head-assets.php'; ?>
 </head>
 <body>
 
 <?php require __DIR__ . '/../../partials/sidebar-government.php'; ?>
 
 <div class="main-content" id="mainContent">
-    <header class="top-header">
-        <div class="d-flex justify-content-between align-items-center">
-            <div class="d-flex align-items-center gap-3">
-                <button class="btn btn-light d-lg-none" id="toggleSidebar"><i class="fas fa-bars"></i></button>
-                <div>
-                    <h5 class="mb-0 fw-bold"><span class="text-gradient-blue">National Enforcement Dashboard</span></h5>
-                    <small class="text-muted d-none d-sm-block">Actions, violations, and impoundments across all cities</small>
-                </div>
-            </div>
-        </div>
-    </header>
+    <?php
+    $pageTitle = 'National enforcement';
+    $pageSubtitle = 'Actions, violations and impoundments across all cities';
+    require __DIR__ . '/../../partials/topheader.php'; ?>
 
     <div class="content-area">
 
         <div class="row g-3 row-cols-2 row-cols-xl-4 mb-4">
-            <div class="col"><div class="stat-hero-card grad-red"><div class="stat-hero-icon"><i class="fas fa-gavel"></i></div><div><div class="stat-hero-value"><?= number_format($totalActions) ?></div><div class="stat-hero-label">Total Actions</div></div></div></div>
-            <div class="col"><div class="stat-hero-card grad-gold"><div class="stat-hero-icon"><i class="fas fa-hourglass-half"></i></div><div><div class="stat-hero-value"><?= number_format($totalPending) ?></div><div class="stat-hero-label">Pending</div></div></div></div>
-            <div class="col"><div class="stat-hero-card grad-dark"><div class="stat-hero-icon"><i class="fas fa-motorcycle"></i></div><div><div class="stat-hero-value"><?= number_format($totalImpounded) ?></div><div class="stat-hero-label">Bikes Impounded</div></div></div></div>
-            <div class="col"><div class="stat-hero-card grad-blue"><div class="stat-hero-icon"><i class="fas fa-money-bill-wave"></i></div><div><div class="stat-hero-value">UGX <?= number_format($totalFinesValue) ?></div><div class="stat-hero-label">Fines Issued</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-red"><div class="stat-hero-icon"><i class="fas fa-gavel"></i></div><div><div class="stat-hero-value"><?= number_format($totalActions) ?></div><div class="stat-hero-label">Total Actions</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-gold"><div class="stat-hero-icon"><i class="fas fa-hourglass-half"></i></div><div><div class="stat-hero-value"><?= number_format($totalPending) ?></div><div class="stat-hero-label">Pending</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-dark"><div class="stat-hero-icon"><i class="fas fa-motorcycle"></i></div><div><div class="stat-hero-value"><?= number_format($totalImpounded) ?></div><div class="stat-hero-label">Bikes Impounded</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-blue"><div class="stat-hero-icon"><i class="fas fa-money-bill-wave"></i></div><div><div class="stat-hero-value">UGX <?= number_format($totalFinesValue) ?></div><div class="stat-hero-label">Fines Issued</div></div></div></div>
         </div>
 
         <div class="row g-3 g-md-4 mb-4">
             <div class="col-xl-5">
                 <div class="card h-100">
                     <div class="card-body">
-                        <h6 class="section-heading mb-3"><i class="fas fa-chart-pie text-primary me-2"></i>Violations by Type</h6>
+                        <h6 class="section-heading mb-3">Violations by Type</h6>
                         <div id="typeChart"></div>
                     </div>
                 </div>
@@ -81,7 +74,7 @@ $agencyLabel = $_SESSION['agency_name'] ?? 'Government Portal';
             <div class="col-xl-7">
                 <div class="card h-100">
                     <div class="card-body">
-                        <h6 class="section-heading mb-3"><i class="fas fa-city text-primary me-2"></i>Enforcement Actions by City</h6>
+                        <h6 class="section-heading mb-3">Enforcement Actions by City</h6>
                         <div id="cityChart"></div>
                     </div>
                 </div>
@@ -92,7 +85,7 @@ $agencyLabel = $_SESSION['agency_name'] ?? 'Government Portal';
             <div class="col-lg-6">
                 <div class="card h-100">
                     <div class="card-body">
-                        <h6 class="fw-bold mb-3"><i class="fas fa-user-times text-danger me-2"></i>Repeat Offenders</h6>
+                        <h6 class="fw-bold mb-3">Repeat Offenders</h6>
                         <?php if (!$repeatOffenders): ?>
                             <p class="text-muted small mb-0">No repeat offenders recorded.</p>
                         <?php else: ?>
@@ -101,8 +94,8 @@ $agencyLabel = $_SESSION['agency_name'] ?? 'Government Portal';
                             <div class="activity-row">
                                 <div class="icon-badge red" style="width:34px;height:34px;font-size:0.85rem;"><i class="fas fa-motorcycle"></i></div>
                                 <div class="flex-1" style="min-width:0;">
-                                    <div class="activity-title"><?= h($o['full_name']) ?> — <?= h($o['bike_plate']) ?></div>
-                                    <div class="activity-sub"><?= h($o['city_name'] ?? '—') ?></div>
+                                    <div class="activity-title"><?= h($o['full_name']) ?> · <?= h($o['bike_plate']) ?></div>
+                                    <div class="activity-sub"><?= h($o['city_name'] ?? '–') ?></div>
                                 </div>
                                 <span class="badge bg-danger" style="flex-shrink:0;"><?= (int) $o['action_count'] ?>x</span>
                             </div>
@@ -115,7 +108,7 @@ $agencyLabel = $_SESSION['agency_name'] ?? 'Government Portal';
             <div class="col-lg-6">
                 <div class="card h-100">
                     <div class="card-body">
-                        <h6 class="fw-bold mb-3"><i class="fas fa-exclamation-triangle text-warning me-2"></i>Violation Type Breakdown</h6>
+                        <h6 class="fw-bold mb-3">Violation Type Breakdown</h6>
                         <?php $typeIcons = ['warning'=>['fa-exclamation-circle','warning'],'fine'=>['fa-money-bill-wave','danger'],'suspension'=>['fa-ban','dark'],'impound'=>['fa-motorcycle','danger']]; ?>
                         <?php foreach (['warning','fine','suspension','impound'] as $t): [$icon, $color] = $typeIcons[$t]; ?>
                             <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
@@ -131,17 +124,17 @@ $agencyLabel = $_SESSION['agency_name'] ?? 'Government Portal';
         <div class="card">
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-                    <h6 class="fw-bold mb-0"><i class="fas fa-list text-primary me-2"></i>All Enforcement Actions</h6>
+                    <h6 class="fw-bold mb-0">All Enforcement Actions</h6>
                     <form class="d-flex gap-2 flex-wrap" method="get">
-                        <select class="form-select form-select-sm" style="width:auto;" name="city" onchange="this.form.submit()">
+                        <select class="form-select form-select-sm" style="width:auto;" name="city" data-autosubmit>
                             <option value="">All Cities</option>
                             <?php foreach ($cities as $c): ?><option value="<?= h($c['id']) ?>" <?= $filterCity === $c['id'] ? 'selected' : '' ?>><?= h($c['name']) ?></option><?php endforeach; ?>
                         </select>
-                        <select class="form-select form-select-sm" style="width:auto;" name="type" onchange="this.form.submit()">
+                        <select class="form-select form-select-sm" style="width:auto;" name="type" data-autosubmit>
                             <option value="">All Types</option>
                             <?php foreach (['warning','fine','suspension','impound'] as $t): ?><option value="<?= $t ?>" <?= $filterType === $t ? 'selected' : '' ?>><?= ucfirst($t) ?></option><?php endforeach; ?>
                         </select>
-                        <select class="form-select form-select-sm" style="width:auto;" name="status" onchange="this.form.submit()">
+                        <select class="form-select form-select-sm" style="width:auto;" name="status" data-autosubmit>
                             <option value="">All Status</option>
                             <?php foreach (['pending','resolved','closed'] as $s): ?><option value="<?= $s ?>" <?= $filterStatus === $s ? 'selected' : '' ?>><?= ucfirst($s) ?></option><?php endforeach; ?>
                         </select>
@@ -156,10 +149,10 @@ $agencyLabel = $_SESSION['agency_name'] ?? 'Government Portal';
                         <?php foreach ($actions as $a): ?>
                             <tr>
                                 <td><code><?= h($a['action_code']) ?></code></td>
-                                <td style="font-size:0.82rem;"><?= h($a['rider_name'] ?? '—') ?><br><small class="text-muted"><?= h($a['plate'] ?: '—') ?></small></td>
-                                <td style="font-size:0.82rem;"><?= h($a['city_name'] ?? '—') ?></td>
+                                <td style="font-size:0.82rem;"><?= h($a['rider_name'] ?? '–') ?><br><small class="text-muted"><?= h($a['plate'] ?: '–') ?></small></td>
+                                <td style="font-size:0.82rem;"><?= h($a['city_name'] ?? '–') ?></td>
                                 <td><span class="badge bg-<?= $typeColors[$a['type']] ?? 'secondary' ?>" style="font-size:0.65rem;"><?= strtoupper($a['type']) ?></span></td>
-                                <td style="font-size:0.82rem;"><?= $a['amount'] ? 'UGX ' . number_format($a['amount']) : '—' ?></td>
+                                <td style="font-size:0.82rem;"><?= $a['amount'] ? 'UGX ' . number_format($a['amount']) : '–' ?></td>
                                 <td style="font-size:0.8rem;"><?= formatDate($a['action_date']) ?></td>
                                 <td><span class="badge bg-<?= $statusColors[$a['status']] ?? 'secondary' ?>"><?= strtoupper($a['status']) ?></span></td>
                             </tr>
@@ -195,13 +188,13 @@ $agencyLabel = $_SESSION['agency_name'] ?? 'Government Portal';
     }).render();
 
     new ApexCharts(document.querySelector('#cityChart'), {
-        series: [{ name: 'Actions', data: <?= json_encode(array_map(fn($c) => (int) $c['c'], $byCity)) ?> }],
+        series: [{ name: 'Actions', data: <?= js_json(array_map(fn($c) => (int) $c['c'], $byCity)) ?> }],
         chart: { type: 'bar', height: 240, toolbar: { show: false } },
         plotOptions: { bar: { borderRadius: 6, columnWidth: '45%', distributed: true } },
         dataLabels: { enabled: false },
         legend: { show: false },
-        colors: ['#5b4bd5', '#198754', '#f59e0b', '#0dcaf0', '#dc3545', '#6f42c1'],
-        xaxis: { categories: <?= json_encode(array_map(fn($c) => $c['name'], $byCity)) ?>, labels: { style: { colors: '#6c757d', fontSize: '11px' } } },
+        colors: ['#056CFE', '#198754', '#f59e0b', '#0dcaf0', '#dc3545', '#001740'],
+        xaxis: { categories: <?= js_json(array_map(fn($c) => $c['name'], $byCity)) ?>, labels: { style: { colors: '#6c757d', fontSize: '11px' } } },
         yaxis: { labels: { style: { colors: '#6c757d', fontSize: '12px' } } },
         grid: { borderColor: '#f1f1f1', strokeDashArray: 4 },
         tooltip: { theme: 'dark' }

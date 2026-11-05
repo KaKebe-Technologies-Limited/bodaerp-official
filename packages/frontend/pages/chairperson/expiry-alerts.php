@@ -27,7 +27,7 @@ $upcomingRevenue = array_sum(array_column($riders, 'annual_tax'));
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <?php $pageTitle = 'Expiry Alerts - BodaERP'; require __DIR__ . '/../../partials/head-assets.php'; ?>
+    <?php $pageTitle = 'Expiry Alerts | BodaERP'; require __DIR__ . '/../../partials/head-assets.php'; ?>
 </head>
 <body>
 
@@ -38,9 +38,9 @@ $upcomingRevenue = array_sum(array_column($riders, 'annual_tax'));
 
     <div class="content-area">
         <div class="row g-3 row-cols-1 row-cols-md-3 mb-4">
-            <div class="col"><div class="stat-hero-card grad-gold"><div class="stat-hero-icon"><i class="fas fa-hourglass-half"></i></div><div><div class="stat-hero-value"><?= count($riders) ?></div><div class="stat-hero-label">Expiring in 30 Days</div></div></div></div>
-            <div class="col"><div class="stat-hero-card grad-red"><div class="stat-hero-icon"><i class="fas fa-exclamation-circle"></i></div><div><div class="stat-hero-value"><?= $criticalCount ?></div><div class="stat-hero-label">Critical (&le;7 days)</div></div></div></div>
-            <div class="col"><div class="stat-hero-card grad-blue"><div class="stat-hero-icon"><i class="fas fa-coins"></i></div><div><div class="stat-hero-value"><?= h(formatCurrency($upcomingRevenue)) ?></div><div class="stat-hero-label">Renewal Value</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-gold"><div class="stat-hero-icon"><i class="fas fa-hourglass-half"></i></div><div><div class="stat-hero-value"><?= count($riders) ?></div><div class="stat-hero-label">Expiring in 30 Days</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-red"><div class="stat-hero-icon"><i class="fas fa-exclamation-circle"></i></div><div><div class="stat-hero-value"><?= $criticalCount ?></div><div class="stat-hero-label">Critical (&le;7 days)</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-blue"><div class="stat-hero-icon"><i class="fas fa-coins"></i></div><div><div class="stat-hero-value"><?= h(formatCurrency($upcomingRevenue)) ?></div><div class="stat-hero-label">Renewal Value</div></div></div></div>
         </div>
 
         <div class="alert alert-warning d-flex justify-content-between align-items-center flex-wrap gap-2">
@@ -62,7 +62,7 @@ $upcomingRevenue = array_sum(array_column($riders, 'annual_tax'));
                             <td><?= formatDate($r['expiry_date']) ?></td>
                             <td><span class="badge <?= $badge ?>"><?= $days ?> days</span></td>
                             <td class="no-export">
-                                <form method="post" class="d-inline" onsubmit="return confirm('Send renewal reminder?');">
+                                <form method="post" class="d-inline" data-confirm="Send renewal reminder?">
                                     <?= csrf_field() ?><input type="hidden" name="rider_id" value="<?= (int)$r['id'] ?>">
                                     <button type="submit" class="btn btn-sm btn-outline-warning"><i class="fas fa-bell"></i> Remind</button>
                                 </form>

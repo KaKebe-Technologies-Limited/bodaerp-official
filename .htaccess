@@ -1,19 +1,43 @@
 # ============================================================
-# BodaERP — URL mapping for the packages/ layout
-# Public URLs stay /pages/... and /assets/... (BASE_URL . '/pages/..'),
-# the files live under packages/frontend/. Needs mod_rewrite.
+# BodaERP - URL mapping and protection (needs mod_rewrite, AllowOverride All)
+# All rules use paths relative to this folder, so the site works in any XAMPP
+# subfolder (http://localhost/bodaerp-official/) and at a domain root alike:
+# no RewriteBase is needed.
 # ============================================================
+Options -Indexes
+DirectoryIndex index.php
+
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options "nosniff"
+</IfModule>
+
 RewriteEngine On
 
-# Never serve secrets, VCS metadata or SQL dumps
-RewriteRule (^|/)\.(env|git) - [F,L]
-RewriteRule \.sql$ - [F,L]
-RewriteRule ^database/ - [F,L]
-RewriteRule ^tests/ - [F,L]
+# Never serve secrets, tooling, docs, VCS metadata or SQL dumps
+RewriteRule (^|/)\.(env|git|claude|vscode|docker) - [F,L]
+RewriteRule \.(sql|md|yml|yaml|log|sh|ini|lock|dist)$ - [F,L]
+RewriteRule ^(database|tests|storage|docker|docs)(/|$) - [F,L]
 RewriteRule ^ipn_logs\.txt$ - [F,L]
+RewriteRule ^config/ - [F,L]
+
+# Backend code and partials are only reachable through the public entry points below
+RewriteCond %{THE_REQUEST} \s/+(?:[^?\s]*/)?packages/(backend|frontend/partials)/ [NC]
+RewriteRule ^ - [F,L]
 
 RewriteRule ^(pages|assets)/(.*)$ packages/frontend/$1/$2 [L]
+RewriteRule ^uploads/(.+)$ packages/backend/serve_upload.php?path=$1 [L,QSA]
 
-# Entry points that moved into packages/backend/ keep their old public URLs
+# Entry points that live in packages/backend/ keep short public URLs
 RewriteRule ^logout\.php$ packages/backend/logout.php [L]
 RewriteRule ^api/payments\.php$ packages/backend/payments.php [L]
+RewriteRule ^api/media-upload\.php$ packages/backend/media_upload.php [L]
+RewriteRule ^sitemap\.xml$ sitemap.php [L]
+RewriteRule ^robots\.txt$ robots.php [L]
+
+# Clean URLs for public content pages: /p/about, /p/privacy-policy ...
+RewriteRule ^p/([a-z0-9-]+)/?$ page.php?slug=$1 [L,QSA]
+
+# Anything that is not a real file or folder gets the branded 404 page
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^ packages/frontend/pages/errors/error.php?code=404 [L]

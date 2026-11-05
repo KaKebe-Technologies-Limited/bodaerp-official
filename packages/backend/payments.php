@@ -1,9 +1,6 @@
 <?php
-// ============================================================
-// BodaERP — api/payments.php
-// Rider self-service ioTec Pay mobile-money collection: initiate a
-// payment, poll its status, and (admin) reconcile stuck-pending ones.
-// ============================================================
+// BodaERP: api/payments.php Rider self-service ioTec Pay mobile-money collection: initiate a payment, poll
+// its status, and (admin) reconcile stuck-pending ones.
 
 require_once __DIR__ . '/../../packages/backend/auth.php';
 require_once __DIR__ . '/../../packages/backend/iotec_functions.php';
@@ -11,7 +8,7 @@ require_once __DIR__ . '/../../packages/backend/iotec_functions.php';
 header('Content-Type: application/json');
 $action = $_GET['action'] ?? $_POST['action'] ?? '';
 
-// ── Rider: initiate a payment for their own annual tax ──────────
+// Rider: initiate a payment for their own annual tax
 if ($action === 'initiate' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     require_role(['rider']);
     csrf_verify();
@@ -28,12 +25,21 @@ if ($action === 'initiate' && $_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
-    $already = fetchValue(
-        "SELECT COUNT(*) FROM payments WHERE rider_id=? AND status='Confirmed' AND fiscal_year=?",
-        [$riderId, CURRENT_FISCAL_YEAR]
-    );
-    if ($already) {
-        echo json_encode(['success' => false, 'message' => 'You have already paid for this fiscal year.']);
+    if (!setting_bool('feature_online_payments', true)) {
+        echo json_encode(['success' => false, 'message' => 'Online payments are switched off. Please pay your stage chairperson.']);
+        exit;
+    }
+    if (!preg_match('/^(\+?256|0)?7\d{8}$/', preg_replace('/[\s-]/', '', $phone))) {
+        echo json_encode(['success' => false, 'message' => 'Enter an MTN or Airtel number, e.g. 0772 123456.']);
+        exit;
+    }
+    if (!rate_limit('pay:' . $riderId, 5, 900)) {
+        echo json_encode(['success' => false, 'message' => 'Several payment requests were sent recently. Wait 15 minutes and try again.']);
+        exit;
+    }
+    $riderRow = fetchOne("SELECT * FROM riders WHERE id = ? AND deleted_at IS NULL", [$riderId]);
+    if ($riderRow && ($reason = permit_payment_block_reason($riderRow))) {
+        echo json_encode(['success' => false, 'message' => $reason]);
         exit;
     }
 
@@ -44,7 +50,7 @@ if ($action === 'initiate' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     $message = $result['status'] === 'completed'
-        ? 'Payment confirmed — thank you!'
+        ? 'Payment confirmed. Thank you!'
         : 'Payment request sent. Approve it on your phone to complete.';
     echo json_encode([
         'success'    => true,
@@ -55,7 +61,7 @@ if ($action === 'initiate' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
 }
 
-// ── Rider: poll a payment's status while it's pending ───────────
+// Rider: poll a payment's status while it's pending
 if ($action === 'check_status' && $_SERVER['REQUEST_METHOD'] === 'GET') {
     require_role(['rider']);
 
@@ -73,7 +79,7 @@ if ($action === 'check_status' && $_SERVER['REQUEST_METHOD'] === 'GET') {
     exit;
 }
 
-// ── Admin: re-check stuck-pending payments directly against ioTec ──
+// Admin: re-check stuck-pending payments directly against ioTec
 if ($action === 'reconcile' && $_SERVER['REQUEST_METHOD'] === 'POST') {
     require_role(['city_admin', 'super_admin']);
     csrf_verify();

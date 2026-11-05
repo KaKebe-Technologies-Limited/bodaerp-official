@@ -17,7 +17,7 @@ $statusColor = $statusColors[$rider['status']] ?? '#6c757d';
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <?php $pageTitle = 'My ID Card - BodaERP'; require __DIR__ . '/../../partials/head-assets.php'; ?>
+    <?php $pageTitle = 'My ID Card | BodaERP'; require __DIR__ . '/../../partials/head-assets.php'; ?>
     <style>
         .id-card { width: 3.375in; height: 2.125in; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 12px 34px rgba(0,0,0,0.18); margin: 0 auto 20px; display: flex; flex-direction: column; border: 1px solid rgba(0,0,0,0.08); position: relative; }
 
@@ -59,13 +59,13 @@ $statusColor = $statusColors[$rider['status']] ?? '#6c757d';
 
         .id-footer { position: relative; z-index: 1; display: flex; align-items: flex-end; justify-content: space-between; gap: 4px; padding: 3px 8px; background: #f8f9fa; border-top: 1px solid #eee; flex-shrink: 0; }
         .id-sig { display: flex; flex-direction: column; align-items: flex-start; min-width: 0; }
-        .id-sig .sig-line { font-family: 'Brush Script MT', cursive; font-size: 0.5rem; color: #2f2480; line-height: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 120px; }
+        .id-sig .sig-line { font-family: 'Brush Script MT', cursive; font-size: 0.5rem; color: #001740; line-height: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 120px; }
         .id-sig .sig-label { font-size: 0.24rem; color: #9aa2ab; text-transform: uppercase; letter-spacing: 0.3px; border-top: 1px solid #ccc; padding-top: 1px; margin-top: 1px; }
         .id-expiry { text-align: right; flex-shrink: 0; }
         .id-expiry .expiry-label { font-size: 0.24rem; color: #9aa2ab; text-transform: uppercase; letter-spacing: 0.3px; }
         .id-expiry .expiry-date { font-size: 0.38rem; font-weight: 800; color: #8f1424; }
 
-        /* back of card — centered return-to-authority notice */
+        /* back of card: centered return-to-authority notice */
         .id-back-body { position: relative; z-index: 1; flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 6px 16px; gap: 2.5px; }
         .id-back-body .back-crest { width: 28px; height: 28px; border-radius: 50%; background: #fff; border: 1.5px solid #eee; display: flex; align-items: center; justify-content: center; overflow: hidden; margin-bottom: 1px; }
         .id-back-body .back-crest img { width: 100%; height: 100%; object-fit: contain; }
@@ -84,7 +84,7 @@ $statusColor = $statusColors[$rider['status']] ?? '#6c757d';
         #idPreviewModal .modal-content { background: transparent; border: none; box-shadow: none; }
         #idPreviewBody { max-height: 92vh; overflow-y: auto; overflow-x: hidden; padding: 20px 0; }
 
-        /* print / save-as-PDF at true CR80 card size (3.375in x 2.125in) — no scale-to-fit */
+        /* print / save-as-PDF at true CR80 card size (3.375in x 2.125in): no scale-to-fit */
         @media print {
             @page { size: 3.375in 2.125in; margin: 0; }
             .id-zoom-btn, .mt-2, .modal { display: none !important; }
@@ -108,7 +108,7 @@ $statusColor = $statusColors[$rider['status']] ?? '#6c757d';
             <div class="id-card">
                 <div class="id-watermark"><span><?= h(strtoupper($city['name'])) ?></span></div>
                 <div class="id-header">
-                    <div class="id-crest"><img src="<?= h(BASE_URL . $city['logo_path']) ?>" onerror="this.style.display='none'"></div>
+                    <div class="id-crest"><img src="<?= h(BASE_URL . $city['logo_path']) ?>" data-hide-broken></div>
                     <div class="id-header-text">
                         <div class="entity-name"><?= h(strtoupper($city['name'])) ?></div>
                         <div class="doc-type">Boda Boda Operator License</div>
@@ -130,16 +130,16 @@ $statusColor = $statusColors[$rider['status']] ?? '#6c757d';
                     <div class="id-fields-col">
                         <div class="id-field"><div class="field-label">Name</div><div class="field-value"><?= h($rider['full_name']) ?></div></div>
                         <div class="id-field"><div class="field-label">Date of Birth</div><div class="field-value"><?= formatDate($rider['date_of_birth']) ?></div></div>
-                        <div class="id-field"><div class="field-label">Gender</div><div class="field-value"><?= h($rider['gender'] ?: '—') ?></div></div>
+                        <div class="id-field"><div class="field-label">Gender</div><div class="field-value"><?= h($rider['gender'] ?: '–') ?></div></div>
                         <div class="id-field"><div class="field-label">Stage</div><div class="field-value"><?= h($rider['stage_name']) ?></div></div>
-                        <div class="id-field"><div class="field-label">Address</div><div class="field-value"><?= h($rider['physical_address'] ?: '—') ?></div></div>
-                        <div class="id-field"><div class="field-label">NIN</div><div class="field-value"><?= h($rider['nin'] ?: '—') ?></div></div>
+                        <div class="id-field"><div class="field-label">Address</div><div class="field-value"><?= h($rider['physical_address'] ?: '–') ?></div></div>
+                        <div class="id-field"><div class="field-label">NIN</div><div class="field-value"><?= h($rider['nin'] ?: '–') ?></div></div>
                     </div>
                     <div class="id-qr-col">
                         <div class="id-holo"></div>
                         <div class="qr-title">Verify</div>
                         <div class="qr-wrap" id="qrFront">
-                            <div class="qr-center-badge"><img src="<?= h(BASE_URL . $city['logo_path']) ?>" onerror="this.style.display='none'"></div>
+                            <div class="qr-center-badge"><img src="<?= h(BASE_URL . $city['logo_path']) ?>" data-hide-broken></div>
                         </div>
                         <div class="qr-caption">Scan to confirm</div>
                     </div>
@@ -165,13 +165,13 @@ $statusColor = $statusColors[$rider['status']] ?? '#6c757d';
                     <div class="id-header-text"><div class="entity-name">If Found, Please Return</div></div>
                 </div>
                 <div class="id-back-body">
-                    <div class="back-crest"><img src="<?= h(BASE_URL . $city['logo_path']) ?>" onerror="this.style.display='none'"></div>
+                    <div class="back-crest"><img src="<?= h(BASE_URL . $city['logo_path']) ?>" data-hide-broken></div>
                     <div class="back-statement">This card is the property of <?= h($city['name']) ?> and must be surrendered on request.</div>
                     <div class="back-return-label">Return To The Issuing Authority</div>
                     <div class="back-contact">
                         <?= h($city['name']) ?> Council<br>
                         <?= h($city['address'] ?: 'Uganda') ?><br>
-                        <?= h($city['contact_phone'] ?: '—') ?> · <?= h($city['contact_email'] ?: '—') ?>
+                        <?= h($city['contact_phone'] ?: '–') ?> · <?= h($city['contact_email'] ?: '–') ?>
                     </div>
                     <div class="back-terms">Non-transferable · Renew annually · Ref <?= h($rider['id_number']) ?></div>
                 </div>
@@ -179,7 +179,7 @@ $statusColor = $statusColors[$rider['status']] ?? '#6c757d';
         </div>
 
         <div class="mt-2">
-            <button class="btn btn-primary" onclick="window.print()"><i class="fas fa-print me-1"></i>Print</button>
+            <button class="btn btn-primary" data-print><i class="fas fa-print me-1"></i>Print</button>
             <button class="btn btn-outline-dark" id="previewAllBtn"><i class="fas fa-magnifying-glass-plus me-1"></i>Preview / Enlarge</button>
         </div>
     </div>
@@ -195,10 +195,10 @@ $statusColor = $statusColors[$rider['status']] ?? '#6c757d';
 </div>
 
 <?php require __DIR__ . '/../../partials/scripts-footer.php'; ?>
-<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js" integrity="sha384-3zSEDfvllQohrq0PHL1fOXJuC/jSOO34H46t6UQfobFOmxE5BpjjaIJY5F2/bMnU" crossorigin="anonymous"></script>
 <script>
     new QRCode(document.getElementById('qrFront'), {
-        text: <?= json_encode(verifyUrl($rider['id_number'])) ?>,
+        text: <?= js_json(verifyUrl((int) $rider['id'])) ?>,
         width: 160, height: 160,
         colorDark: '#1a1a2e', colorLight: '#ffffff',
         correctLevel: QRCode.CorrectLevel.H

@@ -44,3 +44,9 @@ package.json
 package-lock.json
 composer.json
 composer.lock
+
+# Runtime data written by the app (logs, mail log when there is no SMTP)
+storage/
+
+# Browser test screenshots
+.playwright-mcp/

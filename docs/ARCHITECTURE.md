@@ -13,8 +13,8 @@ browser ─► Apache + .htaccess ─► a PHP page ─► packages/backend/auth
 1. **`.htaccess`** maps the public URLs `/pages/…` and `/assets/…` to `packages/frontend/…`, and `/logout.php`,
    `/api/payments.php` to `packages/backend/…`. It also blocks `.env`, `.git`, `*.sql`, `database/`, `tests/`.
 2. **A page** starts with `require_once __DIR__ . '/../../../backend/auth.php'; require_role([...]);` which loads
-   the configuration, starts the session, enforces the role and idle timeout (30 min), and — after the first
-   database query of the request — applies pending database updates (`migrator_auto()`).
+   the configuration, starts the session, enforces the role and idle timeout (30 min), and: after the first
+   database query of the request: applies pending database updates (`migrator_auto()`).
 3. **The page** reads or writes data with the helpers below, then prints HTML using shared partials.
 
 ## Backend (`packages/backend/`)
@@ -23,9 +23,9 @@ browser ─► Apache + .htaccess ─► a PHP page ─► packages/backend/auth
 |---|---|
 | `config/config.php` | Timezone, `BASE_URL` (URL folder, detected automatically), session name and timeout, upload folder |
 | `database/database.php` | The MySQL connection `db()`; environment detection (`db_is_local()`, `db_is_dev_machine()`); credentials come from `.env` |
-| `db_helpers.php` | `fetchAll`, `fetchOne`, `fetchValue`, `runQuery` — **always** prepared statements; positional `?` or named `:name` placeholders; `runQuery` returns the `mysqli_stmt` (`->affected_rows`, `->insert_id`, `->close()`) |
+| `db_helpers.php` | `fetchAll`, `fetchOne`, `fetchValue`, `runQuery`: **always** prepared statements; positional `?` or named `:name` placeholders; `runQuery` returns the `mysqli_stmt` (`->affected_rows`, `->insert_id`, `->close()`) |
 | `auth.php` | Login, `require_role()`, CSRF (`csrf_field()`, `csrf_verify()`), `audit_log()`, `current_user()` |
-| `functions.php` | `h()` (HTML-escape — use on every printed value), `redirect()`, `formatCurrency()`, `formatDate()`, ID/receipt number generators, `verifyUrl()` |
+| `functions.php` | `h()` (HTML-escape: use on every printed value), `redirect()`, `formatCurrency()`, `formatDate()`, ID/receipt number generators, `verifyUrl()` |
 | `migrator.php` | Runs `database/migrations/*.php` and the `mig_*` helpers |
 | `schema_sync.php` | Keeps the database shape in step with `database/schema.snapshot.json` ([DATABASE.md](DATABASE.md)) |
 | `automation.php` | The four scheduled jobs, run lazily while the app is used or from `cron/run.php` |
@@ -39,15 +39,15 @@ browser ─► Apache + .htaccess ─► a PHP page ─► packages/backend/auth
   `fetchOne("SELECT … WHERE id = ? AND stage_id = ?", [$id, $stageId])`.
 - **Forms:** every POST form contains `<?= csrf_field() ?>` and the page calls `csrf_verify()` first.
 - **Output:** print values with `h($value)`. **Scope:** a chairperson page must filter by `$_SESSION['stage_id']`,
-  a city page by `$_SESSION['city_id']` — the role check alone does not isolate data.
+  a city page by `$_SESSION['city_id']`: the role check alone does not isolate data.
 - **Changes worth tracing** call `audit_log('UPDATE', 'entity', $id, 'what happened')`.
 
 ## Front end (`packages/frontend/`)
 
-- `pages/<role>/*.php` — one folder per role (`superadmin`, `citycouncil`, `chairperson`, `rider`, `government`).
-- `partials/` — `head-assets.php` (CSS + chart library), `sidebar-<role>.php` (menu), `topheader.php`,
+- `pages/<role>/*.php`: one folder per role (`superadmin`, `citycouncil`, `chairperson`, `rider`, `government`).
+- `partials/`: `head-assets.php` (CSS + chart library), `sidebar-<role>.php` (menu), `topheader.php`,
   `export-toolbar.php` (CSV / Excel / PDF / print for any table), `scripts-footer.php` (JavaScript).
-- `assets/css/` — `style.css` (design tokens: colours, radii, shadows), `admin.css` (dashboard layout and cards),
+- `assets/css/`: `style.css` (design tokens: colours, radii, shadows), `admin.css` (dashboard layout and cards),
   `component.css`, `login.css`.
 
 ### A page, in full
@@ -68,7 +68,7 @@ $rows = fetchAll("SELECT full_name, status FROM riders WHERE stage_id = ?", [$_S
     <?php $pageTitle = 'My report'; $pageSubtitle = 'One line about it'; require __DIR__ . '/../../partials/topheader.php'; ?>
     <div class="content-area">
         <div class="card"><div class="card-body">
-            <?php foreach ($rows as $r): ?><p><?= h($r['full_name']) ?> — <?= h($r['status']) ?></p><?php endforeach; ?>
+            <?php foreach ($rows as $r): ?><p><?= h($r['full_name']) ?>: <?= h($r['status']) ?></p><?php endforeach; ?>
         </div></div>
     </div>
 </div>
@@ -86,7 +86,7 @@ To add it to the menu, add one line to the `$nav` array in `partials/sidebar-cha
   Bootstrap 5.3.3, Font Awesome 6.5.2, ApexCharts 3.54.0, jsPDF 2.5.1 + AutoTable 3.8.2.
 - **Shared behaviour lives in two files**, loaded by `scripts-footer.php` on every page:
   `assets/js/main.js` (mobile sidebar, alert auto-hide, tooltips) and `assets/js/table-tools.js` (table export).
-  Do **not** paste the same handler into individual pages — a duplicated sidebar handler used to cancel itself
+  Do **not** paste the same handler into individual pages: a duplicated sidebar handler used to cancel itself
   out and kept the mobile menu from ever opening.
 - Page-specific code (a chart, a form calculation) goes in a short `<script>` at the bottom of that page only.
 - Add libraries only when something needs them; each one is downloaded on every page view.
@@ -95,7 +95,7 @@ To add it to the menu, add one line to the `$nav` array in `partials/sidebar-cha
 
 | Role (`users.role`) | Scoped by | Notes |
 |---|---|---|
-| `super_admin` | nothing — sees all | The only role that can change cities, users, splits and the database |
+| `super_admin` | nothing: sees all | The only role that can change cities, users, splits and the database |
 | `city_admin` | `$_SESSION['city_id']` | Called *City council* in the UI |
 | `chairperson` | `$_SESSION['stage_id']` | One stage |
 | `rider` | own `riders` row | Self-service |
@@ -118,6 +118,6 @@ System & Updates.
 | Question | Answer |
 |---|---|
 | How does the URL folder get its value? | `app_base_url()` in `config/config.php`; override with `APP_BASE_URL` in `.env` |
-| Local or live? | `db_is_local()` — CLI, `localhost`, `*.test` or a private address; force with `APP_ENV` |
+| Local or live? | `db_is_local()`: CLI, `localhost`, `*.test` or a private address; force with `APP_ENV` |
 | Why can't I see demo logins / the reset link on the server? | They need `db_is_dev_machine()` (local **and** the request comes from the same machine) |
 | Where are settings like page titles and labels? | The `settings` table, read with `get_setting('key')` |

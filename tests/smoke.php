@@ -1,72 +1,55 @@
 <?php
-// ============================================================
-// BodaERP — smoke test (command line only)
-//
-//   php tests/smoke.php                          uses http://localhost/<this folder name>
-//   php tests/smoke.php http://localhost/boda    or give the address of the site explicitly
-//
-// Signs in as each demo role (the accounts created by `php database/seed_run.php`),
-// opens every page of that role and fails on a PHP error, a server error or an
-// unexpected redirect. Run it after setting up, and after every change.
-// Never run it against a live server: it signs in with the demo passwords.
-// ============================================================
-if (php_sapi_name() !== 'cli') { http_response_code(403); exit('Run from the command line: php tests/smoke.php'); }
-if (!function_exists('curl_init')) { fwrite(STDERR, "The PHP curl extension is required (enable extension=curl in php.ini).\n"); exit(2); }
+// BodaERP - smoke test (command line only)
+// php tests/smoke.php
+// uses http://localhost/<this folder name> php tests/smoke.php http://localhost/boda
+// or give the address of the site explicitly (Docker: docker compose exec app php tests/smoke.php)
+// Opens every public page, checks secrets and backend files are blocked, then signs in as each demo role
+// (accounts from `php database/seed_run.php`) and opens every page of that role. Fails on a PHP error, a
+// server error or an unexpected redirect. Never run it against a live server.
+require __DIR__ . '/lib.php';
 
 $root = dirname(__DIR__);
-$base = rtrim($argv[1] ?? ('http://localhost/' . basename($root)), '/');
+$base = test_base($argv);
+$t = new TestRun();
 
 $roles = [
-    'superadmin' => ['admin@bodaerp.com',            'admin123'],
-    'government' => ['works@gov.bodaerp.com',        'Gov@2026'],
+    'superadmin'  => ['admin@bodaerp.com',            'admin123'],
+    'government'  => ['works@gov.bodaerp.com',        'Gov@2026'],
     'citycouncil' => ['council@liracityuganda.go.ug', 'lira2025'],
     'chairperson' => ['ocen@railway.lira.ug',         'chair123'],
-    'rider'      => ['akello@bodaerp.com',           'rider123'],
+    'rider'       => ['akello@bodaerp.com',           'rider123'],
 ];
 $skip = ['db-backup.php'];                                 // a file download, not a page
 $needsId = ['rider-profile.php', 'edit-rider.php', 'id-preview.php'];
-$errorPattern = '/(Fatal error|Parse error|Warning:|Notice:|Deprecated:|Uncaught|Stack trace)/i';
-
-function http(string $url, string $jar, ?array $post = null): array {
-    $ch = curl_init($url);
-    curl_setopt_array($ch, [CURLOPT_RETURNTRANSFER => true, CURLOPT_COOKIEJAR => $jar, CURLOPT_COOKIEFILE => $jar,
-        CURLOPT_FOLLOWLOCATION => false, CURLOPT_TIMEOUT => 60]);
-    if ($post !== null) { curl_setopt($ch, CURLOPT_POST, true); curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($post)); }
-    $body = (string) curl_exec($ch);
-    $out = ['code' => (int) curl_getinfo($ch, CURLINFO_HTTP_CODE), 'redirect' => (string) curl_getinfo($ch, CURLINFO_REDIRECT_URL), 'body' => $body];
-    curl_close($ch);
-    return $out;
-}
-function csrf(string $html): string { return preg_match('/name="csrf_token" value="([^"]*)"/', $html, $m) ? $m[1] : ''; }
-
-$pass = 0; $fail = 0; $problems = [];
-$check = function (string $label, array $r, bool $expectOk = true) use (&$pass, &$fail, &$problems, $errorPattern) {
-    $bad = $expectOk && ($r['code'] !== 200 || preg_match($errorPattern, $r['body']));
-    if ($bad) { $fail++; $problems[] = sprintf('%-46s HTTP %d %s', $label, $r['code'], $r['redirect'] ? '→ ' . $r['redirect'] : (preg_match($errorPattern, $r['body'], $m) ? $m[1] : '')); }
-    else $pass++;
-};
 
 echo "Testing $base\n\n";
 
-// public pages
-$pub = tempnam(sys_get_temp_dir(), 'smk');
-foreach (['login.php', 'index.php', 'forgot-password.php'] as $p) $check("public/$p", http("$base/$p", $pub));
-$check('assets/css/style.css', http("$base/assets/css/style.css", $pub));
-$check('assets/js/main.js', http("$base/assets/js/main.js", $pub));
-foreach (['.env', 'database/schema.snapshot.json'] as $secret) {
+$pub = test_jar();
+foreach (['', 'index.php', 'login.php', 'forgot-password.php', 'faq.php', 'contact.php', 'verify.php', 'verify.php?code=BODA-LIR-000001',
+          'p/about', 'p/privacy-policy', 'p/terms-of-service', 'p/cookie-policy', 'reset-password.php?token=x', 'verify-email.php'] as $p) {
+    $t->page('public/' . ($p ?: '(home)'), http("$base/$p", $pub));
+}
+foreach (['assets/css/style.css', 'assets/css/public.css', 'assets/js/main.js', 'assets/js/public.js', 'robots.txt', 'sitemap.xml'] as $a) {
+    $t->page($a, http("$base/$a", $pub));
+}
+$r = http("$base/this-page-does-not-exist", $pub);
+$t->ok($r['code'] === 404 && str_contains($r['body'], 'could not find'), 'unknown URL shows the branded 404', 'HTTP ' . $r['code']);
+foreach (['.env', '.env.example', 'database/schema.snapshot.json', 'database/bodaerp_full.sql', 'packages/backend/auth.php',
+          'packages/backend/database/database.php', 'packages/frontend/partials/topheader.php', 'tests/smoke.php', 'storage/logs/mail.log',
+          'docker-compose.yml', 'CLAUDE.md', 'README.md', '.git/config', 'ipn_logs.txt'] as $secret) {
     $r = http("$base/$secret", $pub);
-    if ($r['code'] === 200) { $fail++; $problems[] = "$secret is downloadable (HTTP 200) — .htaccess is not active (enable mod_rewrite / AllowOverride All)"; } else $pass++;
+    $t->ok($r['code'] === 403 || $r['code'] === 404, "$secret is not downloadable", 'HTTP ' . $r['code'] . ' (.htaccess not active? enable mod_rewrite / AllowOverride All)');
+}
+$h = http("$base/login.php", $pub)['headers'];
+foreach (['X-Content-Type-Options', 'X-Frame-Options', 'Content-Security-Policy', 'Referrer-Policy'] as $hdr) {
+    $t->ok(stripos($h, $hdr . ':') !== false, "security header $hdr");
 }
 @unlink($pub);
 
 foreach ($roles as $dir => [$email, $password]) {
-    $jar = tempnam(sys_get_temp_dir(), 'smk');
-    $login = http("$base/login.php", $jar);
-    $r = http("$base/login.php", $jar, ['csrf_token' => csrf($login['body']), 'email' => $email, 'password' => $password]);
-    if ($r['code'] !== 302 || str_contains($r['redirect'], 'login.php')) {
-        $fail++; $problems[] = sprintf('%-46s sign-in failed for %s (run: php database/seed_run.php)', "$dir/login", $email);
-        @unlink($jar); continue;
-    }
+    $why = '';
+    $jar = test_login($base, $email, $password, $why);
+    if (!$jar) { $t->ok(false, "$dir/login", "sign-in failed for $email: $why (run: php database/seed_run.php)"); continue; }
     $count = 0; $riderId = null;
     $files = glob("$root/packages/frontend/pages/$dir/*.php");
     sort($files);
@@ -82,13 +65,32 @@ foreach ($roles as $dir => [$email, $password]) {
             if ($riderId === '') continue;
             $url .= "?id=$riderId";
         }
-        $check("$dir/$name", http($url, $jar)); $count++;
+        $t->page("$dir/$name", http($url, $jar)); $count++;
+    }
+    $t->page("$dir/public home while signed in", http("$base/", $jar));
+    $t->page("$dir/account/settings.php", http("$base/pages/account/settings.php", $jar)); $count++;
+    if ($dir === 'superadmin') {
+        foreach (['content.php?tab=menus', 'content.php?tab=home_feature', 'content.php?tab=home_step', 'content.php?tab=home_role', 'content.php?tab=faq', 'content-edit.php', 'content-edit.php?id=1',
+                  'site-settings.php?cat=home', 'site-settings.php?cat=branding', 'site-settings.php?cat=features', 'email-templates.php?tab=log',
+                  'email-templates.php?id=1', 'inbox.php?status=archived', 'data-requests.php?status=completed', 'media.php?type=image'] as $extra) {
+            $t->page("$dir/$extra", http("$base/pages/superadmin/$extra", $jar)); $count++;
+        }
+    }
+    if ($dir === 'government') {
+        $body = http("$base/pages/government/registry.php", $jar)['body'];
+        $leaked = array_filter(['"nin"', '"phone"', 'verify_token', 'next_of_kin', 'physical_address', 'date_of_birth'], fn($k) => str_contains($body, $k));
+        $t->ok(!$leaked, 'government registry holds no NIN, phone, birth date, address, next of kin or QR token', 'found: ' . implode(', ', $leaked));
+        $flags = http("$base/pages/government/data-flags.php", $jar)['body'];
+        $t->ok(!preg_match('/\+?256\d{6,}|\b\d{4}-\d{2}-\d{2}\b(?=\))/', strip_tags($flags)), 'government data checks hide phone numbers and birth dates');
+        $r = http("$base/pages/citycouncil/dashboard.php", $jar);
+        $t->ok($r['code'] === 403, 'government is refused the city council portal (403)', 'HTTP ' . $r['code']);
+    }
+    if ($dir === 'rider') {
+        $r = http("$base/pages/superadmin/dashboard.php", $jar);
+        $t->ok($r['code'] === 403, 'rider is refused the Super Admin dashboard (403)', 'HTTP ' . $r['code']);
     }
     printf("  %-12s signed in as %-32s %d pages opened\n", $dir, $email, $count);
     @unlink($jar);
 }
 
-echo "\n";
-foreach ($problems as $p) echo "  FAIL  $p\n";
-printf("%d checks passed, %d failed\n", $pass, $fail);
-exit($fail ? 1 : 0);
+$t->finish();

@@ -1,0 +1,39 @@
+name: tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: '0 5 * * 1'
+
+jobs:
+  suites:
+    if: github.event_name != 'schedule'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Start the stack
+        run: docker compose up -d --build --wait --wait-timeout 300
+      - name: PHP syntax
+        run: docker compose exec -T app sh -c 'find . -name "*.php" -not -path "./packages/frontend/assets/vendor/*" -print0 | xargs -0 -n1 php -l > /dev/null'
+      - name: Portability and wiring
+        run: docker compose exec -T app php tests/check_portability.php
+      - name: Smoke
+        run: docker compose exec -T app php tests/smoke.php
+      - name: Flows
+        run: docker compose exec -T app php tests/flows.php
+      - name: Access walls
+        run: docker compose exec -T app php tests/access.php
+      - name: Logs on failure
+        if: failure()
+        run: docker compose logs --tail=200 app
+
+  dependencies:
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Known vulnerabilities in pinned libraries
+        run: php tests/check_dependencies.php

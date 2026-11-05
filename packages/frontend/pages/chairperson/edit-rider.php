@@ -17,7 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $address = trim($_POST['address'] ?? '');
     $plate = strtoupper(trim($_POST['bike_plate'] ?? ''));
     $model = trim($_POST['bike_model'] ?? '');
-    $status = $_POST['status'] ?? $rider['status'];
+    $status = in_array($_POST['status'] ?? '', ['active', 'expired', 'pending'], true) ? $_POST['status'] : $rider['status'];
 
     if ($fullName === '' || $plate === '') {
         $errors[] = 'Full name and bike plate are required.';
@@ -32,7 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <?php $pageTitle = 'Edit Rider - BodaERP'; require __DIR__ . '/../../partials/head-assets.php'; ?>
+    <?php $pageTitle = 'Edit Rider | BodaERP'; require __DIR__ . '/../../partials/head-assets.php'; ?>
 </head>
 <body>
 
@@ -44,7 +44,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div class="content-area">
         <div class="card"><div class="card-body p-5">
             <?php if ($errors): ?><div class="alert alert-danger"><?php foreach ($errors as $e) echo h($e); ?></div><?php endif; ?>
-            <h4 class="fw-bold mb-4"><i class="fas fa-user-edit text-primary me-2"></i>Edit Rider</h4>
+            <h4 class="fw-bold mb-4">Edit Rider</h4>
             <form method="post">
                 <?= csrf_field() ?>
                 <div class="row">

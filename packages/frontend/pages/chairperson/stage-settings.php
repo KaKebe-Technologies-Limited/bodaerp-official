@@ -26,7 +26,7 @@ $stage = fetchOne("SELECT * FROM stages WHERE id = ?", [$stageId]);
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <?php $pageTitle = 'Stage Settings - BodaERP'; require __DIR__ . '/../../partials/head-assets.php'; ?>
+    <?php $pageTitle = 'Stage Settings | BodaERP'; require __DIR__ . '/../../partials/head-assets.php'; ?>
 </head>
 <body>
 

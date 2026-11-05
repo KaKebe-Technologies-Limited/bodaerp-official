@@ -5,6 +5,7 @@
 //   $flagCanReview  bool     - show review / scan controls (Super Admin only)
 //   $flagPageUrl    string   - absolute URL of the including page
 //   $flagScanResult ?array   - result of a scan just run by this request
+//   $flagMaskPersonal bool   - hide phone numbers, NINs and birth dates in flag text (government viewers)
 require_once __DIR__ . '/../../backend/anomaly_engine.php';
 
 $rules = anomaly_rules();
@@ -12,7 +13,7 @@ $cats  = anomaly_categories();
 
 if (!anomaly_tables_ready()): ?>
     <div class="alert alert-warning"><i class="fas fa-database me-2"></i>
-        The anomaly-detection tables are not installed yet. Database updates apply automatically — open Super Admin → <strong>Database</strong> and press <strong>Update database now</strong>.</div>
+        The anomaly-detection tables are not installed yet. Database updates apply automatically: open Super Admin → <strong>Database</strong> and press <strong>Update database now</strong>.</div>
 <?php return; endif;
 
 $filters = [
@@ -29,6 +30,14 @@ if (!in_array($filters['severity'], ['', 'high', 'medium', 'low'], true)) $filte
 $perPage = 25;
 $page    = max(1, (int) ($_GET['p'] ?? 1));
 [$flags, $totalFlags] = anomaly_list($filters, $perPage, ($page - 1) * $perPage);
+if (!empty($flagMaskPersonal)) {
+    foreach ($flags as &$maskedFlag) {
+        foreach (['title', 'details', 'entity_id', 'review_note'] as $maskedField) {
+            if (isset($maskedFlag[$maskedField])) $maskedFlag[$maskedField] = anomaly_mask_personal((string) $maskedFlag[$maskedField]);
+        }
+    }
+    unset($maskedFlag);
+}
 $pages   = max(1, (int) ceil($totalFlags / $perPage));
 
 $sum     = anomaly_summary($flagScopeCity ?: null);
@@ -60,7 +69,7 @@ $ruleLabels = array_map(fn($r) => $r[0], $rules);
     <?php elseif (!empty($flagScanResult['skipped'])): ?>
         <div class="alert alert-warning">A scan is already running. Try again in a moment.</div>
     <?php else: ?>
-        <div class="alert alert-success"><i class="fas fa-check-circle me-2"></i>Scan complete in <?= (int) $flagScanResult['ms'] ?> ms —
+        <div class="alert alert-success"><i class="fas fa-check-circle me-2"></i>Scan complete in <?= (int) $flagScanResult['ms'] ?> ms –
             <strong><?= (int) $flagScanResult['new'] ?></strong> new flag(s), <strong><?= (int) $flagScanResult['resolved'] ?></strong> auto-resolved,
             <strong><?= (int) $flagScanResult['open'] ?></strong> open overall.
             <?php if (!empty($flagScanResult['errors'])): ?><br><small class="text-danger">Some rules failed: <?= h(implode(', ', array_keys($flagScanResult['errors']))) ?></small><?php endif; ?></div>
@@ -71,11 +80,11 @@ $ruleLabels = array_map(fn($r) => $r[0], $rules);
 <div class="dash-banner theme-dark">
     <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 dash-banner-row">
         <div>
-            <h4><i class="fas fa-shield-alt me-2"></i>Data Integrity Monitor</h4>
+            <h4>Data Integrity Monitor</h4>
             <p>Explainable AI-assisted checks across riders, payments, enforcement and sign-ins. Every flag states its reason, is reviewed by a person, and clears itself once the data is fixed.</p>
         </div>
         <div class="text-end">
-            <span class="dash-badge"><i class="fas fa-clock me-1"></i><?= $lastRun ? 'Last scan ' . h(date('M d, H:i', strtotime($lastRun['started_at']))) . ' · ' . h($lastRun['triggered_by']) : 'No scan yet' ?></span>
+            <span class="dash-meta"><?= $lastRun ? 'Last scan ' . h(date('M d, H:i', strtotime($lastRun['started_at']))) . ' · ' . h($lastRun['triggered_by']) : 'No scan yet' ?></span>
             <?php if (!empty($flagCanReview)): ?>
                 <form method="post" class="d-inline ms-2">
                     <?= csrf_field() ?><input type="hidden" name="action" value="scan">
@@ -87,17 +96,17 @@ $ruleLabels = array_map(fn($r) => $r[0], $rules);
 </div>
 
 <div class="row g-3 row-cols-2 row-cols-xl-5 mb-4">
-    <div class="col"><div class="stat-hero-card grad-dark"><div class="stat-hero-icon"><i class="fas fa-flag"></i></div><div><div class="stat-hero-value"><?= number_format($sum['open']) ?></div><div class="stat-hero-label">Open Flags</div></div></div></div>
-    <div class="col"><div class="stat-hero-card grad-red"><div class="stat-hero-icon"><i class="fas fa-exclamation-circle"></i></div><div><div class="stat-hero-value"><?= number_format($sum['sev']['high']) ?></div><div class="stat-hero-label">High Severity</div></div></div></div>
-    <div class="col"><div class="stat-hero-card grad-gold"><div class="stat-hero-icon"><i class="fas fa-exclamation-triangle"></i></div><div><div class="stat-hero-value"><?= number_format($sum['sev']['medium']) ?></div><div class="stat-hero-label">Medium Severity</div></div></div></div>
-    <div class="col"><div class="stat-hero-card grad-blue"><div class="stat-hero-icon"><i class="fas fa-user-tag"></i></div><div><div class="stat-hero-value"><?= number_format($sum['flagged_riders']) ?></div><div class="stat-hero-label">Riders Flagged</div></div></div></div>
-    <div class="col"><div class="stat-hero-card grad-green"><div class="stat-hero-icon"><i class="fas fa-heartbeat"></i></div><div><div class="stat-hero-value"><?= $sum['health'] ?>%</div><div class="stat-hero-label">Data Health Score</div></div></div></div>
+    <div class="col"><div class="stat-hero-card tone-dark"><div class="stat-hero-icon"><i class="fas fa-flag"></i></div><div><div class="stat-hero-value"><?= number_format($sum['open']) ?></div><div class="stat-hero-label">Open Flags</div></div></div></div>
+    <div class="col"><div class="stat-hero-card tone-red"><div class="stat-hero-icon"><i class="fas fa-exclamation-circle"></i></div><div><div class="stat-hero-value"><?= number_format($sum['sev']['high']) ?></div><div class="stat-hero-label">High Severity</div></div></div></div>
+    <div class="col"><div class="stat-hero-card tone-gold"><div class="stat-hero-icon"><i class="fas fa-exclamation-triangle"></i></div><div><div class="stat-hero-value"><?= number_format($sum['sev']['medium']) ?></div><div class="stat-hero-label">Medium Severity</div></div></div></div>
+    <div class="col"><div class="stat-hero-card tone-blue"><div class="stat-hero-icon"><i class="fas fa-user-tag"></i></div><div><div class="stat-hero-value"><?= number_format($sum['flagged_riders']) ?></div><div class="stat-hero-label">Riders Flagged</div></div></div></div>
+    <div class="col"><div class="stat-hero-card tone-green"><div class="stat-hero-icon"><i class="fas fa-heartbeat"></i></div><div><div class="stat-hero-value"><?= $sum['health'] ?>%</div><div class="stat-hero-label">Data Health Score</div></div></div></div>
 </div>
 
 <div class="row g-3 g-md-4 mb-4">
     <div class="col-lg-4">
         <div class="card h-100"><div class="card-body">
-            <h6 class="fw-bold mb-3"><i class="fas fa-chart-pie text-primary me-2"></i>Open flags by severity</h6>
+            <h6 class="fw-bold mb-3">Open flags by severity</h6>
             <?php if ($sum['open'] === 0): ?>
                 <div class="empty-state" style="padding:30px 10px;"><i class="fas fa-check-circle" style="color:#2cc6a8;"></i><h5>All clear</h5><p>No open anomalies detected.</p></div>
             <?php else: ?><div id="sevChart"></div><?php endif; ?>
@@ -105,7 +114,7 @@ $ruleLabels = array_map(fn($r) => $r[0], $rules);
     </div>
     <div class="col-lg-8">
         <div class="card h-100"><div class="card-body">
-            <h6 class="fw-bold mb-3"><i class="fas fa-chart-bar text-primary me-2"></i>Open flags by check</h6>
+            <h6 class="fw-bold mb-3">Open flags by check</h6>
             <?php if (!$sum['by_rule']): ?>
                 <div class="empty-state" style="padding:30px 10px;"><i class="fas fa-check-circle" style="color:#2cc6a8;"></i><h5>Nothing to review</h5><p>Every check passed on the latest scan.</p></div>
             <?php else: ?><div id="ruleChart"></div><?php endif; ?>
@@ -115,7 +124,7 @@ $ruleLabels = array_map(fn($r) => $r[0], $rules);
 
 <div class="card mb-4"><div class="card-body">
     <div class="d-flex justify-content-between align-items-center">
-        <h6 class="fw-bold mb-0"><i class="fas fa-microscope text-primary me-2"></i>How detection works <span class="text-muted fw-normal small">— <?= count($rules) ?> transparent checks, no black box</span></h6>
+        <h6 class="fw-bold mb-0">How detection works <span class="text-muted fw-normal small">– <?= count($rules) ?> transparent checks, no black box</span></h6>
         <button class="btn btn-outline-primary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#howItWorks">Show / hide</button>
     </div>
     <div class="collapse" id="howItWorks">
@@ -173,7 +182,7 @@ $ruleLabels = array_map(fn($r) => $r[0], $rules);
 
 <div class="card"><div class="card-body">
     <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-        <h6 class="fw-bold mb-0"><i class="fas fa-list text-primary me-2"></i>Findings <span class="text-muted fw-normal small">(<?= number_format($totalFlags) ?>)</span></h6>
+        <h6 class="fw-bold mb-0">Findings <span class="text-muted fw-normal small">(<?= number_format($totalFlags) ?>)</span></h6>
         <?php $exportTableId = 'flagsTable'; $exportFilename = 'data_integrity_flags'; $exportTitle = 'Data Integrity Flags'; require __DIR__ . '/export-toolbar.php'; ?>
     </div>
     <div class="table-responsive">
@@ -192,20 +201,20 @@ $ruleLabels = array_map(fn($r) => $r[0], $rules);
                         <?php if ($f['rider_name']): ?><strong><?= h($f['rider_name']) ?></strong><br><small class="text-muted"><?= h($f['bike_plate']) ?></small>
                         <?php else: ?><span class="text-muted"><?= h(ucfirst($f['entity_type'])) ?></span><br><small><?= h($f['entity_id']) ?></small><?php endif; ?>
                     </td>
-                    <?php if (!$flagScopeCity): ?><td style="font-size:0.82rem;"><?= h($f['city_name'] ?: '—') ?></td><?php endif; ?>
-                    <td><span class="flag-rule-chip"><i class="fas <?= h($rules[$f['rule_code']][2] ?? 'fa-flag') ?> me-1" style="color:<?= h($cats[$f['category']][1] ?? '#5b4bd5') ?>;"></i><?= h($rules[$f['rule_code']][0] ?? $f['rule_code']) ?></span></td>
+                    <?php if (!$flagScopeCity): ?><td style="font-size:0.82rem;"><?= h($f['city_name'] ?: '–') ?></td><?php endif; ?>
+                    <td><span class="flag-rule-chip"><i class="fas <?= h($rules[$f['rule_code']][2] ?? 'fa-flag') ?> me-1" style="color:<?= h($cats[$f['category']][1] ?? '#056CFE') ?>;"></i><?= h($rules[$f['rule_code']][0] ?? $f['rule_code']) ?></span></td>
                     <td style="font-size:0.78rem;white-space:nowrap;"><?= h(date('M d, Y', strtotime($f['last_seen_at']))) ?><br><small class="text-muted">since <?= h(date('M d', strtotime($f['first_detected_at']))) ?></small></td>
                     <td><span class="badge bg-<?= $stClass ?>"><?= h($stLabel) ?></span></td>
                     <?php if (!empty($flagCanReview)): ?>
                     <td class="no-export" style="white-space:nowrap;">
                         <?php if ($f['status'] === 'open'): ?>
-                            <button class="btn btn-sm btn-outline-warning" title="Confirm as a real issue" onclick='openReview(<?= (int) $f['id'] ?>,"confirm",<?= json_encode($f['title']) ?>)'><i class="fas fa-check"></i></button>
+                            <button class="btn btn-sm btn-outline-warning" title="Confirm as a real issue" data-call="openReview" data-call-args="<?= h(js_json([(int) $f['id'], 'confirm', (string) $f['title']])) ?>"><i class="fas fa-check"></i></button>
                         <?php endif; ?>
                         <?php if (in_array($f['status'], ['open', 'confirmed'], true)): ?>
-                            <button class="btn btn-sm btn-outline-secondary" title="Dismiss as false positive" onclick='openReview(<?= (int) $f['id'] ?>,"dismiss",<?= json_encode($f['title']) ?>)'><i class="fas fa-ban"></i></button>
+                            <button class="btn btn-sm btn-outline-secondary" title="Dismiss as false positive" data-call="openReview" data-call-args="<?= h(js_json([(int) $f['id'], 'dismiss', (string) $f['title']])) ?>"><i class="fas fa-ban"></i></button>
                         <?php endif; ?>
                         <?php if (in_array($f['status'], ['confirmed', 'dismissed'], true)): ?>
-                            <button class="btn btn-sm btn-outline-primary" title="Reopen" onclick='openReview(<?= (int) $f['id'] ?>,"reopen",<?= json_encode($f['title']) ?>)'><i class="fas fa-undo"></i></button>
+                            <button class="btn btn-sm btn-outline-primary" title="Reopen" data-call="openReview" data-call-args="<?= h(js_json([(int) $f['id'], 'reopen', (string) $f['title']])) ?>"><i class="fas fa-undo"></i></button>
                         <?php endif; ?>
                     </td>
                     <?php endif; ?>
@@ -214,7 +223,7 @@ $ruleLabels = array_map(fn($r) => $r[0], $rules);
             </tbody>
         </table>
         <?php if (!$flags): ?>
-            <div class="empty-state"><i class="fas fa-check-circle" style="color:#2cc6a8;"></i><h5>No findings match</h5><p>Nothing to review with the current filters<?= $filters['status'] === 'active' ? ' — the data looks healthy.' : '.' ?></p></div>
+            <div class="empty-state"><i class="fas fa-check-circle" style="color:#2cc6a8;"></i><h5>No findings match</h5><p>Nothing to review with the current filters<?= $filters['status'] === 'active' ? ': the data looks healthy.' : '.' ?></p></div>
         <?php endif; ?>
     </div>
     <?php if ($pages > 1): ?>
@@ -240,7 +249,7 @@ $ruleLabels = array_map(fn($r) => $r[0], $rules);
         <div class="modal-body p-4">
             <p class="fw-semibold mb-2" id="rvFinding"></p>
             <label class="form-label fw-semibold">Note <span class="text-muted fw-normal">(optional, visible to government viewers)</span></label>
-            <textarea class="form-control" name="note" rows="3" maxlength="300" placeholder="e.g. Verified with the chairperson — plate was re-registered after a sale."></textarea>
+            <textarea class="form-control" name="note" rows="3" maxlength="300" placeholder="e.g. Verified with the chairperson: plate was re-registered after a sale."></textarea>
         </div>
         <div class="modal-footer border-0 pb-3">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
@@ -273,12 +282,12 @@ $ruleLabels = array_map(fn($r) => $r[0], $rules);
         stroke: { width: 0 }, dataLabels: { enabled: false }
     }).render();
     new ApexCharts(document.querySelector('#ruleChart'), {
-        series: [{ name: 'Open flags', data: <?= json_encode(array_values($sum['by_rule'])) ?> }],
+        series: [{ name: 'Open flags', data: <?= js_json(array_values($sum['by_rule'])) ?> }],
         chart: { type: 'bar', height: <?= max(160, 42 * count($sum['by_rule']) + 40) ?>, toolbar: { show: false } },
         plotOptions: { bar: { horizontal: true, borderRadius: 6, barHeight: '58%', distributed: true } },
-        colors: <?= json_encode(array_map(fn($c) => $cats[$rules[$c][1] ?? 'data_quality'][1] ?? '#5b4bd5', array_keys($sum['by_rule']))) ?>,
+        colors: <?= js_json(array_map(fn($c) => $cats[$rules[$c][1] ?? 'data_quality'][1] ?? '#056CFE', array_keys($sum['by_rule']))) ?>,
         dataLabels: { enabled: true, style: { fontSize: '11px' } }, legend: { show: false },
-        xaxis: { categories: <?= json_encode(array_map(fn($c) => $ruleLabels[$c] ?? $c, array_keys($sum['by_rule']))) ?> },
+        xaxis: { categories: <?= js_json(array_map(fn($c) => $ruleLabels[$c] ?? $c, array_keys($sum['by_rule']))) ?> },
         grid: { borderColor: '#efecfa', strokeDashArray: 4 }, tooltip: { theme: 'dark' }
     }).render();
     <?php endif; ?>

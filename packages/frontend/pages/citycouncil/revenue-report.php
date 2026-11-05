@@ -15,27 +15,24 @@ $totalRiders = array_sum(array_column($rows, 'rider_count'));
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <?php $pageTitle = 'Revenue Report - BodaERP'; require __DIR__ . '/../../partials/head-assets.php'; ?>
+    <?php $pageTitle = 'Revenue Report | BodaERP'; require __DIR__ . '/../../partials/head-assets.php'; ?>
 </head>
 <body>
 
 <?php require __DIR__ . '/../../partials/sidebar-citycouncil.php'; ?>
 
 <div class="main-content" id="mainContent">
-    <header class="top-header">
-        <div class="d-flex justify-content-between align-items-center">
-            <div class="d-flex align-items-center gap-3">
-                <button class="btn btn-light d-lg-none" id="toggleSidebar"><i class="fas fa-bars"></i></button>
-                <h5 class="mb-0 fw-bold"><span class="text-gradient-blue">Revenue Report</span></h5>
-            </div>
-            <a href="<?= BASE_URL ?>/pages/citycouncil/revenue-analytics.php" class="btn btn-outline-secondary btn-sm no-print"><i class="fas fa-chart-line me-1"></i>Back to Analytics</a>
-        </div>
-    </header>
+    <?php ob_start(); ?>
+<a href="<?= BASE_URL ?>/pages/citycouncil/revenue-analytics.php" class="btn btn-outline-secondary btn-sm no-print"><i class="fas fa-chart-line me-1" aria-hidden="true"></i>Back to revenue</a>
+    <?php $headerActions = ob_get_clean();
+    $pageTitle = 'Revenue report';
+    $pageSubtitle = '';
+    require __DIR__ . '/../../partials/topheader.php'; ?>
 
     <div class="content-area">
         <div class="card mb-4"><div class="card-body d-flex justify-content-between align-items-center flex-wrap gap-2">
             <div>
-                <h5 class="fw-bold mb-0"><?= h($city['name']) ?> — Annual Revenue Report</h5>
+                <h5 class="fw-bold mb-0"><?= h($city['name']) ?>: Annual Revenue Report</h5>
                 <p class="text-muted mb-0">Fiscal Year <?= h($city['fiscal_year']) ?> · Generated <?= date('M d, Y') ?></p>
             </div>
             <div class="no-print"><?php $exportTableId='revenueReportTable'; $exportFilename='revenue_report'; $exportTitle=$city['name'].' Revenue Report'; require __DIR__ . '/../../partials/export-toolbar.php'; ?></div>
@@ -64,7 +61,7 @@ $totalRiders = array_sum(array_column($rows, 'rider_count'));
                             </tr>
                         <?php endforeach; ?>
                         </tbody>
-                        <tfoot><tr class="fw-bold"><td>Total</td><td><?= $totalRiders ?></td><td>—</td><td>—</td><td><?= h(formatCurrency($totalRevenue)) ?></td><td>100%</td></tr></tfoot>
+                        <tfoot><tr class="fw-bold"><td>Total</td><td><?= $totalRiders ?></td><td>–</td><td>–</td><td><?= h(formatCurrency($totalRevenue)) ?></td><td>100%</td></tr></tfoot>
                     </table>
                 </div>
             </div>

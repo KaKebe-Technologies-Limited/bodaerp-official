@@ -13,7 +13,7 @@ $recentNotifs = fetchAll("SELECT * FROM notifications WHERE rider_id=? ORDER BY 
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <?php $pageTitle = get_setting('rider_dashboard_title') . ' - ' . get_setting('site_name') ?? 'Rider - BodaERP'; require __DIR__ . '/../../partials/head-assets.php'; ?>
+    <?php $pageTitle = get_setting('rider_dashboard_title') . ' | ' . get_setting('site_name') ?? 'Rider | BodaERP'; require __DIR__ . '/../../partials/head-assets.php'; ?>
 </head>
 <body>
 
@@ -26,17 +26,17 @@ $recentNotifs = fetchAll("SELECT * FROM notifications WHERE rider_id=? ORDER BY 
         <div class="dash-banner theme-blue">
             <div class="d-flex justify-content-between align-items-center flex-wrap dash-banner-row">
                 <div>
-                    <h4>👋 Welcome back, <?= h(explode(' ', $rider['full_name'])[0]) ?></h4>
+                    <h4>Welcome back, <?= h(mb_convert_case(explode(' ', $rider['full_name'])[0], MB_CASE_TITLE)) ?></h4>
                     <p><?= h(get_setting('rider_welcome_text') ?? 'Here\'s the status of your permit at ' . ($rider['stage_name'] ?? 'your stage') . '.') ?></p>
                 </div>
-                <span class="dash-badge"><i class="fas fa-motorcycle me-1"></i><?= h($rider['bike_plate'] ?? '') ?></span>
+                <span class="dash-meta"><?= h($rider['bike_plate'] ?? '') ?></span>
             </div>
         </div>
 
         <div class="row g-3 mb-4">
             <div class="col-md-3 col-6"><div class="stat-card-modern"><div class="icon-badge <?= $rider['status']==='active'?'green':'red' ?>"><i class="fas fa-shield-alt"></i></div><div><span class="stat-number"><?= ucfirst($rider['status']) ?></span><div class="stat-label">Status</div></div></div></div>
-            <div class="col-md-3 col-6"><div class="stat-hero-card grad-blue"><div class="stat-hero-icon"><i class="fas fa-calendar-alt"></i></div><div><div class="stat-hero-value"><?= formatDate($rider['expiry_date']) ?></div><div class="stat-hero-label">Expiry Date</div></div></div></div>
-            <div class="col-md-3 col-6"><div class="stat-hero-card grad-gold"><div class="stat-hero-icon"><i class="fas fa-coins"></i></div><div><div class="stat-hero-value"><?= h(formatCurrency($rider['annual_tax'])) ?></div><div class="stat-hero-label">Annual Tax</div></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card tone-blue"><div class="stat-hero-icon"><i class="fas fa-calendar-alt"></i></div><div><div class="stat-hero-value"><?= formatDate($rider['expiry_date']) ?></div><div class="stat-hero-label">Expiry Date</div></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card tone-gold"><div class="stat-hero-icon"><i class="fas fa-coins"></i></div><div><div class="stat-hero-value"><?= h(formatCurrency($rider['annual_tax'])) ?></div><div class="stat-hero-label">Annual Tax</div></div></div></div>
             <div class="col-md-3 col-6">
                 <a href="<?= BASE_URL ?>/pages/rider/payment-history.php" class="text-decoration-none">
                     <div class="stat-card-modern"><div class="icon-badge <?= $hasPaid?'green':'red' ?>"><i class="fas fa-receipt"></i></div><div><span class="stat-number"><?= $hasPaid ? 'Paid' : 'Unpaid' ?></span><div class="stat-label">Payment Status</div></div></div>

@@ -1,17 +1,14 @@
 <?php
-// ============================================================
-// BodaERP — scheduler entry point (runs every enabled automation job that is due)
-//
-// The app already runs due jobs by itself while people use it. Use cron only if you want
-// exact timing even on quiet days. Either:
-//   Command line (Hostinger → Advanced → Cron Jobs, every 5 minutes is plenty):
-//     */5 * * * *  /usr/bin/php /home/<user>/domains/<domain>/public_html/cron/run.php
-//   or a URL pinger (cron-job.org etc.) — the secret token is shown in
-//     Super Admin → System & Updates → Scheduler:
-//     https://<domain>/cron/run.php?token=<secret>
-//   Add --all (CLI) or &all=1 (URL) to force every enabled job to run now.
-// ============================================================
+// BodaERP: scheduler entry point (runs every enabled automation job that is due)
+// The app already runs due jobs by itself while people use it. Use cron only if you want exact timing even
+// on quiet days. Either: Command line (Hostinger → Advanced → Cron Jobs, every 5 minutes is plenty): */5 *
+// * * *
+// /usr/bin/php /home/<user>/domains/<domain>/public_html/cron/run.php or a URL pinger (cron-job.org etc.):
+// the secret token is shown in Super Admin → System & Updates → Scheduler:
+// https://<domain>/cron/run.php?token=<secret> Add --all (CLI) or &all=1 (URL) to force every enabled job
+// to run now.
 define('BODAERP_SKIP_AUTOMATION', true);
+define('BODAERP_BACKGROUND', true);
 require_once __DIR__ . '/../packages/backend/automation.php';
 
 $isCli = PHP_SAPI === 'cli';
@@ -28,4 +25,4 @@ $res = automation_run_due($isCli ? 'cron' : 'cron-url', $force);
 
 if ($res['skipped']) { echo "Another run is in progress.\n"; exit(0); }
 if (!$res['ran'])    { echo date('[Y-m-d H:i:s]') . " nothing due.\n"; exit(0); }
-foreach ($res['ran'] as $code => $r) echo date('[Y-m-d H:i:s]') . " {$code}: " . ($r['ok'] ? 'ok' : 'ERROR') . " — {$r['message']}\n";
+foreach ($res['ran'] as $code => $r) echo date('[Y-m-d H:i:s]') . " {$code}: " . ($r['ok'] ? 'ok' : 'ERROR') . ": {$r['message']}\n";

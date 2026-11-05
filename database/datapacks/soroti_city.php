@@ -1,11 +1,11 @@
 <?php
-// Soroti City (Teso sub-region) — starter data. Idempotent: anything that already exists is left untouched.
+// Soroti City (Teso sub-region): starter data. Idempotent: anything that already exists is left untouched.
 return [
-    'title'       => 'Soroti City — starter data',
+    'title'       => 'Soroti City: starter data',
     'description' => 'Adds Soroti City with 4 stages, a City Council admin, 4 stage chairpersons, 12 riders (5 with rider logins), '
                    . 'payments, 2 enforcement actions and notifications. Dates are relative to today so the data always looks current. '
-                   . 'Safe to re-apply — existing records are never overwritten.',
-    'hint' => 'Default passwords — City Council: Soroti@2026 · Chairpersons: Chair@2026 · Riders: Rider@2026. Ask users to change them after first sign-in.',
+                   . 'Safe to re-apply: existing records are never overwritten.',
+    'hint' => 'Default passwords: City Council: Soroti@2026 · Chairpersons: Chair@2026 · Riders: Rider@2026. Ask users to change them after first sign-in.',
     'apply' => function (): array {
         $cityId = 'SOR';
         $today  = new DateTimeImmutable('today');
@@ -13,7 +13,7 @@ return [
         $count  = ['city' => 0, 'stages' => 0, 'users' => 0, 'riders' => 0, 'payments' => 0, 'enforcement' => 0, 'notifications' => 0];
         $creds  = [];
 
-        // ---- city (revenue split taken from the platform defaults when they are valid) ----
+        // city (revenue split taken from the platform defaults when they are valid)
         $fee = 45000;
         if (!(int) fetchValue("SELECT COUNT(*) FROM cities WHERE id = ?", [$cityId])) {
             $ps = fetchOne("SELECT * FROM platform_settings WHERE id = 1") ?: [];
@@ -32,7 +32,7 @@ return [
             $fee = (float) fetchValue("SELECT annual_fee FROM cities WHERE id = ?", [$cityId]);
         }
 
-        // ---- stages ----
+        // stages
         $stageDefs = [
             ['SOR-STG-001', 'Central Market Stage', 'Soroti Central Market, Eastern Division', 'Market - Town', 'Emuron Peter', '+256 772 500 101'],
             ['SOR-STG-002', 'Railway Stage', 'Soroti Railway Station, Western Division', 'Railway - Hospital Road', 'Apolot Jane', '+256 772 500 102'],
@@ -50,7 +50,7 @@ return [
             $stageId[$i + 1] = (int) $id;
         }
 
-        // ---- users ----
+        // users
         $mkUser = function (string $name, string $email, string $phone, string $password, string $role, ?int $stage) use ($cityId, &$count, &$creds): int {
             $id = fetchValue("SELECT id FROM users WHERE email = ?", [$email]);
             $isNew = !$id;
@@ -70,7 +70,7 @@ return [
             4 => $mkUser('Among Rose',   'chair.arapai@bodaerp.com',         '+256 772 500 104', 'Chair@2026', 'chairperson', $stageId[4]),
         ];
 
-        // ---- riders: name, gender, dob, marital, stage, plate, model, state, days since registration, rider login e-mail ----
+        // riders: name, gender, dob, marital, stage, plate, model, state, days since registration, rider login e-mail
         $riders = [
             ['EKURU SAMUEL',  'Male',   '1991-03-14', 'Married', 1, 'UFB 214K', 'Bajaj Boxer 150',  'active',  120, 'ekuru.samuel@bodaerp.com'],
             ['AMUGE SARAH',   'Female', '1995-07-22', 'Single',  1, 'UFC 508M', 'TVS Star HLX 125', 'active',  95,  'amuge.sarah@bodaerp.com'],
@@ -124,7 +124,7 @@ return [
                 $count['payments']++;
             }
             if ($userId) {   // notifications for riders who have logins
-                if ($state === 'pending')      $notes = [['Registration Complete', 'Welcome to BodaERP. Your registration is complete — pay your annual tax to activate your permit.']];
+                if ($state === 'pending')      $notes = [['Registration Complete', 'Welcome to BodaERP. Your registration is complete: pay your annual tax to activate your permit.']];
                 elseif ($state === 'expired')  $notes = [['Renewal Reminder', 'Your permit has expired. Please renew to avoid enforcement action.']];
                 else $notes = [['Registration Complete', 'Welcome to BodaERP. Your registration is complete.'],
                                ['Payment Confirmed', 'Your annual tax payment has been confirmed. Thank you!'],
@@ -136,7 +136,7 @@ return [
             }
         }
 
-        // ---- two enforcement actions against a lapsed rider ----
+        // two enforcement actions against a lapsed rider
         $offender = $riderIdByName['OKIROR DENIS'] ?? null;
         if ($offender) {
             $actions = [['ENF-SOR-0001', 'warning', null, 'Operating with an expired permit. Verbal warning issued.', -40, 'resolved'],

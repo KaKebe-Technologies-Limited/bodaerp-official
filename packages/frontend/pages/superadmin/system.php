@@ -8,7 +8,7 @@ $tabs = ['packs' => 'Data packs', 'automation' => 'Automation', 'backup' => 'Bac
 $tab = $_GET['tab'] ?? 'packs';
 if (!isset($tabs[$tab])) $tab = 'packs';
 
-// ---------- actions (post → redirect → get) ----------
+// actions (post → redirect → get)
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     csrf_verify();
     $act = $_POST['action'] ?? '';
@@ -49,7 +49,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $flash = $_SESSION['flash_sys'] ?? null;   unset($_SESSION['flash_sys']);
 $creds = $_SESSION['flash_creds'] ?? null; unset($_SESSION['flash_creds']);
 
-// ---------- data ----------
+// data
 $mig        = migrator_status();
 $migFailure = migrator_last_failure();
 $packs      = datapacks_list();
@@ -61,17 +61,19 @@ $cronUrl    = $scheme . '://' . ($_SERVER['HTTP_HOST'] ?? 'your-domain') . BASE_
 $cronCli    = '*/5 * * * *  /usr/bin/php ' . dirname(__DIR__, 2) . '/cron/run.php';
 $enabledJobs = count(array_filter($jobs, fn($j) => $j['enabled']));
 $failedJobs  = count(array_filter($jobs, fn($j) => $j['last_status'] === 'error'));
+$attention   = $autoReady ? automation_health_problems() : [];
+$backups     = backup_list();
 $appliedPacks = count(array_filter($packs, fn($p) => $p['applied']));
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <?php $pageTitle = 'System & Updates - BodaERP Platform'; require __DIR__ . '/../../partials/head-assets.php'; ?>
+    <?php $pageTitle = 'System & Updates | BodaERP'; require __DIR__ . '/../../partials/head-assets.php'; ?>
     <style>
         .sys-code { background: var(--off-white); border-radius: 12px; padding: 10px 14px; font-family: Consolas, monospace; font-size: 0.78rem; word-break: break-all; border: 1px solid var(--light-gray); }
         .pack-card { border-radius: 18px; background: var(--off-white); padding: 20px; height: 100%; }
         .nav-pills .nav-link { border-radius: 99px; font-weight: 600; font-size: 0.85rem; color: var(--text-muted); padding: 8px 18px; }
-        .nav-pills .nav-link.active { background: var(--primary-blue-gradient); color: #fff; box-shadow: 0 6px 16px rgba(91,75,213,0.3); }
+        .nav-pills .nav-link.active { background: var(--primary-blue-gradient); color: #fff; box-shadow: 0 6px 16px rgba(5, 108, 254,0.3); }
         .job-msg { font-size: 0.76rem; color: var(--text-muted); max-width: 360px; }
     </style>
 </head>
@@ -80,16 +82,16 @@ $appliedPacks = count(array_filter($packs, fn($p) => $p['applied']));
 <?php require __DIR__ . '/../../partials/sidebar-superadmin.php'; ?>
 
 <div class="main-content" id="mainContent">
-    <?php $pageTitle = 'System & Updates'; $pageSubtitle = 'Update the database, add cities and run automatic jobs — all online, no uploads'; require __DIR__ . '/../../partials/topheader.php'; ?>
+    <?php $pageTitle = 'System & Updates'; $pageSubtitle = 'Update the database, add cities and run automatic jobs: all online, no uploads'; require __DIR__ . '/../../partials/topheader.php'; ?>
     <div class="content-area">
 
         <?php if ($flash): ?><div class="alert alert-<?= h($flash[0]) ?>"><?= h($flash[1]) ?></div><?php endif; ?>
 
         <div class="row g-3 row-cols-2 row-cols-xl-4 mb-4">
-            <div class="col"><div class="stat-hero-card grad-dark"><div class="stat-hero-icon"><i class="fas fa-server"></i></div><div><div class="stat-hero-value" style="font-size:1.15rem;"><?= h(strtoupper(getDbEnvironment())) ?></div><div class="stat-hero-label">Environment · <?= h(DB_NAME) ?></div></div></div></div>
-            <div class="col"><a href="<?= BASE_URL ?>/pages/superadmin/database.php" class="text-decoration-none d-block"><div class="stat-hero-card <?= $mig['pending'] || $migFailure ? 'grad-gold' : 'grad-green' ?>"><div class="stat-hero-icon"><i class="fas fa-database"></i></div><div><div class="stat-hero-value" style="font-size:1.15rem;"><?= $mig['pending'] ? (int) $mig['pending'] . ' pending' : 'Up to date' ?></div><div class="stat-hero-label">Database · open the Database page</div></div></div></a></div>
-            <div class="col"><div class="stat-hero-card <?= $failedJobs ? 'grad-red' : 'grad-blue' ?>"><div class="stat-hero-icon"><i class="fas fa-robot"></i></div><div><div class="stat-hero-value" style="font-size:1.15rem;"><?= $enabledJobs ?>/<?= count($jobs) ?> on</div><div class="stat-hero-label">Automation<?= $failedJobs ? " · {$failedJobs} failing" : '' ?></div></div></div></div>
-            <div class="col"><div class="stat-hero-card grad-gold"><div class="stat-hero-icon"><i class="fas fa-city"></i></div><div><div class="stat-hero-value" style="font-size:1.15rem;"><?= $appliedPacks ?>/<?= count($packs) ?> applied</div><div class="stat-hero-label">Data packs</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-dark"><div class="stat-hero-icon"><i class="fas fa-server"></i></div><div><div class="stat-hero-value" style="font-size:1.15rem;"><?= h(strtoupper(getDbEnvironment())) ?></div><div class="stat-hero-label">Environment · <?= h(DB_NAME) ?></div></div></div></div>
+            <div class="col"><a href="<?= BASE_URL ?>/pages/superadmin/database.php" class="text-decoration-none d-block"><div class="stat-hero-card <?= $mig['pending'] || $migFailure ? 'tone-gold' : 'tone-green' ?>"><div class="stat-hero-icon"><i class="fas fa-database"></i></div><div><div class="stat-hero-value" style="font-size:1.15rem;"><?= $mig['pending'] ? (int) $mig['pending'] . ' pending' : 'Up to date' ?></div><div class="stat-hero-label">Database · open the Database page</div></div></div></a></div>
+            <div class="col"><div class="stat-hero-card <?= $failedJobs ? 'tone-red' : 'tone-blue' ?>"><div class="stat-hero-icon"><i class="fas fa-robot"></i></div><div><div class="stat-hero-value" style="font-size:1.15rem;"><?= $enabledJobs ?>/<?= count($jobs) ?> on</div><div class="stat-hero-label">Automation<?= $failedJobs ? " · {$failedJobs} failing" : '' ?></div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-gold"><div class="stat-hero-icon"><i class="fas fa-city"></i></div><div><div class="stat-hero-value" style="font-size:1.15rem;"><?= $appliedPacks ?>/<?= count($packs) ?> applied</div><div class="stat-hero-label">Data packs</div></div></div></div>
         </div>
 
         <ul class="nav nav-pills gap-2 mb-4 flex-wrap">
@@ -101,14 +103,14 @@ $appliedPacks = count(array_filter($packs, fn($p) => $p['applied']));
         <?php if ($tab === 'packs'): ?>
             <?php if ($creds): ?>
             <div class="card mb-4"><div class="card-body">
-                <h6 class="fw-bold mb-1"><i class="fas fa-key text-primary me-2"></i>Logins from this pack</h6>
+                <h6 class="fw-bold mb-1">Logins from this pack</h6>
                 <p class="small text-muted mb-3">Share these with the people concerned and ask them to change the password after first sign-in. Passwords are only shown for accounts created just now.</p>
                 <div class="table-responsive"><table class="table table-sm align-middle mb-0" id="credsTable">
                     <thead><tr><th>Role</th><th>Name</th><th>Email</th><th>Password</th></tr></thead>
                     <tbody>
                     <?php foreach ($creds as $c): ?>
                         <tr><td><span class="badge bg-primary"><?= h(strtoupper(str_replace('_', ' ', $c['role']))) ?></span></td><td><?= h($c['name']) ?></td><td><?= h($c['email']) ?></td>
-                            <td><?= $c['password'] ? '<code>' . h($c['password']) . '</code>' : '<span class="text-muted small">already existed — unchanged</span>' ?></td></tr>
+                            <td><?= $c['password'] ? '<code>' . h($c['password']) . '</code>' : '<span class="text-muted small">already existed: unchanged</span>' ?></td></tr>
                     <?php endforeach; ?>
                     </tbody>
                 </table></div>
@@ -128,7 +130,7 @@ $appliedPacks = count(array_filter($packs, fn($p) => $p['applied']));
                     <p class="small text-muted"><?= h($p['description']) ?></p>
                     <?php if ($p['hint']): ?><p class="small mb-2"><i class="fas fa-key text-primary me-1"></i><?= h($p['hint']) ?></p><?php endif; ?>
                     <?php if ($p['applied']): ?><p class="small mb-3"><i class="fas fa-info-circle text-primary me-1"></i><?= h($p['applied']['summary']) ?></p><?php endif; ?>
-                    <form method="post" onsubmit="return confirm('Apply “<?= h(addslashes($p['title'])) ?>”? Existing records are left untouched.');">
+                    <form method="post" data-confirm="Apply “<?= h($p['title']) ?>”? Existing records are left untouched.">
                         <?= csrf_field() ?><input type="hidden" name="action" value="apply_pack"><input type="hidden" name="pack" value="<?= h($p['code']) ?>">
                         <button class="btn <?= $p['applied'] ? 'btn-outline-primary' : 'btn-primary' ?> btn-sm"><i class="fas fa-play me-1"></i><?= $p['applied'] ? 'Re-apply (fill anything missing)' : 'Apply this data pack' ?></button>
                     </form>
@@ -143,13 +145,19 @@ $appliedPacks = count(array_filter($packs, fn($p) => $p['applied']));
             <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-3">
                 <div class="d-flex align-items-center gap-3">
                     <div class="icon-badge blue"><i class="fas fa-robot"></i></div>
-                    <div><h6 class="fw-bold mb-0">Automatic jobs</h6><small class="text-muted">Run by themselves while the system is in use — no cron needed. Switch any job off if you prefer.</small></div>
+                    <div><h6 class="fw-bold mb-0">Automatic jobs</h6><small class="text-muted">Run by themselves while the system is in use: no cron needed. Switch any job off if you prefer.</small></div>
                 </div>
                 <form method="post"><?= csrf_field() ?><input type="hidden" name="action" value="run_all">
                     <button class="btn btn-outline-primary btn-sm"><i class="fas fa-forward me-1"></i>Run all enabled jobs now</button></form>
             </div>
+            <?php if ($attention): ?>
+                <div class="alert alert-warning" data-keep>
+                    <strong><?= count($attention) ?> <?= count($attention) === 1 ? 'item needs' : 'items need' ?> your attention</strong>
+                    <ul class="mb-0 mt-1"><?php foreach ($attention as $problem): ?><li><a href="<?= h(BASE_URL . '/' . $problem['url']) ?>"><?= h($problem['text']) ?></a></li><?php endforeach; ?></ul>
+                </div>
+            <?php endif; ?>
             <?php if (!$autoReady): ?>
-                <div class="alert alert-warning">Automation tables are not installed yet — open <a href="<?= BASE_URL ?>/pages/superadmin/database.php">Database</a> and press “Update database now”.</div>
+                <div class="alert alert-warning">Automation tables are not installed yet: open <a href="<?= BASE_URL ?>/pages/superadmin/database.php">Database</a> and press “Update database now”.</div>
             <?php else: ?>
             <div class="table-responsive"><table class="table align-middle mb-0">
                 <thead><tr><th>Job</th><th>Schedule</th><th>Last run</th><th>Enabled</th><th></th></tr></thead>
@@ -167,7 +175,7 @@ $appliedPacks = count(array_filter($packs, fn($p) => $p['applied']));
                         </td>
                         <td>
                             <form method="post"><?= csrf_field() ?><input type="hidden" name="action" value="toggle_job"><input type="hidden" name="job" value="<?= h($j['code']) ?>">
-                                <div class="form-check form-switch m-0"><input class="form-check-input" type="checkbox" <?= $j['enabled'] ? 'checked' : '' ?> onchange="this.form.submit()" title="Turn this job on or off"></div></form>
+                                <div class="form-check form-switch m-0"><input class="form-check-input" type="checkbox" <?= $j['enabled'] ? 'checked' : '' ?> data-autosubmit title="Turn this job on or off"></div></form>
                         </td>
                         <td><form method="post"><?= csrf_field() ?><input type="hidden" name="action" value="run_job"><input type="hidden" name="job" value="<?= h($j['code']) ?>">
                             <button class="btn btn-sm btn-outline-primary"><i class="fas fa-play me-1"></i>Run now</button></form></td>
@@ -187,6 +195,13 @@ $appliedPacks = count(array_filter($packs, fn($p) => $p['applied']));
                 <p class="small text-muted">Take a backup before big changes. It contains all tables and data (including password hashes), so keep the file private. Sign-in sessions are left out.</p>
                 <form method="post" action="<?= BASE_URL ?>/pages/superadmin/db-backup.php"><?= csrf_field() ?>
                     <button class="btn btn-primary"><i class="fas fa-file-download me-2"></i>Download backup (.sql)</button></form>
+                <hr>
+                <?php if ($backups): $latestBackup = $backups[0]; ?>
+                    <p class="small mb-1"><strong>Latest automatic backup:</strong> <?= h(date('M d, Y H:i', $latestBackup['time'])) ?>, <?= number_format($latestBackup['bytes'] / 1048576, 1) ?> MB, <?= $latestBackup['encrypted'] ? 'encrypted' : 'not encrypted' ?>.</p>
+                    <p class="small text-muted mb-0"><?= count($backups) ?> kept in the server's storage folder. They do not survive losing this server, so keep a copy somewhere else too.</p>
+                <?php else: ?>
+                    <p class="small text-muted mb-0">No automatic backup yet. The "Back up the database" job writes one each day.</p>
+                <?php endif; ?>
             </div></div></div>
             <div class="col-lg-7"><div class="card h-100"><div class="card-body">
                 <div class="d-flex align-items-center gap-3 mb-3"><div class="icon-badge gold"><i class="fas fa-clock"></i></div>
@@ -196,8 +211,8 @@ $appliedPacks = count(array_filter($packs, fn($p) => $p['applied']));
                 <div class="small fw-semibold mb-1">…or ping this URL every few minutes (e.g. cron-job.org)</div>
                 <div class="sys-code mb-2" id="cronUrl"><?= h($cronUrl) ?></div>
                 <div class="d-flex gap-2 flex-wrap">
-                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="navigator.clipboard.writeText(document.getElementById('cronUrl').textContent.trim()); this.innerHTML='<i class=&quot;fas fa-check me-1&quot;></i>Copied'"><i class="fas fa-copy me-1"></i>Copy URL</button>
-                    <form method="post" onsubmit="return confirm('Generate a new token? Any cron job using the old URL will stop working until updated.');"><?= csrf_field() ?><input type="hidden" name="action" value="regen_token">
+                    <button type="button" class="btn btn-sm btn-outline-secondary" data-copy-from="cronUrl"><i class="fas fa-copy me-1"></i>Copy URL</button>
+                    <form method="post" data-confirm="Generate a new token? Any cron job using the old URL will stop working until updated."><?= csrf_field() ?><input type="hidden" name="action" value="regen_token">
                         <button class="btn btn-sm btn-outline-danger"><i class="fas fa-sync-alt me-1"></i>Regenerate token</button></form>
                 </div>
             </div></div></div>

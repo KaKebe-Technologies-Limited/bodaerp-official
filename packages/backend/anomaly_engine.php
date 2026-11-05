@@ -1,13 +1,8 @@
 <?php
-// ============================================================
-// BodaERP — Anomaly & Data-Quality Detection Engine
-//
-// Explainable, rule-based detection over riders, payments,
-// enforcement actions and audit logs. Every flag carries a plain-
-// language reason; flags are fingerprinted (re-scans never duplicate),
-// reviewed by humans, and auto-resolve once the data is fixed.
-// Scores are written to `anomaly_flags`; the UI only reads them.
-// ============================================================
+// BodaERP: Anomaly & Data-Quality Detection Engine
+// Explainable, rule-based detection over riders, payments, enforcement actions and audit logs. Every flag
+// carries a plain- language reason; flags are fingerprinted (re-scans never duplicate), reviewed by humans,
+// and auto-resolve once the data is fixed. Scores are written to `anomaly_flags`; the UI only reads them.
 
 require_once __DIR__ . '/db_helpers.php';
 
@@ -17,43 +12,43 @@ const ANOMALY_ACTIVE_STATUSES       = "'open','confirmed'";
 
 function anomaly_categories(): array {
     return [
-        'identity'     => ['Identity & duplicates', '#5b4bd5'],
+        'identity'     => ['Identity & duplicates', '#056CFE'],
         'payment'      => ['Payments & revenue',    '#f59e0b'],
         'compliance'   => ['Compliance status',     '#2cc6a8'],
         'enforcement'  => ['Enforcement',           '#e5484d'],
         'security'     => ['Security',              '#1f1b3a'],
-        'data_quality' => ['Data quality',          '#e0529c'],
+        'data_quality' => ['Data quality',          '#d97706'],
     ];
 }
 
 function anomaly_rules(): array {
     return [
         'DUP_PLATE' => ['Duplicate bike plate', 'identity', 'fa-clone', 'high',
-            'The same plate number (ignoring spaces and case) is registered to more than one rider — a cloned plate, a transferred bike not updated, or a double registration.'],
+            'The same plate number (ignoring spaces and case) is registered to more than one rider: a cloned plate, a transferred bike not updated, or a double registration.'],
         'DUP_PHONE' => ['Shared phone number', 'identity', 'fa-phone', 'medium',
             'One phone number appears on several rider records. Can be a family phone, but is also a common sign of fake or duplicate registrations.'],
         'DUP_PERSON' => ['Possible double registration', 'identity', 'fa-user-friends', 'high',
-            'Two or more riders share the same full name and date of birth but have different NINs — likely one person registered twice.'],
+            'Two or more riders share the same full name and date of birth but have different NINs: likely one person registered twice.'],
         'UNDERAGE' => ['Rider under 18', 'identity', 'fa-child', 'high',
             'The date of birth makes the rider younger than 18, which is below the legal age to operate a commercial motorcycle.'],
         'AGE_UNUSUAL' => ['Unusual rider age', 'identity', 'fa-hourglass-end', 'low',
-            'The rider is older than 75 — usually a date-of-birth typing error worth confirming.'],
+            'The rider is older than 75: usually a date-of-birth typing error worth confirming.'],
         'ACTIVE_NO_PAYMENT' => ['Active without any payment', 'payment', 'fa-file-invoice-dollar', 'high',
-            'The rider is marked active and was registered over 14 days ago, yet has no confirmed payment on record — possible unpaid activation.'],
+            'The rider is marked active and was registered over 14 days ago, yet has no confirmed payment on record: possible unpaid activation.'],
         'PAYMENT_AMOUNT' => ['Payment differs from city fee', 'payment', 'fa-coins', 'medium',
             'A confirmed payment in the last 12 months does not equal the city\'s annual fee (under- or over-payment). Instalments can be legitimate, so this is for review.'],
         'PAYMENT_DUPLICATE' => ['Possible duplicate payment', 'payment', 'fa-copy', 'medium',
-            'The same rider has two or more confirmed payments of the same amount on the same day — a double charge or double entry.'],
+            'The same rider has two or more confirmed payments of the same amount on the same day: a double charge or double entry.'],
         'COLLECTOR_BURST' => ['Collector volume spike', 'payment', 'fa-bolt', 'medium',
-            'One collector recorded an unusually high number of payments in a single day (limit ' . ANOMALY_COLLECTOR_DAILY_LIMIT . ') — a pattern worth reconciling with cash handed in.'],
+            'One collector recorded an unusually high number of payments in a single day (limit ' . ANOMALY_COLLECTOR_DAILY_LIMIT . '): a pattern worth reconciling with cash handed in.'],
         'STATUS_STALE' => ['Active but permit expired', 'compliance', 'fa-calendar-times', 'medium',
             'Status still says active although the permit expiry date has passed. Statuses are not auto-updated, so compliance figures are overstated until fixed.'],
         'STATUS_CONFLICT' => ['Expired but permit valid', 'compliance', 'fa-random', 'medium',
-            'Status says expired while the expiry date is still in the future — the status or the date is wrong.'],
+            'Status says expired while the expiry date is still in the future: the status or the date is wrong.'],
         'REPEAT_OFFENDER' => ['Repeat enforcement actions', 'enforcement', 'fa-gavel', 'medium',
-            'Three or more enforcement actions against the same rider in 180 days. Flagged for human review — never an automatic penalty.'],
+            'Three or more enforcement actions against the same rider in 180 days. Flagged for human review: never an automatic penalty.'],
         'LOGIN_BRUTE_FORCE' => ['Repeated failed logins (account)', 'security', 'fa-user-lock', 'high',
-            'Five or more failed sign-in attempts for the same email within 24 hours — possible password guessing.'],
+            'Five or more failed sign-in attempts for the same email within 24 hours: possible password guessing.'],
         'IP_BRUTE_FORCE' => ['Repeated failed logins (IP)', 'security', 'fa-network-wired', 'high',
             'Ten or more failed sign-ins from the same IP address within 24 hours across any accounts.'],
         'BAD_DATES' => ['Inconsistent dates', 'data_quality', 'fa-calendar-minus', 'low',
@@ -61,7 +56,7 @@ function anomaly_rules(): array {
     ];
 }
 
-// ---------- availability / small helpers ----------
+// availability / small helpers
 
 function anomaly_tables_ready(): bool {
     static $ready = null;
@@ -94,6 +89,13 @@ function anomaly_scan_if_stale(string $triggeredBy = 'auto'): ?array {
     return run_anomaly_scan($triggeredBy);
 }
 
+/** Masks phone numbers, NINs and full birth dates in flag text, for viewers who need the finding but not the data. */
+function anomaly_mask_personal(string $text): string {
+    $text = preg_replace_callback('/\+?\d[\d ]{7,}\d/', fn($m) => str_repeat('•', 6) . substr(preg_replace('/\D/', '', $m[0]), -3), $text);
+    $text = preg_replace_callback('/\bC[MF][A-Z0-9]{12}\b/i', fn($m) => substr($m[0], 0, 2) . str_repeat('•', 9) . substr($m[0], -3), $text);
+    return preg_replace('/\b(19|20)(\d{2})-\d{2}-\d{2}\b/', '$1$2', $text);
+}
+
 function _anomaly_row(string $rule, string $key, string $sev, string $etype, string $eid, ?int $rider, ?string $city, string $title, string $details = ''): array {
     $cat = anomaly_rules()[$rule][1];
     return [
@@ -103,7 +105,7 @@ function _anomaly_row(string $rule, string $key, string $sev, string $etype, str
     ];
 }
 
-// ---------- detectors (each returns a list of rows) ----------
+// detectors (each returns a list of rows)
 
 function anomaly_detectors(): array {
     return [
@@ -115,7 +117,7 @@ function anomaly_detectors(): array {
         foreach ($rows as $r) {
             $out[] = _anomaly_row('DUP_PLATE', $r['norm'], 'high', 'plate', $r['norm'], (int) $r['first_id'], $r['city'],
                 "Plate {$r['norm']} is registered to {$r['c']} riders",
-                'Riders: ' . mb_substr($r['names'], 0, 300) . ($r['cities'] > 1 ? " — across {$r['cities']} cities." : '.'));
+                'Riders: ' . mb_substr($r['names'], 0, 300) . ($r['cities'] > 1 ? ", in {$r['cities']} different cities." : '.'));
         }
         return $out;
     },
@@ -148,7 +150,7 @@ function anomaly_detectors(): array {
             FROM riders WHERE deleted_at IS NULL AND date_of_birth IS NOT NULL AND date_of_birth > DATE_SUB(CURDATE(), INTERVAL 18 YEAR)");
         foreach ($rows as $r) {
             $out[] = _anomaly_row('UNDERAGE', (string) $r['id'], 'high', 'rider', (string) $r['id'], (int) $r['id'], $r['city_id'],
-                "{$r['full_name']} is only {$r['age']} years old", "Date of birth {$r['date_of_birth']} — below the minimum age of 18.");
+                "{$r['full_name']} is only {$r['age']} years old", "Date of birth {$r['date_of_birth']}: below the minimum age of 18.");
         }
         return $out;
     },
@@ -158,7 +160,7 @@ function anomaly_detectors(): array {
             FROM riders WHERE deleted_at IS NULL AND date_of_birth IS NOT NULL AND date_of_birth < DATE_SUB(CURDATE(), INTERVAL 75 YEAR)");
         foreach ($rows as $r) {
             $out[] = _anomaly_row('AGE_UNUSUAL', (string) $r['id'], 'low', 'rider', (string) $r['id'], (int) $r['id'], $r['city_id'],
-                "{$r['full_name']} is recorded as {$r['age']} years old", "Date of birth {$r['date_of_birth']} — confirm it is not a typing error.");
+                "{$r['full_name']} is recorded as {$r['age']} years old", "Date of birth {$r['date_of_birth']}: confirm it is not a typing error.");
         }
         return $out;
     },
@@ -194,7 +196,7 @@ function anomaly_detectors(): array {
         foreach ($rows as $r) {
             $out[] = _anomaly_row('PAYMENT_DUPLICATE', $r['rider_id'] . '|' . $r['amount'] . '|' . $r['d'], 'medium', 'payment', (string) $r['pid'], (int) $r['rider_id'], $r['city'],
                 "{$r['c']} identical payments of UGX " . number_format($r['amount']) . " on {$r['d']}",
-                'Same rider, same amount, same day — check for a double charge or duplicate entry.');
+                'Same rider, same amount, same day: check for a double charge or duplicate entry.');
         }
         return $out;
     },
@@ -283,7 +285,7 @@ function anomaly_detectors(): array {
     ];
 }
 
-// ---------- scan ----------
+// scan
 
 function run_anomaly_scan(string $triggeredBy = 'manual'): array {
     if (!anomaly_tables_ready()) return ['error' => 'Anomaly tables are missing. Run: php database/migrate.php'];
@@ -332,7 +334,7 @@ function run_anomaly_scan(string $triggeredBy = 'manual'): array {
     }
 }
 
-// ---------- reading ----------
+// reading
 
 function anomaly_summary(?string $cityId = null): array {
     $cityWhere = $cityId ? ' AND city_id = ?' : '';

@@ -31,7 +31,7 @@ $expiringSoon = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE stage_id = ?
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <?php $pageTitle = 'My Riders - BodaERP'; require __DIR__ . '/../../partials/head-assets.php'; ?>
+    <?php $pageTitle = 'My Riders | BodaERP'; require __DIR__ . '/../../partials/head-assets.php'; ?>
 </head>
 <body>
 
@@ -42,10 +42,10 @@ $expiringSoon = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE stage_id = ?
 
     <div class="content-area">
         <div class="row g-3 row-cols-2 row-cols-xl-4 mb-4">
-            <div class="col"><div class="stat-hero-card grad-blue"><div class="stat-hero-icon"><i class="fas fa-users"></i></div><div><div class="stat-hero-value"><?= $totalRiders ?></div><div class="stat-hero-label">Total Riders</div></div></div></div>
-            <div class="col"><div class="stat-hero-card grad-green"><div class="stat-hero-icon"><i class="fas fa-user-check"></i></div><div><div class="stat-hero-value"><?= $activeRiders ?></div><div class="stat-hero-label">Active</div></div></div></div>
-            <div class="col"><div class="stat-hero-card grad-red"><div class="stat-hero-icon"><i class="fas fa-exclamation-triangle"></i></div><div><div class="stat-hero-value"><?= $defaulters ?></div><div class="stat-hero-label">Defaulters</div></div></div></div>
-            <div class="col"><div class="stat-hero-card grad-gold"><div class="stat-hero-icon"><i class="fas fa-hourglass-half"></i></div><div><div class="stat-hero-value"><?= $expiringSoon ?></div><div class="stat-hero-label">Expiring Soon</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-blue"><div class="stat-hero-icon"><i class="fas fa-users"></i></div><div><div class="stat-hero-value"><?= $totalRiders ?></div><div class="stat-hero-label">Total Riders</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-green"><div class="stat-hero-icon"><i class="fas fa-user-check"></i></div><div><div class="stat-hero-value"><?= $activeRiders ?></div><div class="stat-hero-label">Active</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-red"><div class="stat-hero-icon"><i class="fas fa-exclamation-triangle"></i></div><div><div class="stat-hero-value"><?= $defaulters ?></div><div class="stat-hero-label">Defaulters</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-gold"><div class="stat-hero-icon"><i class="fas fa-hourglass-half"></i></div><div><div class="stat-hero-value"><?= $expiringSoon ?></div><div class="stat-hero-label">Expiring Soon</div></div></div></div>
         </div>
 
         <div class="card mb-4">
@@ -92,7 +92,7 @@ $expiringSoon = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE stage_id = ?
                                 <td class="no-export">
                                     <a href="<?= BASE_URL ?>/pages/chairperson/rider-profile.php?id=<?= (int)$r['id'] ?>" class="btn btn-sm btn-outline-primary"><i class="fas fa-eye"></i></a>
                                     <a href="<?= BASE_URL ?>/pages/chairperson/edit-rider.php?id=<?= (int)$r['id'] ?>" class="btn btn-sm btn-outline-warning"><i class="fas fa-edit"></i></a>
-                                    <form method="post" class="d-inline" onsubmit="return confirm('Delete this rider? This cannot be undone.');">
+                                    <form method="post" class="d-inline" data-confirm="Delete this rider? This cannot be undone.">
                                         <?= csrf_field() ?><input type="hidden" name="action" value="delete"><input type="hidden" name="id" value="<?= (int)$r['id'] ?>">
                                         <button type="submit" class="btn btn-sm btn-outline-danger"><i class="fas fa-trash"></i></button>
                                     </form>
@@ -105,7 +105,7 @@ $expiringSoon = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE stage_id = ?
                     <div class="empty-state">
                         <i class="fas fa-users"></i>
                         <h5>No riders found</h5>
-                        <p>Try adjusting your search or filters, or register a new rider to get started.</p>
+                        <p>No rider matches. Clear the search, or register a new rider.</p>
                     </div>
                     <?php endif; ?>
                 </div>

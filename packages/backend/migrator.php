@@ -1,19 +1,13 @@
 <?php
-// ============================================================
-// BodaERP — automatic, idempotent database migrations
-//
-// Every schema change lives in database/migrations/<timestamp>_<name>.php.
-// Pending migrations are applied automatically (once, under a lock) the first
-// time any request touches the database, so deploying new code is enough —
-// nobody has to import SQL by hand. Applied migrations are recorded in the
-// `schema_migrations` table.
-//
-// A migration file returns:  ['description' => '...', 'up' => function (mysqli $db) { ... }]
-// and MUST be idempotent (use the mig_* helpers below, which check
-// information_schema first). A failure never takes the site down: it is
-// logged, shown to the Super Admin, and retried at most every 5 minutes.
-// ============================================================
-
+// BodaERP: automatic, idempotent database migrations
+// Every schema change lives in database/migrations/<timestamp>_<name>.php. Pending migrations are applied
+// automatically (once, under a lock) the first time any request touches the database, so deploying new code
+// is enough: nobody has to import SQL by hand. Applied migrations are recorded in the `schema_migrations`
+// table.
+// A migration file returns:
+// ['description' => '...', 'up' => function (mysqli $db) { ... }] and MUST be idempotent (use the mig_*
+// helpers below, which check information_schema first). A failure never takes the site down: it is logged,
+// shown to the Super Admin, and retried at most every 5 minutes.
 
 require_once __DIR__ . '/schema_sync.php';
 
@@ -117,8 +111,8 @@ function migrator_fail_file(): string {
 function migrator_last_failure(): ?array {
     $f = migrator_fail_file();
     if (!is_file($f)) return null;
-    $data = json_decode((string) @file_get_contents($f), true);
-    return is_array($data) ? $data : null;
+    $failure = json_decode((string) @file_get_contents($f), true);
+    return is_array($failure) ? $failure : null;
 }
 
 /** Runs pending migrations and records/clears the failure marker. */
@@ -135,7 +129,7 @@ function migrator_run_tracked(string $by): array {
 /**
  * Cheap per-request hook. When nothing is pending it costs two tiny queries:
  *   1. pending migration files   (database/migrations/*.php)
- *   2. a changed schema snapshot (database/schema.snapshot.json) — see schema_sync.php
+ *   2. a changed schema snapshot (database/schema.snapshot.json): see schema_sync.php
  * and, on a developer machine only, a throttled check that keeps the snapshot
  * file in step with the local database.
  */
@@ -169,9 +163,7 @@ function migrator_auto(): void {
     }
 }
 
-// ------------------------------------------------------------
 // Helpers for writing idempotent migrations
-// ------------------------------------------------------------
 
 function mig_value(mysqli $db, string $sql, array $params = []) {
     $stmt = $db->prepare($sql);

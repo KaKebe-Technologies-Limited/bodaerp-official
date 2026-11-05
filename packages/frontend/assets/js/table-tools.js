@@ -1,8 +1,4 @@
-// ============================================================
-// BodaERP — Shared table export toolkit (CSV / Excel / PDF / Print)
-// Any <table id="..."> can be exported. Mark cells that shouldn't
-// appear in exports (e.g. an Actions column) with class="no-export".
-// ============================================================
+// BodaERP: Shared table export toolkit (CSV / Excel / PDF / Print) Any <table id="..."> can be exported. Mark cells that shouldn't appear in exports (e.g. an Actions column) with class="no-export".
 
 function getExportRows(tableId) {
     const table = document.getElementById(tableId);
@@ -29,14 +25,14 @@ function downloadBlob(content, filename, mime) {
 
 function exportTableCSV(tableId, filename) {
     const rows = getExportRows(tableId);
-    if (!rows.length) { alert('Nothing to export.'); return; }
+    if (!rows.length) { showToast('This table has no rows to export.', 'error'); return; }
     const csv = rows.map(r => r.map(v => '"' + v.replace(/"/g, '""') + '"').join(',')).join('\r\n');
     downloadBlob('﻿' + csv, filename.endsWith('.csv') ? filename : filename + '.csv', 'text/csv;charset=utf-8;');
 }
 
 function exportTableExcel(tableId, filename) {
     const rows = getExportRows(tableId);
-    if (!rows.length) { alert('Nothing to export.'); return; }
+    if (!rows.length) { showToast('This table has no rows to export.', 'error'); return; }
     let html = '<table border="1">';
     rows.forEach((r, i) => {
         const tag = i === 0 ? 'th' : 'td';
@@ -49,8 +45,8 @@ function exportTableExcel(tableId, filename) {
 
 function exportTablePDF(tableId, filename, title) {
     const rows = getExportRows(tableId);
-    if (!rows.length) { alert('Nothing to export.'); return; }
-    if (!window.jspdf) { alert('PDF library failed to load.'); return; }
+    if (!rows.length) { showToast('This table has no rows to export.', 'error'); return; }
+    if (!window.jspdf) { showToast('The PDF library did not load. Check your connection and try again.', 'error'); return; }
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF({ orientation: rows[0].length > 6 ? 'landscape' : 'portrait' });
     doc.setFontSize(14);
@@ -63,7 +59,7 @@ function exportTablePDF(tableId, filename, title) {
         body: rows.slice(1),
         startY: 26,
         styles: { fontSize: 8, cellPadding: 2 },
-        headStyles: { fillColor: [91, 75, 213] },
+        headStyles: { fillColor: [0, 23, 64] },
         margin: { left: 14, right: 14 },
     });
     doc.save(filename.endsWith('.pdf') ? filename : filename + '.pdf');

@@ -3,13 +3,14 @@
  * ioTec Pay Helper Functions for BodaERP
  * Lets a rider pay their annual tax online via mobile money instead of
  * only a chairperson recording a manual cash/bank/momo payment. The
- * amount charged is always the rider's own `annual_tax` — a snapshot
+ * amount charged is always the rider's own `annual_tax`: a snapshot
  * of the city's admin-configurable `annual_fee` taken at registration
- * (see pages/superadmin/cities.php and pages/citycouncil/council-setting.php) —
+ * (see pages/superadmin/cities.php and pages/citycouncil/council-setting.php): 
  * never a value hardcoded here.
  */
 
 require_once __DIR__ . '/iotec_config.php';
+require_once __DIR__ . '/permits.php';
 
 class IotecApiClient
 {
@@ -128,8 +129,8 @@ function normalizeUgPhone($phone) {
 
 /**
  * Initiate a rider's annual-tax payment via ioTec Pay mobile money
- * collection. Charges the rider's own `annual_tax` — never a hardcoded
- * or client-supplied amount — so the admin-configurable city fee is
+ * collection. Charges the rider's own `annual_tax`: never a hardcoded
+ * or client-supplied amount: so the admin-configurable city fee is
  * always what's actually collected.
  * Returns ['success'=>true,'payment_id'=>N,'status'=>'pending'|'completed']
  * or      ['error' => 'message'].
@@ -185,9 +186,9 @@ function initiateRiderPayment(int $riderId, string $phone) {
         $status        = $response->status ?? 'Pending';
 
         if (empty($transactionId)) {
-            $errMsg = $response->message ?? json_encode($response);
+            app_log('payments', 'ioTec collect rejected', ['payment_id' => $paymentId, 'response' => $response]);
             runQuery("UPDATE payments SET status='Failed' WHERE id=?", [$paymentId]);
-            return ['error' => 'ioTec Pay error: ' . $errMsg];
+            return ['error' => 'The mobile-money service rejected the request. Check the phone number and try again.'];
         }
 
         runQuery("UPDATE payments SET iotec_transaction_id=? WHERE id=?", [$transactionId, $paymentId]);
@@ -205,54 +206,15 @@ function initiateRiderPayment(int $riderId, string $phone) {
         return ['success' => true, 'payment_id' => $paymentId, 'status' => 'pending'];
 
     } catch (Exception $e) {
+        app_log('payments', 'ioTec collect failed: ' . $e->getMessage(), ['payment_id' => $paymentId]);
         runQuery("UPDATE payments SET status='Failed' WHERE id=? AND status='Pending'", [$paymentId]);
-        return ['error' => 'Payment exception: ' . $e->getMessage()];
+        return ['error' => 'The mobile-money service did not respond. No money was taken; please try again in a few minutes.'];
     }
 }
 
-/**
- * Mark a payment completed: assign its real receipt number, activate
- * the rider and extend their expiry a year, and notify them — the
- * same effects collect-payments.php produces for a manually-recorded
- * payment, so a self-service online payment looks identical everywhere
- * (dashboards, reports, defaulter lists) once it's Confirmed.
- * Shared by the collect() immediate-success path, the status poll, and
- * the reconcile sweep. Only ever acts on a still-Pending row.
- */
-function markPaymentCompleted(int $paymentId): bool {
-    $payment = fetchOne("SELECT * FROM payments WHERE id = ? AND status = 'Pending'", [$paymentId]);
-    if (!$payment) return false;
+function markPaymentCompleted(int $paymentId): bool { return payment_confirm($paymentId); }
 
-    runQuery("UPDATE payments SET status='Confirmed' WHERE id=?", [$paymentId]);
-    $receipt = nextReceiptNumber($paymentId);
-    runQuery("UPDATE payments SET receipt_number=? WHERE id=?", [$receipt, $paymentId]);
-
-    runQuery(
-        "UPDATE riders SET status='active', expiry_date = DATE_ADD(CURDATE(), INTERVAL 365 DAY) WHERE id = ?",
-        [$payment['rider_id']]
-    );
-    runQuery(
-        "INSERT INTO notifications (rider_id,type,message) VALUES (?, 'Payment Confirmed', ?)",
-        [$payment['rider_id'], 'Your annual tax payment has been confirmed. Thank you!']
-    );
-
-    runQuery(
-        "INSERT INTO audit_logs (user_id,user_name_snapshot,role_snapshot,city_id,action,entity_type,entity_id,details,ip_address)
-         VALUES (NULL,'System (ioTec Pay)','system',:city,'UPDATE','payment',:pid,:details,:ip)",
-        [
-            'city'    => $payment['city_id'],
-            'pid'     => (string) $paymentId,
-            'details' => "Rider self-paid {$payment['amount']} via ioTec mobile money, receipt {$receipt}",
-            'ip'      => $_SERVER['REMOTE_ADDR'] ?? '',
-        ]
-    );
-
-    return true;
-}
-
-function markPaymentFailed(int $paymentId): void {
-    runQuery("UPDATE payments SET status='Failed' WHERE id=? AND status='Pending'", [$paymentId]);
-}
+function markPaymentFailed(int $paymentId, string $reason = 'declined or cancelled on the phone'): void { payment_mark_failed($paymentId, $reason); }
 
 /**
  * Verify a payment's current status by asking ioTec Pay directly.
@@ -286,8 +248,9 @@ function verifyIotecPaymentTransaction(int $paymentId): array {
         }
         return ['success' => true, 'status' => 'pending'];
     } catch (Exception $e) {
-        // Network/API hiccup — leave as pending, the next poll or reconcile sweep will resolve it.
-        return ['success' => true, 'status' => 'pending', 'error' => $e->getMessage()];
+        // Network/API hiccup: leave as pending, the next poll or reconcile sweep will resolve it.
+        app_log('payments', 'ioTec status check failed: ' . $e->getMessage(), ['payment_id' => $paymentId]);
+        return ['success' => true, 'status' => 'pending', 'error' => 'Status check failed; will retry.'];
     }
 }
 
@@ -324,16 +287,21 @@ function reconcilePendingPayments(int $limit = 50): array {
 
 /**
  * Verify that an incoming callback request really came from ioTec Pay.
- * See the note in iotec_config.php — this wallet's callback URL isn't
+ * See the note in iotec_config.php: this wallet's callback URL isn't
  * currently pointed at BodaERP, so this path is a ready-to-use fallback
  * rather than the primary confirmation mechanism.
  */
 function verifyIotecIpnSecret(): bool {
+    if (IOTEC_IPN_SECRET === '') return false;                // no secret configured: accept nothing
     $headers = function_exists('getallheaders') ? getallheaders() : [];
-    foreach ($headers as $value) {
-        if ($value === IOTEC_IPN_SECRET || $value === 'Bearer ' . IOTEC_IPN_SECRET) {
-            return true;
-        }
+    // ioTec's header name is not documented for this wallet, so by default any header may carry the secret
+    // (the caller still has to know it). Set IOTEC_IPN_HEADER once the real name is known to pin it.
+    $only = strtolower(IOTEC_IPN_HEADER);
+    foreach ($headers as $name => $value) {
+        if ($only !== '' && strtolower((string) $name) !== $only) continue;
+        $value = trim((string) $value);
+        if (str_starts_with($value, 'Bearer ')) $value = substr($value, 7);
+        if ($value !== '' && hash_equals(IOTEC_IPN_SECRET, $value)) return true;
     }
     return false;
 }
@@ -343,12 +311,12 @@ function verifyIotecIpnSecret(): bool {
  * ipn_handler.php when/if ioTec posts a transaction status update
  * for this wallet to BodaERP.
  */
-function processIotecIpn(): array {
+function processIotecIpn(?string $raw = null): array {
     if (!verifyIotecIpnSecret()) {
         return ['error' => 'Invalid or missing IPN secret'];
     }
 
-    $raw     = file_get_contents('php://input');
+    $raw     ??= (string) file_get_contents('php://input', false, null, 0, 65536);
     $payload = json_decode($raw);
     if (!$payload) {
         return ['error' => 'Invalid IPN payload'];
@@ -366,15 +334,14 @@ function processIotecIpn(): array {
         $payment = fetchOne("SELECT * FROM payments WHERE id = ? LIMIT 1", [(int) $externalId]);
     }
     if (!$payment) {
-        return ['error' => 'Payment not found for transaction: ' . $transactionId];
+        return ['error' => 'Payment not found'];
     }
 
-    if ($status === 'Success') {
-        markPaymentCompleted((int) $payment['id']);
-    } elseif (in_array($status, ['Failed', 'RolledBack', 'Cancelled', 'Rejected'], true)) {
-        markPaymentFailed((int) $payment['id']);
+    if ($transactionId && $payment['iotec_transaction_id'] && !hash_equals((string) $payment['iotec_transaction_id'], (string) $transactionId)) {
+        return ['error' => 'Transaction id does not match the payment'];
     }
-    // Pending / SentToVendor / AwaitingApproval / Scheduled — leave as-is
-
-    return ['success' => true, 'status' => $status];
+    // The callback only says "something changed": the outcome is always read back from ioTec's API,
+    // so a forged or replayed callback cannot confirm a payment.
+    $checked = verifyIotecPaymentTransaction((int) $payment['id']);
+    return ['success' => true, 'reported' => $status, 'status' => $checked['status'] ?? 'pending'];
 }

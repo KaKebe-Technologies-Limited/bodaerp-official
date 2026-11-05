@@ -42,7 +42,7 @@ return [
             if ($bad === 0) {
                 mig_exec($db, 'ALTER TABLE cities ADD CONSTRAINT chk_revenue_split CHECK (revenue_split_city + revenue_split_association + revenue_split_platform + revenue_split_government = 100)');
             } else {
-                error_log("BodaERP: {$bad} city row(s) do not total 100% — chk_revenue_split not re-added.");
+                error_log("BodaERP: {$bad} city row(s) do not total 100%: chk_revenue_split not re-added.");
             }
         }
     },

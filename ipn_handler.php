@@ -1,34 +1,24 @@
 <?php
 /**
- * IPN Handler — BodaERP
- * ioTec Pay posts payment status updates here in the background
- * (configured per-wallet in the ioTec Pay portal under Callback URLs).
- * This endpoint must respond with HTTP 200 quickly.
- *
- * NOTE: this ioTec wallet's callback URL is currently pointed at
- * ChamaFunds, not here — see the note in packages/backend/iotec_config.php.
- * Rider payment confirmation works today via active status polling
- * (api/payments.php action=check_status / reconcile) regardless of
- * whether this endpoint ever receives a real callback. This file is a
- * ready-to-use fallback for whenever the callback URL is reconfigured
- * (or a separate wallet is created for BodaERP).
+ * ioTec Pay callback (IPN). ioTec posts a status update here when a collection changes.
+ * The request must carry IOTEC_IPN_SECRET in a header; even then the payment outcome is
+ * re-read from ioTec's API before anything changes (see processIotecIpn()).
+ * Note: the ioTec wallet's callback URL must point at <site>/ipn_handler.php for this to be used;
+ * until then payments are confirmed by status polling and the reconcile sweep.
  */
-
 require_once __DIR__ . '/packages/backend/functions.php';
 require_once __DIR__ . '/packages/backend/iotec_functions.php';
 
-function logIpn($data) {
-    $logFile = __DIR__ . '/ipn_logs.txt';
-    $entry   = '[' . date('Y-m-d H:i:s') . '] ' . print_r($data, true) . "\n---\n";
-    file_put_contents($logFile, $entry, FILE_APPEND | LOCK_EX);
-}
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') { http_response_code(405); header('Allow: POST'); exit; }
 
-logIpn(['request' => $_REQUEST, 'input' => file_get_contents('php://input')]);
+$raw = (string) file_get_contents('php://input', false, null, 0, 65536);
+$payload = json_decode($raw, true);
+app_log('ipn', 'callback received', ['ip' => $_SERVER['REMOTE_ADDR'] ?? '', 'id' => $payload['id'] ?? null,
+    'externalId' => $payload['externalId'] ?? null, 'status' => $payload['status'] ?? null]);
 
-$result = processIotecIpn();
+$result = processIotecIpn($raw);
+app_log('ipn', 'callback processed', $result);
 
-logIpn(['result' => $result]);
-
-http_response_code(200);
-echo 'OK';
-exit;
+http_response_code(isset($result['error']) && str_contains($result['error'], 'secret') ? 403 : 200);
+header('Content-Type: text/plain');
+echo isset($result['error']) ? 'REJECTED' : 'OK';

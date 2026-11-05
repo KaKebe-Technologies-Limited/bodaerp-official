@@ -1,29 +1,19 @@
 <?php
-// ============================================================
-// BodaERP — Database connection (mysqli)
-//
-// Zero setup on your own computer (XAMPP / WAMP / MAMP): connects to MySQL on
-// 127.0.0.1 as root and creates the database if it does not exist yet — the
-// tables then build themselves (see migrator.php and schema_sync.php).
-//
-// On a live server put the connection in ONE place, the .env file next to
-// login.php (copy .env.example):
-//     DB_HOST=localhost
-//     DB_NAME=your_database
-//     DB_USER=your_user
-//     DB_PASS=your_password
-//
-// The old config/database.php (one file holding a local and a live block) is
-// still understood — it is only READ, never executed — so an existing server
-// keeps working until you move those four values into .env.
-//
+// BodaERP: Database connection (mysqli)
+// Zero setup on your own computer (XAMPP / WAMP / MAMP): connects to MySQL on 127.0.0.1 as root and creates
+// the database if it does not exist yet: the tables then build themselves (see migrator.php and
+// schema_sync.php).
+// On a live server put the connection in ONE place, the .env file next to login.php (copy .env.example):
+// DB_HOST=localhost DB_NAME=your_database DB_USER=your_user DB_PASS=your_password
+// The old config/database.php (one file holding a local and a live block) is still understood: it is only
+// READ, never executed: so an existing server keeps working until you move those four values into .env.
 // All backend code uses the mysqli API directly: db() must return mysqli.
-// ============================================================
 
+date_default_timezone_set('Africa/Kampala');   // also for CLI scripts that load only the database layer
 require_once __DIR__ . '/../env_loader.php';
 loadEnvFile(__DIR__ . '/../../../.env');
 
-/** True on a developer machine: CLI, localhost, *.test, private LAN addresses (APP_ENV=live|local overrides). */
+/** True on a developer machine: CLI, or a localhost / *.test / LAN host name requested from a loopback or LAN client (APP_ENV=live|local overrides). */
 function db_is_local(): bool {
     static $local = null;
     if ($local !== null) return $local;
@@ -32,6 +22,13 @@ function db_is_local(): bool {
     if (in_array($forced, ['live', 'production', 'prod'], true))  return $local = false;
     if (in_array($forced, ['local', 'dev', 'development'], true)) return $local = true;
     if (PHP_SAPI === 'cli') return $local = true;
+
+    // SERVER_NAME usually comes from the client's Host header, so a public visitor could send
+    // "Host: localhost". Only believe a local-looking name when the client is on loopback or a private LAN.
+    $client = (string) ($_SERVER['REMOTE_ADDR'] ?? '');
+    $clientIsPrivate = $client !== '' && filter_var($client, FILTER_VALIDATE_IP) !== false
+        && filter_var($client, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) === false;
+    if (!$clientIsPrivate) return $local = false;
 
     $host = strtolower((string) preg_replace('/:\d+$/', '', $_SERVER['SERVER_NAME'] ?? $_SERVER['HTTP_HOST'] ?? ''));
     return $local = (
@@ -114,6 +111,8 @@ unset($_dbCfg);
 function _db_open(string $dbName): mysqli {
     $c = new mysqli(DB_HOST, DB_USER, DB_PASS, $dbName, DB_PORT);
     $c->set_charset('utf8mb4');
+    // NOW() / CURRENT_TIMESTAMP must agree with PHP's date() (Africa/Kampala), whatever timezone the server runs in.
+    $c->query("SET time_zone = '" . (new DateTime('now', new DateTimeZone(date_default_timezone_get())))->format('P') . "'");
     return $c;
 }
 
@@ -174,7 +173,7 @@ function _db_fail(Throwable $e): never {
     echo '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
        . '<title>Database unavailable - BodaERP</title><style>'
        . 'body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#f3f1fb;font-family:system-ui,Segoe UI,Arial,sans-serif;color:#25214a}'
-       . '.c{max-width:520px;margin:24px;background:#fff;border-radius:20px;padding:34px;box-shadow:0 20px 50px rgba(91,75,213,.15)}'
+       . '.c{max-width:520px;margin:24px;background:#fff;border-radius:20px;padding:34px;box-shadow:0 20px 50px rgba(5, 108, 254,.15)}'
        . 'h1{font-size:1.25rem;margin:0 0 6px}p{line-height:1.55;color:#5b5878;margin:10px 0}code{background:#f3f1fb;padding:2px 6px;border-radius:6px;font-size:.85em}'
        . 'small{color:#8b88a6}.b{display:inline-block;background:#fdeaea;color:#c0392b;border-radius:99px;padding:3px 12px;font-size:.78rem;font-weight:600}'
        . '</style></head><body><div class="c"><span class="b">Database unavailable</span><h1>BodaERP can\'t reach its database</h1>'

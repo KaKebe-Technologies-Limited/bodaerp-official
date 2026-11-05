@@ -17,7 +17,7 @@ $riders = fetchAll(
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <?php $pageTitle = 'Expiring Soon - BodaERP'; require __DIR__ . '/../../partials/head-assets.php'; ?>
+    <?php $pageTitle = 'Expiring Soon | BodaERP'; require __DIR__ . '/../../partials/head-assets.php'; ?>
 </head>
 <body>
 

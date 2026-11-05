@@ -17,7 +17,7 @@ $pageTitle = get_setting('chairperson_dashboard_title') ?? 'Stage Dashboard';
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <?php $pageTitle = get_setting('chairperson_dashboard_title') . ' - ' . get_setting('site_name') ?? 'Stage - BodaERP'; require __DIR__ . '/../../partials/head-assets.php'; ?>
+    <?php $pageTitle = get_setting('chairperson_dashboard_title') . ' | ' . get_setting('site_name') ?? 'Stage | BodaERP'; require __DIR__ . '/../../partials/head-assets.php'; ?>
     <style>
         .status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; }
         .status-dot.active { background: #198754; } .status-dot.expired { background: #dc3545; } .status-dot.pending { background: #ffc107; }
@@ -34,18 +34,18 @@ $pageTitle = get_setting('chairperson_dashboard_title') ?? 'Stage Dashboard';
         <div class="dash-banner theme-green">
             <div class="d-flex justify-content-between align-items-center flex-wrap dash-banner-row">
                 <div>
-                    <h4>📍 <?= h($stage['name']) ?></h4>
+                    <h4><?= h($stage['name']) ?></h4>
                     <p><?= h(get_setting('chairperson_welcome_text') ?? 'Manage your stage\'s riders, payments and compliance from one place.') ?></p>
                 </div>
-                <span class="dash-badge"><i class="fas fa-calendar me-1"></i><?= h(CURRENT_FISCAL_YEAR) ?></span>
+                <span class="dash-meta"><?= h(CURRENT_FISCAL_YEAR) ?></span>
             </div>
         </div>
 
         <div class="row g-3 mb-4">
-            <div class="col-md-3 col-6"><div class="stat-hero-card grad-blue"><div class="stat-hero-icon"><i class="fas fa-users"></i></div><div><div class="stat-hero-value"><?= $totalRiders ?></div><div class="stat-hero-label">Total Riders</div></div></div></div>
-            <div class="col-md-3 col-6"><div class="stat-hero-card grad-green"><div class="stat-hero-icon"><i class="fas fa-check-circle"></i></div><div><div class="stat-hero-value"><?= $activeRiders ?></div><div class="stat-hero-label">Active (Paid)</div></div></div></div>
-            <div class="col-md-3 col-6"><div class="stat-hero-card grad-red"><div class="stat-hero-icon"><i class="fas fa-exclamation-triangle"></i></div><div><div class="stat-hero-value"><?= $defaulters ?></div><div class="stat-hero-label">Defaulters</div></div></div></div>
-            <div class="col-md-3 col-6"><div class="stat-hero-card grad-gold"><div class="stat-hero-icon"><i class="fas fa-money-bill-wave"></i></div><div><div class="stat-hero-value"><?= h(formatCurrency($revenue)) ?></div><div class="stat-hero-label">Revenue Collected</div></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card tone-blue"><div class="stat-hero-icon"><i class="fas fa-users"></i></div><div><div class="stat-hero-value"><?= $totalRiders ?></div><div class="stat-hero-label">Total Riders</div></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card tone-green"><div class="stat-hero-icon"><i class="fas fa-check-circle"></i></div><div><div class="stat-hero-value"><?= $activeRiders ?></div><div class="stat-hero-label">Active (Paid)</div></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card tone-red"><div class="stat-hero-icon"><i class="fas fa-exclamation-triangle"></i></div><div><div class="stat-hero-value"><?= $defaulters ?></div><div class="stat-hero-label">Defaulters</div></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card tone-gold"><div class="stat-hero-icon"><i class="fas fa-money-bill-wave"></i></div><div><div class="stat-hero-value"><?= h(formatCurrency($revenue)) ?></div><div class="stat-hero-label">Revenue Collected</div></div></div></div>
         </div>
 
         <h6 class="fw-bold mb-3">Quick Actions</h6>
@@ -59,7 +59,7 @@ $pageTitle = get_setting('chairperson_dashboard_title') ?? 'Stage Dashboard';
         <div class="card">
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h5 class="fw-bold mb-0"><i class="fas fa-users text-primary me-2"></i>Recent Riders</h5>
+                    <h5 class="fw-bold mb-0">Recent Riders</h5>
                     <a href="<?= BASE_URL ?>/pages/chairperson/my-riders.php" class="btn btn-sm btn-outline-primary">View All</a>
                 </div>
                 <div class="table-responsive">

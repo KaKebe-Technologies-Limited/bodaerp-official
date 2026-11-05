@@ -21,7 +21,7 @@ $icons = [
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <?php $pageTitle = 'Notifications - BodaERP'; require __DIR__ . '/../../partials/head-assets.php'; ?>
+    <?php $pageTitle = 'Notifications | BodaERP'; require __DIR__ . '/../../partials/head-assets.php'; ?>
 </head>
 <body>
 

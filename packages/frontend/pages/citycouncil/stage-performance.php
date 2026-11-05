@@ -24,7 +24,7 @@ $worst = $stages ? end($stages)['performance'] : 0;
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <?php $pageTitle = 'Stage Performance - BodaERP'; require __DIR__ . '/../../partials/head-assets.php'; ?>
+    <?php $pageTitle = 'Stage Performance | BodaERP'; require __DIR__ . '/../../partials/head-assets.php'; ?>
     <style>
     </style>
 </head>
@@ -33,20 +33,16 @@ $worst = $stages ? end($stages)['performance'] : 0;
 <?php require __DIR__ . '/../../partials/sidebar-citycouncil.php'; ?>
 
 <div class="main-content" id="mainContent">
-    <header class="top-header">
-        <div class="d-flex justify-content-between align-items-center">
-            <div class="d-flex align-items-center gap-3">
-                <button class="btn btn-light d-lg-none" id="toggleSidebar"><i class="fas fa-bars"></i></button>
-                <h5 class="mb-0 fw-bold"><span class="text-gradient-blue">Stage Performance</span></h5>
-            </div>
-        </div>
-    </header>
+    <?php
+    $pageTitle = 'Stage performance';
+    $pageSubtitle = '';
+    require __DIR__ . '/../../partials/topheader.php'; ?>
 
     <div class="content-area">
         <div class="row g-3 mb-4">
-            <div class="col-md-4"><div class="stat-hero-card grad-green"><div class="stat-hero-icon"><i class="fas fa-trophy"></i></div><div><div class="stat-hero-value"><?= $best ?>%</div><div class="stat-hero-label">Best Performing</div></div></div></div>
-            <div class="col-md-4"><div class="stat-hero-card grad-gold"><div class="stat-hero-icon"><i class="fas fa-chart-line"></i></div><div><div class="stat-hero-value"><?= $avg ?>%</div><div class="stat-hero-label">Average Score</div></div></div></div>
-            <div class="col-md-4"><div class="stat-hero-card grad-red"><div class="stat-hero-icon"><i class="fas fa-exclamation-triangle"></i></div><div><div class="stat-hero-value"><?= $worst ?>%</div><div class="stat-hero-label">Needs Attention</div></div></div></div>
+            <div class="col-md-4"><div class="stat-hero-card tone-green"><div class="stat-hero-icon"><i class="fas fa-trophy"></i></div><div><div class="stat-hero-value"><?= $best ?>%</div><div class="stat-hero-label">Best Performing</div></div></div></div>
+            <div class="col-md-4"><div class="stat-hero-card tone-gold"><div class="stat-hero-icon"><i class="fas fa-chart-line"></i></div><div><div class="stat-hero-value"><?= $avg ?>%</div><div class="stat-hero-label">Average Score</div></div></div></div>
+            <div class="col-md-4"><div class="stat-hero-card tone-red"><div class="stat-hero-icon"><i class="fas fa-exclamation-triangle"></i></div><div><div class="stat-hero-value"><?= $worst ?>%</div><div class="stat-hero-label">Needs Attention</div></div></div></div>
         </div>
 
         <div class="card mb-4"><div class="card-body">
@@ -70,7 +66,7 @@ $worst = $stages ? end($stages)['performance'] : 0;
                             <tr>
                                 <td><span class="badge bg-secondary">#<?= $i+1 ?></span></td>
                                 <td><strong><?= h($s['name']) ?></strong></td>
-                                <td><?= h($s['chairperson_name'] ?: '—') ?></td>
+                                <td><?= h($s['chairperson_name'] ?: '–') ?></td>
                                 <td><?= (int) $s['rider_count'] ?></td>
                                 <td><?= h(formatCurrency($s['revenue'])) ?></td>
                                 <td><?= (float)($s['compliance_pct'] ?? 0) ?>%</td>
@@ -89,13 +85,13 @@ $worst = $stages ? end($stages)['performance'] : 0;
 <?php require __DIR__ . '/../../partials/scripts-footer.php'; ?>
 <script>
     new ApexCharts(document.querySelector('#performanceChart'), {
-        series: [{ name: 'Performance %', data: <?= json_encode(array_column($stages, 'performance')) ?> }],
+        series: [{ name: 'Performance %', data: <?= js_json(array_column($stages, 'performance')) ?> }],
         chart: { type: 'bar', height: 320, toolbar: { show: false } },
         plotOptions: { bar: { borderRadius: 6, columnWidth: '55%', distributed: true } },
-        colors: ['#5b4bd5','#198754','#f59e0b','#dc3545','#0dcaf0','#6f42c1','#fd7e14','#20c997','#e83e8c','#6c757d'],
+        colors: ['#056CFE','#198754','#f59e0b','#dc3545','#0dcaf0','#001740','#fd7e14','#20c997','#e83e8c','#6c757d'],
         legend: { show: false },
         dataLabels: { enabled: true, formatter: v => v + '%' },
-        xaxis: { categories: <?= json_encode(array_column($stages, 'name')) ?> },
+        xaxis: { categories: <?= js_json(array_column($stages, 'name')) ?> },
         yaxis: { max: 100 },
     }).render();
 

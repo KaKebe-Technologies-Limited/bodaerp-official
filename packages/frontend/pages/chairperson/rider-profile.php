@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/../../../backend/auth.php';
+require_once __DIR__ . '/../../../backend/accounts.php';
 require_role(['chairperson']);
 $active = 'my-riders';
 $stageId = $_SESSION['stage_id'];
@@ -8,6 +8,13 @@ $riderId = (int) ($_GET['id'] ?? 0);
 $rider = fetchOne("SELECT r.*, s.name AS stage_name FROM riders r LEFT JOIN stages s ON s.id=r.stage_id WHERE r.id = ? AND r.stage_id = ?", [$riderId, $stageId]);
 if (!$rider) redirect('/pages/chairperson/my-riders.php');
 
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'invite') {
+    csrf_verify();
+    flash('info', rider_portal_invite($riderId));
+    redirect('/pages/chairperson/rider-profile.php?id=' . $riderId);
+}
+$account = $rider['user_id'] ? fetchOne("SELECT email, last_login_at, password_changed_at FROM users WHERE id = ?", [$rider['user_id']]) : null;
+
 $payments = fetchAll("SELECT * FROM payments WHERE rider_id = ? ORDER BY paid_at DESC", [$riderId]);
 $isNew = isset($_GET['new']);
 $sc = ['active'=>'bg-success','expired'=>'bg-danger','pending'=>'bg-warning text-dark'];
@@ -15,7 +22,7 @@ $sc = ['active'=>'bg-success','expired'=>'bg-danger','pending'=>'bg-warning text
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <?php $pageTitle = 'Rider Profile - BodaERP'; require __DIR__ . '/../../partials/head-assets.php'; ?>
+    <?php $pageTitle = 'Rider Profile | BodaERP'; require __DIR__ . '/../../partials/head-assets.php'; ?>
 </head>
 <body>
 
@@ -36,6 +43,12 @@ $sc = ['active'=>'bg-success','expired'=>'bg-danger','pending'=>'bg-warning text
                 <div class="d-flex gap-2">
                     <a href="<?= BASE_URL ?>/pages/chairperson/id-preview.php?id=<?= $riderId ?>" class="btn btn-outline-primary"><i class="fas fa-id-card me-1"></i>ID Card</a>
                     <a href="<?= BASE_URL ?>/pages/chairperson/edit-rider.php?id=<?= $riderId ?>" class="btn btn-primary"><i class="fas fa-edit me-1"></i>Edit</a>
+                    <?php if ($rider['email'] && (!$account || !$account['password_changed_at'])): ?>
+                    <form method="post" class="d-inline" data-confirm="Email <?= h($rider['email']) ?> a link to set up their portal password?" data-confirm-ok="Send invite">
+                        <?= csrf_field() ?><input type="hidden" name="action" value="invite">
+                        <button class="btn btn-outline-success" data-busy-label="Sending"><i class="fas fa-paper-plane me-1"></i><?= $account ? 'Resend portal invite' : 'Invite to rider portal' ?></button>
+                    </form>
+                    <?php endif; ?>
                 </div>
             </div>
         </div></div>
@@ -52,19 +65,19 @@ $sc = ['active'=>'bg-success','expired'=>'bg-danger','pending'=>'bg-warning text
                             <h6 class="fw-bold text-primary">Personal Information</h6>
                             <p><strong>NIN:</strong> <?= h($rider['nin']) ?></p>
                             <p><strong>DOB:</strong> <?= formatDate($rider['date_of_birth']) ?></p>
-                            <p><strong>Gender:</strong> <?= h($rider['gender'] ?: '—') ?></p>
-                            <p><strong>Marital Status:</strong> <?= h($rider['marital_status'] ?: '—') ?></p>
+                            <p><strong>Gender:</strong> <?= h($rider['gender'] ?: '–') ?></p>
+                            <p><strong>Marital Status:</strong> <?= h($rider['marital_status'] ?: '–') ?></p>
                             <p><strong>Phone:</strong> <?= h($rider['phone']) ?></p>
-                            <p><strong>Email:</strong> <?= h($rider['email'] ?: '—') ?></p>
-                            <p><strong>Address:</strong> <?= h($rider['physical_address'] ?: '—') ?></p>
-                            <p><strong>Next of Kin:</strong> <?= h($rider['next_of_kin_name'] ?: '—') ?> (<?= h($rider['next_of_kin_contact'] ?: '—') ?>)</p>
+                            <p><strong>Email:</strong> <?= h($rider['email'] ?: '–') ?></p>
+                            <p><strong>Address:</strong> <?= h($rider['physical_address'] ?: '–') ?></p>
+                            <p><strong>Next of Kin:</strong> <?= h($rider['next_of_kin_name'] ?: '–') ?> (<?= h($rider['next_of_kin_contact'] ?: '–') ?>)</p>
                         </div>
                         <div class="col-md-6">
                             <h6 class="fw-bold text-primary">Bike & Stage</h6>
                             <p><strong>Plate:</strong> <?= h($rider['bike_plate']) ?></p>
-                            <p><strong>Model:</strong> <?= h($rider['bike_model'] ?: '—') ?></p>
+                            <p><strong>Model:</strong> <?= h($rider['bike_model'] ?: '–') ?></p>
                             <p><strong>Stage:</strong> <?= h($rider['stage_name']) ?></p>
-                            <p><strong>Route:</strong> <?= h($rider['route'] ?: '—') ?></p>
+                            <p><strong>Route:</strong> <?= h($rider['route'] ?: '–') ?></p>
                             <p><strong>Member Since:</strong> <?= formatDate($rider['member_since']) ?></p>
                             <p><strong>Expiry Date:</strong> <?= formatDate($rider['expiry_date']) ?></p>
                             <p><strong>Annual Tax:</strong> <?= h(formatCurrency($rider['annual_tax'])) ?></p>

@@ -36,21 +36,17 @@ $totalRiders = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE city_id = ? A
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <?php $pageTitle = 'Council Settings - BodaERP'; require __DIR__ . '/../../partials/head-assets.php'; ?>
+    <?php $pageTitle = 'Council Settings | BodaERP'; require __DIR__ . '/../../partials/head-assets.php'; ?>
 </head>
 <body>
 
 <?php require __DIR__ . '/../../partials/sidebar-citycouncil.php'; ?>
 
 <div class="main-content" id="mainContent">
-    <header class="top-header">
-        <div class="d-flex justify-content-between align-items-center">
-            <div class="d-flex align-items-center gap-3">
-                <button class="btn btn-light d-lg-none" id="toggleSidebar"><i class="fas fa-bars"></i></button>
-                <h5 class="mb-0 fw-bold"><span class="text-gradient-blue">Council Settings</span></h5>
-            </div>
-        </div>
-    </header>
+    <?php
+    $pageTitle = 'Council settings';
+    $pageSubtitle = '';
+    require __DIR__ . '/../../partials/topheader.php'; ?>
 
     <div class="content-area">
         <?php if ($saved): ?><div class="alert alert-success">Settings updated successfully!</div><?php endif; ?>
@@ -61,7 +57,7 @@ $totalRiders = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE city_id = ? A
             <div class="row g-4">
                 <div class="col-lg-6">
                     <div class="card"><div class="card-body">
-                        <h5 class="fw-bold mb-3"><i class="fas fa-sliders-h text-primary me-2"></i>General Settings</h5>
+                        <h5 class="fw-bold mb-3">General Settings</h5>
                         <div class="mb-3"><label class="form-label fw-semibold">City Name</label><input type="text" class="form-control" value="<?= h($city['name']) ?>" disabled></div>
                         <div class="mb-3"><label class="form-label fw-semibold">Annual Tax Amount (UGX)</label><input type="number" class="form-control" name="annual_fee" value="<?= (float)$city['annual_fee'] ?>"></div>
                         <div class="mb-3"><label class="form-label fw-semibold">Currency</label>
@@ -83,16 +79,16 @@ $totalRiders = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE city_id = ? A
 
                 <div class="col-lg-6">
                     <div class="card"><div class="card-body">
-                        <h5 class="fw-bold mb-3"><i class="fas fa-credit-card text-danger me-2"></i>Revenue Split</h5>
+                        <h5 class="fw-bold mb-3">Revenue Split</h5>
                         <div class="mb-3">
                             <label class="form-label fw-semibold">Revenue Distribution</label>
                             <div class="row g-2">
-                                <div class="col-3"><label class="small text-muted">City Council</label><div class="input-group"><input type="number" class="form-control" name="split_city" id="csSplitCity" value="<?= (int)$city['revenue_split_city'] ?>" oninput="updateCsSplitTotal()"><span class="input-group-text">%</span></div></div>
-                                <div class="col-3"><label class="small text-muted">Boda Assoc.</label><div class="input-group"><input type="number" class="form-control" name="split_assoc" id="csSplitAssoc" value="<?= (int)$city['revenue_split_association'] ?>" oninput="updateCsSplitTotal()"><span class="input-group-text">%</span></div></div>
-                                <div class="col-3"><label class="small text-muted">Government</label><div class="input-group"><input type="number" class="form-control" name="split_government" id="csSplitGov" value="<?= (int)$city['revenue_split_government'] ?>" oninput="updateCsSplitTotal()"><span class="input-group-text">%</span></div></div>
-                                <div class="col-3"><label class="small text-muted">Kakebe Tech</label><div class="input-group"><input type="number" class="form-control" name="split_platform" id="csSplitPlatform" value="<?= (int)$city['revenue_split_platform'] ?>" oninput="updateCsSplitTotal()"><span class="input-group-text">%</span></div></div>
+                                <div class="col-3"><label class="small text-muted">City Council</label><div class="input-group"><input type="number" class="form-control" name="split_city" id="csSplitCity" value="<?= (int)$city['revenue_split_city'] ?>" data-call-input="updateCsSplitTotal"><span class="input-group-text">%</span></div></div>
+                                <div class="col-3"><label class="small text-muted">Boda Assoc.</label><div class="input-group"><input type="number" class="form-control" name="split_assoc" id="csSplitAssoc" value="<?= (int)$city['revenue_split_association'] ?>" data-call-input="updateCsSplitTotal"><span class="input-group-text">%</span></div></div>
+                                <div class="col-3"><label class="small text-muted">Government</label><div class="input-group"><input type="number" class="form-control" name="split_government" id="csSplitGov" value="<?= (int)$city['revenue_split_government'] ?>" data-call-input="updateCsSplitTotal"><span class="input-group-text">%</span></div></div>
+                                <div class="col-3"><label class="small text-muted">Kakebe Tech</label><div class="input-group"><input type="number" class="form-control" name="split_platform" id="csSplitPlatform" value="<?= (int)$city['revenue_split_platform'] ?>" data-call-input="updateCsSplitTotal"><span class="input-group-text">%</span></div></div>
                             </div>
-                            <small class="text-muted">Total: <span id="csSplitTotal" class="fw-bold" style="color:#198754;">100%</span> — must equal 100%</small>
+                            <small class="text-muted">Total: <span id="csSplitTotal" class="fw-bold" style="color:#198754;">100%</span>: must equal 100%</small>
                         </div>
                         <div class="mb-3"><label class="form-label fw-semibold">Payment Gateway</label>
                             <select class="form-select" name="payment_gateway">
@@ -106,7 +102,7 @@ $totalRiders = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE city_id = ? A
 
                 <div class="col-lg-6">
                     <div class="card"><div class="card-body">
-                        <h5 class="fw-bold mb-3"><i class="fas fa-check-circle text-success me-2"></i>Compliance Settings</h5>
+                        <h5 class="fw-bold mb-3">Compliance Settings</h5>
                         <div class="mb-3"><label class="form-label fw-semibold">Compliance Threshold</label><div class="input-group"><input type="number" class="form-control" name="compliance_target" value="<?= (int)$city['compliance_target'] ?>"><span class="input-group-text">%</span></div><small class="text-muted">Stages below this threshold will be flagged</small></div>
                         <div class="mb-3"><label class="form-label fw-semibold">Grace Period (Days)</label><input type="number" class="form-control" name="grace_period_days" value="<?= (int)$city['grace_period_days'] ?>"></div>
                         <div class="mb-3"><label class="form-label fw-semibold">Auto-Reminder Days</label><div class="input-group"><input type="number" class="form-control" name="reminder_days" value="<?= (int)$city['reminder_days'] ?>"><span class="input-group-text">days before expiry</span></div></div>
@@ -115,9 +111,7 @@ $totalRiders = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE city_id = ? A
 
                 <div class="col-lg-6">
                     <div class="card"><div class="card-body">
-                        <h5 class="fw-bold mb-3"><i class="fas fa-server text-primary me-2"></i>System Status</h5>
-                        <div class="d-flex justify-content-between align-items-center py-2 border-bottom"><span>System Version</span><span class="fw-bold">v2.0.0 (PHP/MySQL)</span></div>
-                        <div class="d-flex justify-content-between align-items-center py-2 border-bottom"><span>Database Status</span><span class="badge bg-success">Connected</span></div>
+                        <h5 class="fw-bold mb-3">Council summary</h5>
                         <div class="d-flex justify-content-between align-items-center py-2 border-bottom"><span>Total Riders</span><span class="fw-bold"><?= number_format($totalRiders) ?></span></div>
                         <div class="d-flex justify-content-between align-items-center py-2"><span>City Status</span><span class="badge bg-<?= $city['status']==='active'?'success':'warning' ?>"><?= strtoupper($city['status']) ?></span></div>
                     </div></div>

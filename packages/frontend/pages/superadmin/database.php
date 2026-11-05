@@ -6,7 +6,7 @@ $active = 'database';
 $uid = (int) ($_SESSION['user_id'] ?? 0);
 migrator_auto();   // let the automatic update finish first, so the status below is what the database really looks like now
 
-// ---------- actions (post → redirect → get) ----------
+// actions (post → redirect → get)
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     csrf_verify();
     $act = $_POST['action'] ?? '';
@@ -21,7 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $s = schema_sync_run_tracked('manual:' . $uid);
             $changes = count($m['applied']) + count($s['applied']);
             if ($s['skipped'])                    $flash = ['warning', 'Another update is already running. Try again in a moment.'];
-            elseif ($s['failed'] || $s['error'])  $flash = ['danger', count($s['failed']) . ' change(s) could not be applied — details below. Everything else was updated.'];
+            elseif ($s['failed'] || $s['error'])  $flash = ['danger', count($s['failed']) . ' change(s) could not be applied: details below. Everything else was updated.'];
             elseif ($changes)                     $flash = ['success', 'Database updated: ' . count($m['applied']) . ' migration(s) and ' . count($s['applied']) . ' structure change(s) applied.'];
             else                                  $flash = ['success', 'The database is already up to date.'];
         }
@@ -44,7 +44,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 $flash = $_SESSION['flash_db'] ?? null; unset($_SESSION['flash_db']);
 
-// ---------- data ----------
+// data
 $db        = db();
 $info      = db_connection_info();
 $mig       = migrator_status();
@@ -70,16 +70,16 @@ foreach ($mig['migrations'] as $m) if ($m['applied_at'] && (!$lastApplied || $m[
 if ($state && !empty($state['at']) && (!$lastApplied || $state['at'] > $lastApplied)) $lastApplied = $state['at'];
 
 $typeLabel = ['create_table' => 'New table', 'add_column' => 'New column', 'widen_column' => 'Safe widening', 'add_index' => 'New index', 'add_fk' => 'New link'];
-$fmtDate = fn(?string $d): string => $d ? date('M d, Y H:i', strtotime($d)) : '—';
+$fmtDate = fn(?string $d): string => $d ? date('M d, Y H:i', strtotime($d)) : '–';
 $fmtSize = function (float $b): string { return $b >= 1048576 ? round($b / 1048576, 1) . ' MB' : round($b / 1024) . ' KB'; };
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <?php $pageTitle = 'Database - BodaERP Platform'; require __DIR__ . '/../../partials/head-assets.php'; ?>
+    <?php $pageTitle = 'Database | BodaERP'; require __DIR__ . '/../../partials/head-assets.php'; ?>
     <style>
         .db-step { display: flex; gap: 14px; align-items: flex-start; }
-        .db-step .num { flex: 0 0 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: .85rem; color: #fff; background: var(--primary-blue-gradient); box-shadow: 0 6px 14px rgba(91,75,213,.28); }
+        .db-step .num { flex: 0 0 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: .85rem; color: #fff; background: var(--primary-blue-gradient); box-shadow: 0 6px 14px rgba(5, 108, 254,.28); }
         .db-step.off .num { background: #c9c6dc; box-shadow: none; }
         .db-step h6 { margin: 0 0 2px; font-weight: 700; font-size: .92rem; }
         .db-step p { margin: 0; font-size: .8rem; color: var(--text-muted); line-height: 1.5; }
@@ -90,12 +90,12 @@ $fmtSize = function (float $b): string { return $b >= 1048576 ? round($b / 10485
         .db-pill.ok { background: rgba(25,135,84,.12); color: #198754; }
         .db-pill.pending { background: rgba(245,158,11,.14); color: #b86e00; }
         .db-pill.attention { background: rgba(220,53,69,.12); color: #c0392b; }
-        .db-pill.info { background: rgba(91,75,213,.1); color: var(--primary-blue); }
+        .db-pill.info { background: rgba(5, 108, 254,.1); color: var(--primary-blue); }
         .db-code { background: var(--off-white); border: 1px solid var(--light-gray); border-radius: 10px; padding: 6px 10px; font-family: Consolas, monospace; font-size: .74rem; word-break: break-all; }
         .db-sync-hero { border-radius: 20px; padding: 24px 26px; color: #fff; background: var(--primary-blue-gradient); position: relative; overflow: hidden; }
-        .db-sync-hero.ok { background: linear-gradient(135deg, #2cc6a8 0%, #0e7c72 100%); }
-        .db-sync-hero.pending { background: linear-gradient(135deg, #ffb547 0%, #e17a1d 100%); }
-        .db-sync-hero.attention { background: linear-gradient(135deg, #ff7a8a 0%, #d63f66 100%); }
+        .db-sync-hero.ok { background: #15803d; }
+        .db-sync-hero.pending { background: #b45309; }
+        .db-sync-hero.attention { background: #c0263a; }
         .db-sync-hero h4 { font-weight: 800; margin: 0 0 4px; }
         .db-sync-hero p { margin: 0; opacity: .92; font-size: .88rem; }
         .db-sync-hero .btn-light { font-weight: 700; border-radius: 99px; padding: 10px 22px; }
@@ -108,7 +108,7 @@ $fmtSize = function (float $b): string { return $b >= 1048576 ? round($b / 10485
 <?php require __DIR__ . '/../../partials/sidebar-superadmin.php'; ?>
 
 <div class="main-content" id="mainContent">
-    <?php $pageTitle = 'Database'; $pageSubtitle = 'Update the database from here — new tables and fields apply themselves'; require __DIR__ . '/../../partials/topheader.php'; ?>
+    <?php $pageTitle = 'Database'; $pageSubtitle = 'Update the database from here: new tables and fields apply themselves'; require __DIR__ . '/../../partials/topheader.php'; ?>
     <div class="content-area">
 
         <?php if ($flash): ?><div class="alert alert-<?= h($flash[0]) ?>"><?= h($flash[1]) ?></div><?php endif; ?>
@@ -116,7 +116,6 @@ $fmtSize = function (float $b): string { return $b >= 1048576 ? round($b / 10485
             <div class="alert alert-warning py-2 small"><i class="fas fa-info-circle me-1"></i>The connection is read from the old <code>config/database.php</code>. It works, but move <code>DB_HOST</code>, <code>DB_NAME</code>, <code>DB_USER</code> and <code>DB_PASS</code> into the <code>.env</code> file when convenient (see <code>.env.example</code>).</div>
         <?php endif; ?>
 
-        <!-- status hero -->
         <div class="db-sync-hero <?= $status ?> mb-4">
             <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
                 <div>
@@ -140,29 +139,27 @@ $fmtSize = function (float $b): string { return $b >= 1048576 ? round($b / 10485
             </div>
         </div>
 
-        <!-- quick facts -->
         <div class="row g-3 row-cols-2 row-cols-xl-4 mb-4">
-            <div class="col"><div class="stat-hero-card grad-dark"><div class="stat-hero-icon"><i class="fas fa-server"></i></div><div><div class="stat-hero-value" style="font-size:1.15rem;"><?= h(strtoupper($info['environment'])) ?></div><div class="stat-hero-label">Environment · <?= h($info['database']) ?></div></div></div></div>
-            <div class="col"><div class="stat-hero-card grad-blue"><div class="stat-hero-icon"><i class="fas fa-table"></i></div><div><div class="stat-hero-value" style="font-size:1.15rem;"><?= count($tables) ?> tables</div><div class="stat-hero-label">Size on disk · <?= h($fmtSize((float) $totalBytes)) ?></div></div></div></div>
-            <div class="col"><div class="stat-hero-card <?= $mig['pending'] ? 'grad-gold' : 'grad-green' ?>"><div class="stat-hero-icon"><i class="fas fa-code-branch"></i></div><div><div class="stat-hero-value" style="font-size:1.15rem;"><?= count($mig['migrations']) - $mig['pending'] ?>/<?= count($mig['migrations']) ?> applied</div><div class="stat-hero-label">Migrations</div></div></div></div>
-            <div class="col"><div class="stat-hero-card <?= $plan['actions'] ? 'grad-gold' : 'grad-green' ?>"><div class="stat-hero-icon"><i class="fas fa-columns"></i></div><div><div class="stat-hero-value" style="font-size:1.15rem;"><?= $snap ? ($plan['actions'] ? count($plan['actions']) . ' pending' : 'In sync') : 'No file yet' ?></div><div class="stat-hero-label">Schema file<?= $plan['drift'] ? ' · ' . count($plan['drift']) . ' to review' : '' ?></div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-dark"><div class="stat-hero-icon"><i class="fas fa-server"></i></div><div><div class="stat-hero-value" style="font-size:1.15rem;"><?= h(strtoupper($info['environment'])) ?></div><div class="stat-hero-label">Environment · <?= h($info['database']) ?></div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-blue"><div class="stat-hero-icon"><i class="fas fa-table"></i></div><div><div class="stat-hero-value" style="font-size:1.15rem;"><?= count($tables) ?> tables</div><div class="stat-hero-label">Size on disk · <?= h($fmtSize((float) $totalBytes)) ?></div></div></div></div>
+            <div class="col"><div class="stat-hero-card <?= $mig['pending'] ? 'tone-gold' : 'tone-green' ?>"><div class="stat-hero-icon"><i class="fas fa-code-branch"></i></div><div><div class="stat-hero-value" style="font-size:1.15rem;"><?= count($mig['migrations']) - $mig['pending'] ?>/<?= count($mig['migrations']) ?> applied</div><div class="stat-hero-label">Migrations</div></div></div></div>
+            <div class="col"><div class="stat-hero-card <?= $plan['actions'] ? 'tone-gold' : 'tone-green' ?>"><div class="stat-hero-icon"><i class="fas fa-columns"></i></div><div><div class="stat-hero-value" style="font-size:1.15rem;"><?= $snap ? ($plan['actions'] ? count($plan['actions']) . ' pending' : 'In sync') : 'No file yet' ?></div><div class="stat-hero-label">Schema file<?= $plan['drift'] ? ' · ' . count($plan['drift']) . ' to review' : '' ?></div></div></div></div>
         </div>
 
         <div class="row g-4">
             <div class="col-xl-7">
 
-                <!-- how it works -->
                 <div class="card mb-4"><div class="card-body">
                     <div class="d-flex align-items-center gap-3 mb-4">
                         <div class="icon-badge blue"><i class="fas fa-route"></i></div>
-                        <div><h6 class="fw-bold mb-0">How your changes reach the live server</h6><small class="text-muted">You only work locally — nothing to import or upload by hand</small></div>
+                        <div><h6 class="fw-bold mb-0">How your changes reach the live server</h6><small class="text-muted">You only work locally: nothing to import or upload by hand</small></div>
                     </div>
                     <div class="d-flex flex-column gap-4">
                         <div class="db-step <?= $isLocal ? '' : 'off' ?>">
                             <div class="num">1</div>
                             <div>
                                 <h6>Change the database on your computer</h6>
-                                <p>Add tables or fields any way you like — phpMyAdmin, a migration, or ask Claude. The structure (never the data) is saved to <code>database/schema.snapshot.json</code>
+                                <p>Add tables or fields however you prefer, in phpMyAdmin or with a migration. The structure (never the data) is saved to <code>database/schema.snapshot.json</code>
                                     <?php if ($isLocal): ?>
                                         <?= $autoSave ? '<span class="db-pill ok ms-1"><i class="fas fa-circle" style="font-size:.45rem;"></i>auto-save on</span>' : '<span class="db-pill attention ms-1">auto-save off</span>' ?>
                                     <?php else: ?>
@@ -181,7 +178,7 @@ $fmtSize = function (float $b): string { return $b >= 1048576 ? round($b / 10485
                                 <h6>Deploy your code as usual</h6>
                                 <p>Commit and push <code>database/schema.snapshot.json</code> together with your code.
                                     <?php if ($snap && $snapMeta): ?>Current file: <strong><?= (int) ($snapMeta['tables'] ?? count($snap['tables'])) ?> tables</strong>, saved <?= h($fmtDate($snapMeta['saved_at'] ?? null)) ?>.
-                                    <?php else: ?><strong>No schema file yet</strong> — it is created automatically the first time you use the app on localhost.<?php endif; ?></p>
+                                    <?php else: ?><strong>No schema file yet</strong>: it is created automatically the first time you use the app on localhost.<?php endif; ?></p>
                             </div>
                         </div>
                         <div class="db-step">
@@ -195,7 +192,6 @@ $fmtSize = function (float $b): string { return $b >= 1048576 ? round($b / 10485
                     </div>
                 </div></div>
 
-                <!-- pending changes -->
                 <?php if ($plan['actions']): ?>
                 <div class="card mb-4"><div class="card-body">
                     <div class="d-flex align-items-center gap-3 mb-3">
@@ -217,7 +213,6 @@ $fmtSize = function (float $b): string { return $b >= 1048576 ? round($b / 10485
                 </div></div>
                 <?php endif; ?>
 
-                <!-- problems -->
                 <?php if ($migFail || $failedItems): ?>
                 <div class="card mb-4 border-danger"><div class="card-body">
                     <div class="d-flex align-items-center gap-3 mb-3">
@@ -234,12 +229,11 @@ $fmtSize = function (float $b): string { return $b >= 1048576 ? round($b / 10485
                 </div></div>
                 <?php endif; ?>
 
-                <!-- needs review -->
                 <?php if ($plan['drift']): ?>
                 <div class="card mb-4"><div class="card-body">
                     <div class="d-flex align-items-center gap-3 mb-3">
                         <div class="icon-badge gold"><i class="fas fa-eye"></i></div>
-                        <div><h6 class="fw-bold mb-0">Needs review — not changed automatically</h6><small class="text-muted">These differ from your code but could lose data. Ask for a migration to change them safely.</small></div>
+                        <div><h6 class="fw-bold mb-0">Needs review: not changed automatically</h6><small class="text-muted">These differ from your code but could lose data. Ask for a migration to change them safely.</small></div>
                     </div>
                     <div class="table-responsive"><table class="table table-sm align-middle mb-0">
                         <thead><tr><th>Where</th><th>Your code expects</th><th>This database has</th></tr></thead>
@@ -256,7 +250,6 @@ $fmtSize = function (float $b): string { return $b >= 1048576 ? round($b / 10485
                 </div></div>
                 <?php endif; ?>
 
-                <!-- tables & history (collapsed) -->
                 <div class="card mb-4"><div class="card-body">
                     <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
                         <div class="d-flex align-items-center gap-3">
@@ -306,7 +299,6 @@ $fmtSize = function (float $b): string { return $b >= 1048576 ? round($b / 10485
             </div>
 
             <div class="col-xl-5">
-                <!-- connection -->
                 <div class="card mb-4"><div class="card-body">
                     <div class="d-flex align-items-center gap-3 mb-3">
                         <div class="icon-badge dark"><i class="fas fa-plug"></i></div>
@@ -321,11 +313,10 @@ $fmtSize = function (float $b): string { return $b >= 1048576 ? round($b / 10485
                         <dt>Settings from</dt><dd><?= h($info['source']) ?></dd>
                     </dl>
                     <hr>
-                    <p class="small text-muted mb-1"><strong>Nothing to configure on your computer</strong> — it connects to MySQL on localhost and creates the database if it is missing.</p>
+                    <p class="small text-muted mb-1"><strong>Nothing to configure on your computer</strong>: it connects to MySQL on localhost and creates the database if it is missing.</p>
                     <p class="small text-muted mb-0">On the live server put the connection in one file, <code>.env</code> (copy <code>.env.example</code>): <code>DB_HOST</code>, <code>DB_NAME</code>, <code>DB_USER</code>, <code>DB_PASS</code>.</p>
                 </div></div>
 
-                <!-- what is covered -->
                 <div class="card mb-4"><div class="card-body">
                     <div class="d-flex align-items-center gap-3 mb-3">
                         <div class="icon-badge green"><i class="fas fa-shield-alt"></i></div>
@@ -336,7 +327,7 @@ $fmtSize = function (float $b): string { return $b >= 1048576 ? round($b / 10485
                         <li><strong class="text-dark">Widens</strong> safely: longer text, bigger numbers, new choices at the end of a list, “allow empty”.</li>
                         <li><strong class="text-dark">Never</strong> deletes, renames or shrinks anything, and never changes your records.</li>
                         <li>Risky differences are listed for review instead of being applied.</li>
-                        <li>A problem never takes the site down — it is reported here and retried.</li>
+                        <li>A problem never takes the site down: it is reported here and retried.</li>
                         <?php if ($unsupported['views'] || $unsupported['triggers'] || $unsupported['routines']): ?>
                             <li class="text-warning-emphasis">Views (<?= (int) $unsupported['views'] ?>), triggers (<?= (int) $unsupported['triggers'] ?>) and routines (<?= (int) $unsupported['routines'] ?>) are updated through migrations, not by this sync.</li>
                         <?php endif; ?>

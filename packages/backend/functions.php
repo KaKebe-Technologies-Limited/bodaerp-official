@@ -2,16 +2,23 @@
 require_once __DIR__ . '/config/config.php';
 require_once __DIR__ . '/db_helpers.php';
 
-define('CURRENT_FISCAL_YEAR', '2026/2027');
+/** Uganda's fiscal year runs 1 July to 30 June, e.g. "2026/2027". */
+function current_fiscal_year(?int $ts = null): string {
+    $ts ??= time();
+    $y = (int) date('Y', $ts);
+    $start = (int) date('n', $ts) >= 7 ? $y : $y - 1;
+    return $start . '/' . ($start + 1);
+}
+define('CURRENT_FISCAL_YEAR', current_fiscal_year());
 
 function formatCurrency($amount, string $currency = 'UGX'): string {
     return $currency . ' ' . number_format((float) $amount);
 }
 
 function formatDate(?string $date, string $fmt = 'M d, Y'): string {
-    if (!$date) return '—';
+    if (!$date) return '–';
     $ts = strtotime($date);
-    return $ts ? date($fmt, $ts) : '—';
+    return $ts ? date($fmt, $ts) : '–';
 }
 
 function daysUntil(?string $date): ?int {
@@ -52,7 +59,12 @@ function nextReceiptNumber(int $paymentId): string {
 }
 
 function nextActionCode(int $actionId): string {
-    return 'ENF-2026-' . str_pad((string) $actionId, 3, '0', STR_PAD_LEFT);
+    return 'ENF-' . date('Y') . '-' . str_pad((string) $actionId, 3, '0', STR_PAD_LEFT);
+}
+
+/** JSON for embedding inside a <script> block or an HTML attribute: "<", ">", "&" and quotes are escaped. */
+function js_json(mixed $value, int $flags = 0): string {
+    return json_encode($value, $flags | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE) ?: 'null';
 }
 
 function h(?string $s): string {
@@ -64,8 +76,13 @@ function redirect(string $path): never {
     exit;
 }
 
-function verifyUrl(string $idNumber): string {
-    $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
-    $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
-    return $scheme . '://' . $host . BASE_URL . '/verify.php?code=' . urlencode($idNumber);
+/** Link printed in an ID card's QR code. Uses the rider's random token (creating one if missing). */
+function verifyUrl(int $riderId): string {
+    $token = fetchValue("SELECT verify_token FROM riders WHERE id = ?", [$riderId]);
+    if (!$token) {
+        $token = bin2hex(random_bytes(10));
+        runQuery("UPDATE riders SET verify_token = ? WHERE id = ? AND verify_token IS NULL", [$token, $riderId]);
+        $token = fetchValue("SELECT verify_token FROM riders WHERE id = ?", [$riderId]);
+    }
+    return app_url('verify.php?t=' . urlencode((string) $token));
 }

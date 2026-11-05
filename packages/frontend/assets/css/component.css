@@ -1,8 +1,5 @@
-/* ============================================================
-   BodaERP - Reusable Components
-   ============================================================ */
 
-/* ----- Search Bar ----- */
+
 .search-bar {
     position: relative;
     max-width: 400px;
@@ -19,7 +16,7 @@
 .search-bar .form-control:focus {
     background: var(--pure-white);
     border-color: var(--primary-blue);
-    box-shadow: 0 0 0 4px rgba(91, 75, 213, 0.08);
+    box-shadow: 0 0 0 4px rgba(5, 108, 254, 0.08);
 }
 
 .search-bar .search-icon {
@@ -30,7 +27,6 @@
     color: var(--text-muted);
 }
 
-/* ----- Pagination ----- */
 .pagination .page-link {
     border: none;
     border-radius: var(--radius-sm);
@@ -46,12 +42,11 @@
 }
 
 .pagination .page-item.active .page-link {
-    background: var(--primary-blue-gradient);
+    background: var(--primary-blue-solid);
     color: var(--pure-white);
     box-shadow: var(--shadow-sm);
 }
 
-/* ----- Tabs ----- */
 .nav-tabs {
     border-bottom: 2px solid var(--light-gray);
 }
@@ -94,7 +89,6 @@
     transform: scaleX(1);
 }
 
-/* ----- Modal ----- */
 .modal-content {
     border: none;
     border-radius: var(--radius-lg);
@@ -115,7 +109,6 @@
     padding: 16px 24px;
 }
 
-/* ----- Toast Notifications ----- */
 .toast-container {
     position: fixed;
     top: 20px;
@@ -132,30 +125,20 @@
 }
 
 .toast-success {
-    background: var(--primary-blue-gradient);
+    background: var(--primary-blue-solid);
     color: white;
 }
 
 .toast-error {
-    background: var(--secondary-red-gradient);
+    background: var(--secondary-red-solid);
     color: white;
 }
 
 .toast-dark {
-    background: var(--dark-black-gradient);
+    background: var(--dark-black-solid);
     color: white;
 }
 
-/* ----- Skeleton Loading ----- */
-.skeleton {
-    background: var(--light-gray);
-    border-radius: var(--radius-sm);
-    animation: shimmer 1.5s ease-in-out infinite;
-    background: linear-gradient(90deg, var(--light-gray) 25%, var(--off-white) 50%, var(--light-gray) 75%);
-    background-size: 200% 100%;
-}
-
-/* ----- Empty State ----- */
 .empty-state {
     text-align: center;
     padding: 60px 20px;
@@ -178,7 +161,6 @@
     margin: 8px auto 0;
 }
 
-/* ----- Divider ----- */
 .divider {
     display: flex;
     align-items: center;
@@ -200,7 +182,6 @@
     font-size: 0.85rem;
 }
 
-/* ----- Status Indicators ----- */
 .status-dot {
     display: inline-block;
     width: 10px;
@@ -214,8 +195,3 @@
 .status-dot.expired { background: var(--secondary-red); }
 .status-dot.inactive { background: var(--text-muted); }
 
-/* ----- Animations for Components ----- */
-@keyframes shimmer {
-    0% { background-position: -200% 0; }
-    100% { background-position: 200% 0; }
-}

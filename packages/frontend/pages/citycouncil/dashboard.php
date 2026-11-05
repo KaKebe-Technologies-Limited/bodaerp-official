@@ -27,7 +27,7 @@ for ($i = 11; $i >= 0; $i--) {
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <?php $pageTitle = get_setting('citycouncil_dashboard_title') . ' - ' . get_setting('site_name') ?? 'City Council - BodaERP'; require __DIR__ . '/../../partials/head-assets.php'; ?>
+    <?php $pageTitle = get_setting('citycouncil_dashboard_title') . ' | ' . get_setting('site_name') ?? 'City Council | BodaERP'; require __DIR__ . '/../../partials/head-assets.php'; ?>
 </head>
 <body>
 
@@ -40,28 +40,28 @@ for ($i = 11; $i >= 0; $i--) {
         <div class="dash-banner theme-blue">
             <div class="d-flex justify-content-between align-items-center flex-wrap dash-banner-row">
                 <div>
-                    <h4>🏛️ City Council Overview</h4>
+                    <h4>City council overview</h4>
                     <p>Monitoring boda operations across all stages in <?= h($city['name']) ?></p>
                 </div>
                 <div class="d-flex gap-2 flex-wrap">
-                    <span class="dash-badge"><i class="fas fa-calendar me-1"></i><?= h($city['fiscal_year']) ?></span>
-                    <span class="dash-badge"><i class="fas fa-flag me-1"></i><?= h($city['name']) ?></span>
+                    <span class="dash-meta"><?= h($city['fiscal_year']) ?></span>
+                    <span class="dash-meta"><?= h($city['name']) ?></span>
                 </div>
             </div>
         </div>
 
         <div class="row g-3 row-cols-2 row-cols-xl-4 mb-4">
-            <div class="col"><div class="stat-hero-card grad-green"><div class="stat-hero-icon"><i class="fas fa-users"></i></div><div><div class="stat-hero-value"><?= number_format($totalRiders) ?></div><div class="stat-hero-label">Total Riders</div></div></div></div>
-            <div class="col"><div class="stat-hero-card grad-blue"><div class="stat-hero-icon"><i class="fas fa-money-bill-wave"></i></div><div><div class="stat-hero-value"><?= h(formatCurrency($totalRevenue)) ?></div><div class="stat-hero-label">Total Revenue</div></div></div></div>
-            <div class="col"><div class="stat-hero-card grad-gold"><div class="stat-hero-icon"><i class="fas fa-check-circle"></i></div><div><div class="stat-hero-value"><?= $complianceRate ?>%</div><div class="stat-hero-label">Compliance Rate</div></div></div></div>
-            <div class="col"><div class="stat-hero-card grad-red"><div class="stat-hero-icon"><i class="fas fa-exclamation-triangle"></i></div><div><div class="stat-hero-value"><?= number_format($defaulters) ?></div><div class="stat-hero-label">Defaulters</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-green"><div class="stat-hero-icon"><i class="fas fa-users"></i></div><div><div class="stat-hero-value"><?= number_format($totalRiders) ?></div><div class="stat-hero-label">Total Riders</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-blue"><div class="stat-hero-icon"><i class="fas fa-money-bill-wave"></i></div><div><div class="stat-hero-value"><?= h(formatCurrency($totalRevenue)) ?></div><div class="stat-hero-label">Total Revenue</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-gold"><div class="stat-hero-icon"><i class="fas fa-check-circle"></i></div><div><div class="stat-hero-value"><?= $complianceRate ?>%</div><div class="stat-hero-label">Compliance Rate</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-red"><div class="stat-hero-icon"><i class="fas fa-exclamation-triangle"></i></div><div><div class="stat-hero-value"><?= number_format($defaulters) ?></div><div class="stat-hero-label">Defaulters</div></div></div></div>
         </div>
 
         <div class="row g-4 mb-4">
             <div class="col-xl-8">
                 <div class="card" style="border: none; border-radius: 14px; box-shadow: 0 2px 12px rgba(0,0,0,0.04); background: white;">
                     <div class="card-body">
-                        <h5 class="fw-bold mb-3"><i class="fas fa-chart-bar text-primary me-2"></i>Revenue Overview (last 12 months)</h5>
+                        <h5 class="fw-bold mb-3">Revenue Overview (last 12 months)</h5>
                         <div id="revenueChart"></div>
                     </div>
                 </div>
@@ -69,13 +69,13 @@ for ($i = 11; $i >= 0; $i--) {
             <div class="col-xl-4">
                 <div class="card" style="border: none; border-radius: 14px; box-shadow: 0 2px 12px rgba(0,0,0,0.04); background: white;">
                     <div class="card-body">
-                        <h5 class="fw-bold mb-3"><i class="fas fa-pie-chart text-primary me-2"></i>Revenue Split</h5>
+                        <h5 class="fw-bold mb-3">Revenue Split</h5>
                         <div id="pieChart"></div>
                         <div class="mt-3">
-                            <div class="d-flex justify-content-between align-items-center py-1"><span><span class="badge bg-primary me-2">●</span> City Council</span><span class="fw-bold"><?= (int)$city['revenue_split_city'] ?>%</span></div>
-                            <div class="d-flex justify-content-between align-items-center py-1"><span><span class="badge bg-success me-2">●</span> Boda Association</span><span class="fw-bold"><?= (int)$city['revenue_split_association'] ?>%</span></div>
-                            <div class="d-flex justify-content-between align-items-center py-1"><span><span class="badge me-2" style="background:#e0529c;">●</span> Government</span><span class="fw-bold"><?= (int)$city['revenue_split_government'] ?>%</span></div>
-                            <div class="d-flex justify-content-between align-items-center py-1"><span><span class="badge bg-info me-2">●</span> Kakebe Tech</span><span class="fw-bold"><?= (int)$city['revenue_split_platform'] ?>%</span></div>
+                            <div class="d-flex justify-content-between align-items-center py-1"><span><span class="legend-dot bg-primary me-2"></span> City Council</span><span class="fw-bold"><?= (int)$city['revenue_split_city'] ?>%</span></div>
+                            <div class="d-flex justify-content-between align-items-center py-1"><span><span class="legend-dot bg-success me-2"></span> Boda Association</span><span class="fw-bold"><?= (int)$city['revenue_split_association'] ?>%</span></div>
+                            <div class="d-flex justify-content-between align-items-center py-1"><span><span class="badge me-2" style="background:#d97706;">●</span> Government</span><span class="fw-bold"><?= (int)$city['revenue_split_government'] ?>%</span></div>
+                            <div class="d-flex justify-content-between align-items-center py-1"><span><span class="legend-dot bg-info me-2"></span> Kakebe Tech</span><span class="fw-bold"><?= (int)$city['revenue_split_platform'] ?>%</span></div>
                         </div>
                     </div>
                 </div>
@@ -95,15 +95,15 @@ for ($i = 11; $i >= 0; $i--) {
 <?php require __DIR__ . '/../../partials/scripts-footer.php'; ?>
 <script>
     new ApexCharts(document.querySelector('#revenueChart'), {
-        series: [{ name: 'Revenue (UGX M)', data: <?= json_encode($chartValues) ?> }],
+        series: [{ name: 'Revenue (UGX M)', data: <?= js_json($chartValues) ?> }],
         chart: { type: 'area', height: 280, toolbar: { show: false }, animations: { enabled: true } },
         dataLabels: { enabled: false },
-        stroke: { curve: 'smooth', width: 3, colors: ['#5b4bd5'] },
+        stroke: { curve: 'smooth', width: 3, colors: ['#056CFE'] },
         fill: { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.4, opacityTo: 0.05 } },
-        xaxis: { categories: <?= json_encode($chartLabels) ?>, labels: { style: { colors: '#6c757d', fontSize: '12px' } } },
+        xaxis: { categories: <?= js_json($chartLabels) ?>, labels: { style: { colors: '#6c757d', fontSize: '12px' } } },
         yaxis: { labels: { formatter: (val) => 'UGX ' + val + 'M', style: { colors: '#6c757d', fontSize: '12px' } } },
         grid: { borderColor: '#f1f1f1', strokeDashArray: 4 },
-        colors: ['#5b4bd5'],
+        colors: ['#056CFE'],
         tooltip: { theme: 'dark', y: { formatter: (val) => 'UGX ' + val + ' Million' } }
     }).render();
 
@@ -111,7 +111,7 @@ for ($i = 11; $i >= 0; $i--) {
         series: [<?= (int)$city['revenue_split_city'] ?>, <?= (int)$city['revenue_split_association'] ?>, <?= (int)$city['revenue_split_government'] ?>, <?= (int)$city['revenue_split_platform'] ?>],
         chart: { type: 'donut', height: 200, animations: { enabled: true } },
         labels: ['City Council', 'Boda Association', 'Government', 'Kakebe Tech'],
-        colors: ['#5b4bd5', '#198754', '#e0529c', '#0dcaf0'],
+        colors: ['#056CFE', '#198754', '#d97706', '#0dcaf0'],
         legend: { show: false },
         plotOptions: { pie: { donut: { size: '70%', labels: { show: true, total: { show: true, label: 'Total Split', formatter: () => '100%' } } } } },
         stroke: { width: 0 },

@@ -1,25 +1,17 @@
 <?php
-// ============================================================
-// BodaERP — automatic schema sync  ("change it locally, the server follows")
-//
-//  1. On your own computer the app watches the local database. Whenever tables,
-//     columns or indexes change — however they changed (phpMyAdmin, a
-//     migration, Claude) — their structure (never data) is saved to
-//     database/schema.snapshot.json. Commit that file with your code.
-//  2. Any other copy of the app (the live server, a teammate's laptop) compares
-//     the snapshot with its own database on the first request after the new
-//     code arrives and ADDS whatever is missing: tables, columns, indexes,
-//     foreign keys, plus safe widenings (longer varchar, bigger int, more enum
-//     values, NULL allowed). It never drops, renames or shrinks anything and
-//     never touches rows.
-//  3. Anything riskier (different column types, differing indexes) is listed
-//     as "Needs review" in Super Admin → Database; that kind of change belongs
-//     in a migration file (database/migrations/), which also runs by itself.
-//
-// A sync problem never takes the site down: it is logged, shown to the Super
-// Admin and retried later. Views, triggers and stored routines are not tracked
-// here — use a migration for those.
-// ============================================================
+// BodaERP: automatic schema sync
+// ("change it locally, the server follows")
+// 1. On your own computer the app watches the local database. Whenever tables, columns or indexes change:
+// however they changed (phpMyAdmin, a migration, Claude): their structure (never data) is saved to
+// database/schema.snapshot.json. Commit that file with your code. 2. Any other copy of the app (the live
+// server, a teammate's laptop) compares the snapshot with its own database on the first request after the
+// new code arrives and ADDS whatever is missing: tables, columns, indexes, foreign keys, plus safe
+// widenings (longer varchar, bigger int, more enum values, NULL allowed). It never drops, renames or
+// shrinks anything and never touches rows. 3. Anything riskier (different column types, differing indexes)
+// is listed as "Needs review" in Super Admin → Database; that kind of change belongs in a migration file
+// (database/migrations/), which also runs by itself.
+// A sync problem never takes the site down: it is logged, shown to the Super Admin and retried later.
+// Views, triggers and stored routines are not tracked here: use a migration for those.
 
 require_once __DIR__ . '/database/database.php';
 
@@ -44,9 +36,7 @@ function schema_ignored_table(string $t): bool {
     return (bool) preg_match('/^(tmp|temp|bak|backup|old|zz)_|_(bak|backup|old|tmp)$/i', $t);
 }
 
-// ------------------------------------------------------------
 // Reading structure
-// ------------------------------------------------------------
 
 /** Splits the text of SHOW CREATE TABLE into columns / indexes / foreign keys / checks / options. */
 function schema_parse_create(string $sql): array {
@@ -109,9 +99,7 @@ function schema_unsupported_objects(?mysqli $db = null): array {
     ];
 }
 
-// ------------------------------------------------------------
 // Snapshot file
-// ------------------------------------------------------------
 
 function schema_snapshot_build(?mysqli $db = null): array {
     $db = $db ?? db();
@@ -136,7 +124,7 @@ function schema_snapshot_build(?mysqli $db = null): array {
 function schema_snapshot_json(array $snap, ?array $meta): string {
     $doc = [];
     if ($meta !== null) {
-        $doc['_note'] = 'Structure of the database (no data). Written automatically on the developer machine; applied automatically on every other copy. Commit it with the code. Safe to delete — it is rebuilt from the local database.';
+        $doc['_note'] = 'Structure of the database (no data). Written automatically on the developer machine; applied automatically on every other copy. Commit it with the code. Safe to delete: it is rebuilt from the local database.';
         $doc['meta']  = $meta;
     }
     $doc['format'] = $snap['format'] ?? SCHEMA_SNAPSHOT_FORMAT;
@@ -147,8 +135,8 @@ function schema_snapshot_json(array $snap, ?array $meta): string {
 function schema_snapshot_load(): ?array {
     $path = schema_snapshot_path();
     if (!is_file($path)) return null;
-    $data = json_decode((string) @file_get_contents($path), true);
-    return (is_array($data) && isset($data['tables']) && is_array($data['tables'])) ? $data : null;
+    $snapshot = json_decode((string) @file_get_contents($path), true);
+    return (is_array($snapshot) && isset($snapshot['tables']) && is_array($snapshot['tables'])) ? $data : null;
 }
 
 function schema_snapshot_md5(): ?string {
@@ -156,9 +144,7 @@ function schema_snapshot_md5(): ?string {
     return is_file($path) ? md5_file($path) : null;
 }
 
-// ------------------------------------------------------------
-// Comparing — what would change on this database
-// ------------------------------------------------------------
+// Comparing: what would change on this database
 
 function schema_norm_type(string $t): string {
     $t = strtolower(trim(preg_replace('/\s+/', ' ', $t)));
@@ -331,16 +317,14 @@ function schema_apply(mysqli $db, array $plan): array {
     return ['done' => $done, 'failed' => $failed];
 }
 
-// ------------------------------------------------------------
 // State (stored in system_settings) and the run itself
-// ------------------------------------------------------------
 
 function schema_state_load(?mysqli $db = null): ?array {
     try {
         $db = $db ?? db();
         $row = $db->query("SELECT setting_value FROM system_settings WHERE setting_key = '" . SCHEMA_STATE_KEY . "'")->fetch_row();
-        $data = $row ? json_decode((string) $row[0], true) : null;
-        return is_array($data) ? $data : null;
+        $lastRun = $row ? json_decode((string) $row[0], true) : null;
+        return is_array($lastRun) ? $lastRun : null;
     } catch (Throwable $e) {
         return null;       // system_settings does not exist yet
     }
@@ -427,9 +411,7 @@ function schema_last_failure(): ?array {
     return ($st && !empty($st['failed'])) ? $st : null;
 }
 
-// ------------------------------------------------------------
 // Local auto-save of the snapshot
-// ------------------------------------------------------------
 
 /** Auto-save is only ever active on a developer machine, from the machine itself. */
 function schema_capture_possible(): bool {
@@ -462,9 +444,9 @@ function schema_capture(string $by = 'manual', bool $force = false): array {
         'saved_at' => date('Y-m-d H:i:s'), 'saved_by' => substr($by, 0, 40),
         'database_server' => $db->server_info, 'tables' => count($snap['tables']),
     ]);
-    $tmp = $path . '.tmp' . getmypid();
-    if (@file_put_contents($tmp, $json) === false || !@rename($tmp, $path)) {
-        @unlink($tmp);
+    $tempPath = $path . '.tmp' . getmypid();
+    if (@file_put_contents($tempPath, $json) === false || !@rename($tempPath, $path)) {
+        @unlink($tempPath);
         throw new RuntimeException('Could not write ' . $path . ' (is the folder writable?)');
     }
     // This database is the source of the snapshot, so it is already "applied" here.

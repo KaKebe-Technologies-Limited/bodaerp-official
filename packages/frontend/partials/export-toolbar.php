@@ -8,10 +8,10 @@ $exportTitle = $exportTitle ?? '';
         <i class="fas fa-file-export me-1"></i>Export
     </button>
     <ul class="dropdown-menu dropdown-menu-end">
-        <li><a class="dropdown-item" href="#" onclick="exportTablePDF('<?= h($exportTableId) ?>','<?= h($exportFilename) ?>','<?= h($exportTitle) ?>');return false;"><i class="fas fa-file-pdf me-2 text-danger"></i>PDF</a></li>
-        <li><a class="dropdown-item" href="#" onclick="exportTableExcel('<?= h($exportTableId) ?>','<?= h($exportFilename) ?>');return false;"><i class="fas fa-file-excel me-2 text-success"></i>Excel</a></li>
-        <li><a class="dropdown-item" href="#" onclick="exportTableCSV('<?= h($exportTableId) ?>','<?= h($exportFilename) ?>');return false;"><i class="fas fa-file-csv me-2 text-primary"></i>CSV</a></li>
+        <li><button type="button" class="dropdown-item" data-call="exportTablePDF" data-call-args="<?= h(js_json([(string) $exportTableId, (string) $exportFilename, (string) $exportTitle])) ?>"><i class="fas fa-file-pdf me-2 text-danger"></i>PDF</button></li>
+        <li><button type="button" class="dropdown-item" data-call="exportTableExcel" data-call-args="<?= h(js_json([(string) $exportTableId, (string) $exportFilename])) ?>"><i class="fas fa-file-excel me-2 text-success"></i>Excel</button></li>
+        <li><button type="button" class="dropdown-item" data-call="exportTableCSV" data-call-args="<?= h(js_json([(string) $exportTableId, (string) $exportFilename])) ?>"><i class="fas fa-file-csv me-2 text-primary"></i>CSV</button></li>
         <li><hr class="dropdown-divider"></li>
-        <li><a class="dropdown-item" href="#" onclick="window.print();return false;"><i class="fas fa-print me-2 text-secondary"></i>Print</a></li>
+        <li><button type="button" class="dropdown-item" data-print><i class="fas fa-print me-2 text-secondary"></i>Print</button></li>
     </ul>
 </div>

@@ -1,17 +1,13 @@
 <?php
-// ============================================================
-// BodaERP — Automation (scheduled jobs) + system settings
-//
-// Jobs are defined here, their on/off switch and last result live in
-// `automation_jobs`. They run automatically:
-//   1. lazily — a cheap throttled check on normal page traffic runs whatever
-//      is due, after the response has been sent (no cron needed);
-//   2. from cron/run.php (CLI or secret-token URL) for exact timing.
+// BodaERP: Automation (scheduled jobs) + system settings
+// Jobs are defined here, their on/off switch and last result live in `automation_jobs`. They run
+// automatically: 1. lazily: a cheap throttled check on normal page traffic runs whatever is due, after the
+// response has been sent (no cron needed); 2. from cron/run.php (CLI or secret-token URL) for exact timing.
 // A GET_LOCK guarantees two requests never run the same batch twice.
-// ============================================================
 
 require_once __DIR__ . '/db_helpers.php';
 require_once __DIR__ . '/anomaly_engine.php';
+require_once __DIR__ . '/automation_notices.php';
 
 function automation_tables_ready(): bool {
     static $ready = null;
@@ -21,7 +17,7 @@ function automation_tables_ready(): bool {
     return $ready;
 }
 
-// ---------- system settings (key/value) ----------
+// system settings (key/value)
 
 function system_setting(string $key, ?string $default = null): ?string {
     try {
@@ -42,14 +38,14 @@ function automation_cron_token(bool $regenerate = false): string {
     return $t;
 }
 
-// ---------- job registry ----------
+// job registry
 
 function automation_audit(string $details, string $entity = 'automation'): void {
     runQuery("INSERT INTO audit_logs (user_id, user_name_snapshot, role_snapshot, action, entity_type, details, ip_address)
               VALUES (NULL, 'System (automation)', NULL, 'UPDATE', ?, ?, 'cli')", [$entity, mb_substr($details, 0, 500)])->close();
 }
 
-/** code => [title, description, every N minutes, callable returning a result message] — in run order. */
+/** code => [title, description, every N minutes, callable returning a result message]: in run order. */
 function automation_jobs(): array {
     return [
         'expire_riders' => [
@@ -66,19 +62,9 @@ function automation_jobs(): array {
         ],
         'renewal_reminders' => [
             'title' => 'Send renewal reminders',
-            'desc'  => 'Notifies riders with an account when their permit expires within their city\'s reminder window (once every 14 days).',
-            'every' => 1440,
-            'run'   => function () {
-                $r = runQuery("INSERT INTO notifications (rider_id, type, message)
-                    SELECT r.id, 'Renewal Reminder', CONCAT('Your permit expires on ', DATE_FORMAT(r.expiry_date, '%b %d, %Y'), '. Renew now to stay compliant.')
-                    FROM riders r JOIN cities c ON c.id = r.city_id
-                    WHERE r.status = 'active' AND r.deleted_at IS NULL AND r.user_id IS NOT NULL
-                      AND r.expiry_date BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL c.reminder_days DAY)
-                      AND NOT EXISTS (SELECT 1 FROM notifications n WHERE n.rider_id = r.id AND n.type = 'Renewal Reminder'
-                                      AND n.created_at >= DATE_SUB(NOW(), INTERVAL 14 DAY))");
-                $n = max(0, $r->affected_rows); $r->close();
-                return $n === 0 ? 'No reminders due.' : "Sent {$n} renewal reminder(s).";
-            },
+            'desc'  => 'Reminds riders in the portal and by email when their permit enters their city\'s reminder window, a week out and three days out. Honours each rider\'s notification choices.',
+            'every' => 60,
+            'run'   => 'job_renewal_reminders',
         ],
         'anomaly_scan' => [
             'title' => 'Data integrity scan',
@@ -103,15 +89,21 @@ function automation_jobs(): array {
                 return $n === 0 ? 'Nothing to clean.' : "Removed {$n} old session(s).";
             },
         ],
-    ];
+    ] + automation_notice_jobs();
 }
 
-// ---------- state ----------
+/** Registers a job the first time it is seen; jobs that email people outside the team start switched off. */
+function automation_register_job(string $code): void {
+    $job = automation_jobs()[$code] ?? [];
+    runQuery("INSERT IGNORE INTO automation_jobs (job_code, enabled) VALUES (?, ?)", [$code, empty($job['off_by_default']) ? 1 : 0])->close();
+}
+
+// state
 
 /** Jobs merged with their stored state; creates missing rows. */
 function automation_state(): array {
     $jobs = automation_jobs();
-    foreach ($jobs as $code => $_) runQuery("INSERT IGNORE INTO automation_jobs (job_code) VALUES (?)", [$code])->close();
+    foreach ($jobs as $code => $_) automation_register_job($code);
     $rows = array_column(fetchAll("SELECT * FROM automation_jobs"), null, 'job_code');
     $out = [];
     foreach ($jobs as $code => $j) {
@@ -134,15 +126,15 @@ function automation_every_label(int $minutes): string {
     return "Every {$minutes} min";
 }
 
-// ---------- running ----------
+// running
 
 function automation_run_job(string $code, string $by = 'manual'): array {
     $jobs = automation_jobs();
     if (!isset($jobs[$code])) return ['ok' => false, 'message' => 'Unknown job.'];
-    runQuery("INSERT IGNORE INTO automation_jobs (job_code) VALUES (?)", [$code])->close();
+    automation_register_job($code);
     $t0 = microtime(true);
     try {
-        $msg = (string) $jobs[$code]['run']();
+        $msg = (string) ($jobs[$code]['run'])();
         $ok = true;
     } catch (\Throwable $e) {
         $msg = $e->getMessage(); $ok = false;
@@ -173,6 +165,27 @@ function automation_run_due(string $by = 'auto', bool $force = false): array {
     return ['ran' => $ran, 'skipped' => false];
 }
 
+/**
+ * Sends the finished page to the browser before slow jobs run. PHP-FPM and LiteSpeed have a function for it;
+ * under Apache mod_php (XAMPP, the Docker dev stack) the buffered page is sent with Content-Length and
+ * Connection: close, so the browser stops waiting while PHP carries on.
+ */
+function automation_finish_response(): void {
+    if (function_exists('fastcgi_finish_request')) { fastcgi_finish_request(); return; }
+    if (function_exists('litespeed_finish_request')) { litespeed_finish_request(); return; }
+    ignore_user_abort(true);
+    if (!headers_sent()) {
+        $body = '';
+        while (ob_get_level() > 0) $body = ob_get_clean() . $body;
+        header('Connection: close');
+        header('Content-Encoding: none');
+        header('Content-Length: ' . strlen($body));
+        echo $body;
+    }
+    while (ob_get_level() > 0) @ob_end_flush();
+    flush();
+}
+
 /** Lazy trigger: at most one due-check per minute across all traffic; work runs after the response is sent. */
 function automation_tick(): void {
     static $done = false;
@@ -183,7 +196,10 @@ function automation_tick(): void {
     @touch($marker);
     register_shutdown_function(function () {
         if (session_status() === PHP_SESSION_ACTIVE) session_write_close();   // don't hold the user's session lock
-        if (function_exists('fastcgi_finish_request')) fastcgi_finish_request();
+        // Jobs run under whoever's page view triggered them; without this a payment the job confirms would be
+        // audited as that person's action.
+        $_SESSION = [];
+        automation_finish_response();
         try { automation_run_due('auto'); } catch (\Throwable $e) { error_log('BodaERP automation tick: ' . $e->getMessage()); }
     });
 }

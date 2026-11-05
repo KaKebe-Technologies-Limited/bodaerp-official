@@ -29,7 +29,7 @@ $amountOwed = array_sum(array_column($defaulters, 'annual_tax'));
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <?php $pageTitle = 'Defaulters - BodaERP'; require __DIR__ . '/../../partials/head-assets.php'; ?>
+    <?php $pageTitle = 'Defaulters | BodaERP'; require __DIR__ . '/../../partials/head-assets.php'; ?>
 </head>
 <body>
 
@@ -40,9 +40,9 @@ $amountOwed = array_sum(array_column($defaulters, 'annual_tax'));
 
     <div class="content-area">
         <div class="row g-3 row-cols-1 row-cols-md-3 mb-4">
-            <div class="col"><div class="stat-hero-card grad-red"><div class="stat-hero-icon"><i class="fas fa-user-times"></i></div><div><div class="stat-hero-value"><?= count($defaulters) ?></div><div class="stat-hero-label">Total Defaulters</div></div></div></div>
-            <div class="col"><div class="stat-hero-card grad-dark"><div class="stat-hero-icon"><i class="fas fa-fire"></i></div><div><div class="stat-hero-value"><?= $critical ?></div><div class="stat-hero-label">Critical (&gt;90 days)</div></div></div></div>
-            <div class="col"><div class="stat-hero-card grad-gold"><div class="stat-hero-icon"><i class="fas fa-coins"></i></div><div><div class="stat-hero-value"><?= h(formatCurrency($amountOwed)) ?></div><div class="stat-hero-label">Amount Owed</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-red"><div class="stat-hero-icon"><i class="fas fa-user-times"></i></div><div><div class="stat-hero-value"><?= count($defaulters) ?></div><div class="stat-hero-label">Total Defaulters</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-dark"><div class="stat-hero-icon"><i class="fas fa-fire"></i></div><div><div class="stat-hero-value"><?= $critical ?></div><div class="stat-hero-label">Critical (&gt;90 days)</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-gold"><div class="stat-hero-icon"><i class="fas fa-coins"></i></div><div><div class="stat-hero-value"><?= h(formatCurrency($amountOwed)) ?></div><div class="stat-hero-label">Amount Owed</div></div></div></div>
         </div>
 
         <div class="d-flex justify-content-end mb-2 no-print">
@@ -64,7 +64,7 @@ $amountOwed = array_sum(array_column($defaulters, 'annual_tax'));
                             <td><?= h(formatCurrency($d['annual_tax'])) ?></td>
                             <td><span class="badge <?= $badge ?>"><?= $label ?></span></td>
                             <td class="no-export">
-                                <form method="post" class="d-inline" onsubmit="return confirm('Send reminder to <?= h(addslashes($d['full_name'])) ?>?');">
+                                <form method="post" class="d-inline" data-confirm="Send reminder to <?= h($d['full_name']) ?>?">
                                     <?= csrf_field() ?><input type="hidden" name="rider_id" value="<?= (int)$d['id'] ?>">
                                     <button type="submit" class="btn btn-sm btn-outline-warning"><i class="fas fa-bell"></i> Remind</button>
                                 </form>

@@ -4,19 +4,19 @@
 // given name pattern already used by the demo accounts (e.g. "Akello James").
 
 return [
-    'LIR' => [ // Lira — Langi
+    'LIR' => [ // Lira: Langi
         'surnames_male'   => ['Okello','Otim','Ocen','Opio','Odongo','Olanya','Oyoo','Owiny','Ojok','Omara','Odur','Okwir','Ogwal','Ogwang'],
         'surnames_female' => ['Akello','Aciro','Apio','Adong','Aloyo','Aber','Anena','Atim','Awor','Acen','Aol','Auma','Adyeri'],
     ],
-    'GUL' => [ // Gulu — Acholi
+    'GUL' => [ // Gulu: Acholi
         'surnames_male'   => ['Okello','Komakech','Ocaya','Odong','Lakony','Otema','Ojara','Oyet','Okot','Opiyo','Ocitti','Lubanga'],
         'surnames_female' => ['Lamwaka','Akello','Aciro','Alanyo','Anying','Adokorach','Akumu','Aromorach','Atto','Akao'],
     ],
-    'KLA' => [ // Kampala — Buganda
+    'KLA' => [ // Kampala: Buganda
         'surnames_male'   => ['Mukasa','Ssebunya','Kato','Ssempala','Kayongo','Lubega','Ssemwogerere','Kigongo','Kavuma','Musisi','Kizito','Waiswa'],
         'surnames_female' => ['Nakato','Namutebi','Nalwoga','Namuli','Nabirye','Nakintu','Namusoke','Naigaga','Nansubuga','Namazzi'],
     ],
-    'MBA' => [ // Mbarara — Banyankole
+    'MBA' => [ // Mbarara: Banyankole
         'surnames_male'   => ['Tumwine','Ahimbisibwe','Turyamureeba','Byaruhanga','Kamugisha','Tumusiime','Mugisha','Baguma','Rukundo'],
         'surnames_female' => ['Kyomuhendo','Ninsiima','Atuhaire','Kobusingye','Natukunda','Kemigisha','Nabaasa','Komuhangi'],
     ],

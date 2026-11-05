@@ -18,7 +18,7 @@ $hasPaidThisYear = fetchValue(
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <?php $pageTitle = 'Payment History - BodaERP'; require __DIR__ . '/../../partials/head-assets.php'; ?>
+    <?php $pageTitle = 'Payment History | BodaERP'; require __DIR__ . '/../../partials/head-assets.php'; ?>
 </head>
 <body>
 
@@ -30,7 +30,7 @@ $hasPaidThisYear = fetchValue(
     <div class="content-area">
         <?php if (!$hasPaidThisYear): ?>
         <div class="alert alert-warning d-flex justify-content-between align-items-center flex-wrap gap-2 no-print">
-            <div><i class="fas fa-exclamation-triangle me-2"></i>You haven't paid your annual tax for <strong><?= h(CURRENT_FISCAL_YEAR) ?></strong> yet — <strong><?= h(formatCurrency($rider['annual_tax'])) ?></strong> due.</div>
+            <div><i class="fas fa-exclamation-triangle me-2"></i>You haven't paid your annual tax for <strong><?= h(CURRENT_FISCAL_YEAR) ?></strong> yet: <strong><?= h(formatCurrency($rider['annual_tax'])) ?></strong> due.</div>
             <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#payNowModal"><i class="fas fa-mobile-alt me-1"></i>Pay Now</button>
         </div>
         <?php endif; ?>
@@ -67,19 +67,18 @@ $hasPaidThisYear = fetchValue(
     </div>
 </div>
 
-<!-- ══════════════ Pay Now Modal ══════════════ -->
 <div class="modal fade" id="payNowModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title"><i class="fas fa-mobile-alt text-primary me-2"></i>Pay Annual Tax</h5>
+        <h5 class="modal-title">Pay Annual Tax</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body" id="payNowBody">
         <div class="alert alert-light border text-center mb-3">
           <div class="text-muted small">Amount Due (<?= h(CURRENT_FISCAL_YEAR) ?>)</div>
           <div class="fs-3 fw-bold"><?= h(formatCurrency($rider['annual_tax'])) ?></div>
-          <div class="text-muted small">Set by your city council — not editable</div>
+          <div class="text-muted small">Set by your city council: not editable</div>
         </div>
         <div id="payNowAlert" class="alert d-none"></div>
         <div class="mb-3">
@@ -90,7 +89,7 @@ $hasPaidThisYear = fetchValue(
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-        <button type="button" class="btn btn-primary" id="payNowSubmitBtn" onclick="submitPayNow()"><i class="fas fa-lock me-1"></i>Pay Now</button>
+        <button type="button" class="btn btn-primary" id="payNowSubmitBtn" data-call="submitPayNow"><i class="fas fa-lock me-1"></i>Pay Now</button>
       </div>
     </div>
   </div>
@@ -99,8 +98,8 @@ $hasPaidThisYear = fetchValue(
 <?php require __DIR__ . '/../../partials/scripts-footer.php'; ?>
 <script>
 
-    // ── Pay Now (ioTec Pay mobile money collection) ──────────────
-    const PAY_CSRF = <?= json_encode(csrf_token()) ?>;
+    // Pay Now (ioTec Pay mobile money collection)
+    const PAY_CSRF = <?= js_json(csrf_token()) ?>;
     let payNowPolling = null;
 
     function payNowAlert(msg, type) {
@@ -124,7 +123,7 @@ $hasPaidThisYear = fetchValue(
         fd.append('csrf_token', PAY_CSRF);
 
         try {
-            const res = await fetch('<?= BASE_URL ?>/packages/backend/payments.php?action=initiate', { method: 'POST', body: fd });
+            const res = await fetch('<?= BASE_URL ?>/api/payments.php?action=initiate', { method: 'POST', body: fd });
             const data = await res.json();
 
             if (!data.success) {
@@ -135,12 +134,12 @@ $hasPaidThisYear = fetchValue(
             }
 
             if (data.status === 'completed') {
-                payNowAlert('✅ ' + data.message, 'success');
+                payNowAlert(data.message, 'success');
                 setTimeout(() => location.reload(), 1500);
                 return;
             }
 
-            payNowAlert('📲 Check your phone (' + phone + ') and approve the payment prompt…', 'warning');
+            payNowAlert('Check your phone (' + phone + ') and approve the payment prompt…', 'warning');
             btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Waiting for approval…';
             pollPaymentStatus(data.payment_id);
         } catch (err) {
@@ -157,24 +156,24 @@ $hasPaidThisYear = fetchValue(
         payNowPolling = setInterval(async () => {
             attempts++;
             try {
-                const res = await fetch('<?= BASE_URL ?>/packages/backend/payments.php?action=check_status&payment_id=' + paymentId);
+                const res = await fetch('<?= BASE_URL ?>/api/payments.php?action=check_status&payment_id=' + paymentId);
                 const data = await res.json();
 
                 if (data.status === 'confirmed') {
                     clearInterval(payNowPolling);
-                    payNowAlert('✅ Payment confirmed — thank you!', 'success');
+                    payNowAlert('Payment confirmed. Thank you!', 'success');
                     setTimeout(() => location.reload(), 1500);
                     return;
                 }
                 if (data.status === 'failed') {
                     clearInterval(payNowPolling);
-                    payNowAlert('❌ Payment failed or was declined. Please try again.', 'danger');
+                    payNowAlert('Payment failed or was declined. Please try again.', 'danger');
                     const btn = document.getElementById('payNowSubmitBtn');
                     btn.disabled = false;
                     btn.innerHTML = '<i class="fas fa-lock me-1"></i>Pay Now';
                     return;
                 }
-            } catch (err) { /* keep polling — a transient network hiccup isn't fatal */ }
+            } catch (err) { /* keep polling: a transient network hiccup isn't fatal */ }
 
             if (attempts >= maxAttempts) {
                 clearInterval(payNowPolling);

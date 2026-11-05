@@ -1,18 +1,16 @@
 <?php
-// ============================================================
-// BodaERP — update / inspect the database from the command line
-//   php database/migrate.php                 apply pending migrations, then sync the schema snapshot
-//   php database/migrate.php --status        what is applied / pending / would change
-//   php database/migrate.php --capture       save this database's structure to database/schema.snapshot.json
-// (All of this also happens automatically on the first request after a deploy.)
-// ============================================================
+// BodaERP: update / inspect the database from the command line php database/migrate.php
+// apply pending migrations, then sync the schema snapshot php database/migrate.php --status
+// what is applied / pending / would change php database/migrate.php --capture
+// save this database's structure to database/schema.snapshot.json (All of this also happens automatically
+// on the first request after a deploy.)
 if (php_sapi_name() !== 'cli') { http_response_code(403); exit('Run from the command line: php database/migrate.php'); }
 define('BODAERP_SKIP_MIGRATIONS', true);   // we run them explicitly below
 require_once __DIR__ . '/../packages/backend/db_helpers.php';
 
 if (in_array('--capture', $argv, true)) {
     $r = schema_capture('cli', in_array('--force', $argv, true));
-    echo $r['changed'] ? "Saved {$r['tables']} tables to database/schema.snapshot.json — commit it with your code.\n"
+    echo $r['changed'] ? "Saved {$r['tables']} tables to database/schema.snapshot.json: commit it with your code.\n"
                        : "Snapshot already matches this database ({$r['tables']} tables).\n";
     exit(0);
 }
@@ -38,11 +36,11 @@ if ($r['failed'] || $r['error']) { fwrite(STDERR, "FAILED " . ($r['failed'] ?? '
 echo $r['applied'] ? "Migrations done.\n" : "Migrations: already up to date.\n";
 
 $sr = schema_sync_run_tracked('cli');
-if ($sr['no_snapshot']) { echo "Schema: no snapshot file yet — nothing to sync.\n"; exit(0); }
+if ($sr['no_snapshot']) { echo "Schema: no snapshot file yet: nothing to sync.\n"; exit(0); }
 if ($sr['skipped'])     { echo "Another schema sync is in progress.\n"; exit(0); }
 foreach ($sr['applied'] as $a) printf("synced   %-13s %s.%s\n", $a['type'], $a['table'], $a['name']);
 foreach ($sr['failed']  as $f) { fwrite(STDERR, sprintf("FAILED   %s %s.%s: %s\n", $f['type'], $f['table'], $f['name'], $f['error'])); $exit = 1; }
 if ($sr['error'])              { fwrite(STDERR, "Schema sync error: {$sr['error']}\n"); $exit = 1; }
-if ($sr['drift']) printf("%d difference(s) need review (not applied) — see Super Admin → Database.\n", count($sr['drift']));
+if ($sr['drift']) printf("%d difference(s) need review (not applied): see Super Admin → Database.\n", count($sr['drift']));
 echo $sr['applied'] ? "Schema synced.\n" : "Schema: already up to date.\n";
 exit($exit);

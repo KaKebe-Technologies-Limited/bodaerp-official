@@ -25,12 +25,12 @@ return [
 ];
 ```
 
-Rules: a migration must be **idempotent** (safe to run twice, and safe to resume after a half-finished run) —
+Rules: a migration must be **idempotent** (safe to run twice, and safe to resume after a half-finished run) , 
 use the `mig_*` helpers in `packages/backend/migrator.php` (`mig_add_column`, `mig_add_index`, `mig_table_exists`,
 `mig_column_exists`, `mig_column_type`, ...), which check `information_schema` first. Never edit a migration
 that has already been released; add a new one.
 
-## Schema file — structure changes need no migration
+## Schema file: structure changes need no migration
 
 Plain structure changes (new table, new column, new index, a longer `varchar`, a new `enum`
 value) do **not** need a migration file any more:

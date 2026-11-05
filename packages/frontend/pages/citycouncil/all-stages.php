@@ -22,7 +22,7 @@ $totalRiders = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE city_id = ? A
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <?php $pageTitle = 'All Stages - BodaERP'; require __DIR__ . '/../../partials/head-assets.php'; ?>
+    <?php $pageTitle = 'All Stages | BodaERP'; require __DIR__ . '/../../partials/head-assets.php'; ?>
     <style>
     </style>
 </head>
@@ -31,22 +31,19 @@ $totalRiders = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE city_id = ? A
 <?php require __DIR__ . '/../../partials/sidebar-citycouncil.php'; ?>
 
 <div class="main-content" id="mainContent">
-    <header class="top-header">
-        <div class="d-flex justify-content-between align-items-center">
-            <div class="d-flex align-items-center gap-3">
-                <button class="btn btn-light d-lg-none" id="toggleSidebar"><i class="fas fa-bars"></i></button>
-                <h5 class="mb-0 fw-bold"><span class="text-gradient-blue">All Stages</span></h5>
-            </div>
-            <a href="<?= BASE_URL ?>/pages/citycouncil/stage-management.php" class="btn btn-primary btn-sm"><i class="fas fa-cog me-1"></i>Manage Stages</a>
-        </div>
-    </header>
+    <?php ob_start(); ?>
+<a href="<?= BASE_URL ?>/pages/citycouncil/stage-management.php" class="btn btn-primary btn-sm"><i class="fas fa-gear me-1" aria-hidden="true"></i>Manage stages</a>
+    <?php $headerActions = ob_get_clean();
+    $pageTitle = 'Stages';
+    $pageSubtitle = '';
+    require __DIR__ . '/../../partials/topheader.php'; ?>
 
     <div class="content-area">
         <div class="row g-3 mb-4">
-            <div class="col-md-3 col-6"><div class="stat-hero-card grad-blue"><div class="stat-hero-icon"><i class="fas fa-map-marker-alt"></i></div><div><div class="stat-hero-value"><?= $totalStages ?></div><div class="stat-hero-label">Total Stages</div></div></div></div>
-            <div class="col-md-3 col-6"><div class="stat-hero-card grad-green"><div class="stat-hero-icon"><i class="fas fa-check-circle"></i></div><div><div class="stat-hero-value"><?= $activeStages ?></div><div class="stat-hero-label">Active Stages</div></div></div></div>
-            <div class="col-md-3 col-6"><div class="stat-hero-card grad-red"><div class="stat-hero-icon"><i class="fas fa-exclamation-circle"></i></div><div><div class="stat-hero-value"><?= $totalStages - $activeStages ?></div><div class="stat-hero-label">Inactive Stages</div></div></div></div>
-            <div class="col-md-3 col-6"><div class="stat-hero-card grad-gold"><div class="stat-hero-icon"><i class="fas fa-users"></i></div><div><div class="stat-hero-value"><?= number_format($totalRiders) ?></div><div class="stat-hero-label">Total Riders</div></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card tone-blue"><div class="stat-hero-icon"><i class="fas fa-map-marker-alt"></i></div><div><div class="stat-hero-value"><?= $totalStages ?></div><div class="stat-hero-label">Total Stages</div></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card tone-green"><div class="stat-hero-icon"><i class="fas fa-check-circle"></i></div><div><div class="stat-hero-value"><?= $activeStages ?></div><div class="stat-hero-label">Active Stages</div></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card tone-red"><div class="stat-hero-icon"><i class="fas fa-exclamation-circle"></i></div><div><div class="stat-hero-value"><?= $totalStages - $activeStages ?></div><div class="stat-hero-label">Inactive Stages</div></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card tone-gold"><div class="stat-hero-icon"><i class="fas fa-users"></i></div><div><div class="stat-hero-value"><?= number_format($totalRiders) ?></div><div class="stat-hero-label">Total Riders</div></div></div></div>
         </div>
 
         <div class="card mb-3 no-print">
@@ -54,7 +51,7 @@ $totalRiders = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE city_id = ? A
                 <form class="row g-2 align-items-center">
                     <div class="col-md-5"><input type="text" class="form-control" name="q" value="<?= h($search) ?>" placeholder="Search stage name..."></div>
                     <div class="col-md-3">
-                        <select class="form-select" name="status" onchange="this.form.submit()">
+                        <select class="form-select" name="status" data-autosubmit>
                             <option value="">All Status</option>
                             <option value="active" <?= $statusFilter==='active'?'selected':'' ?>>Active</option>
                             <option value="inactive" <?= $statusFilter==='inactive'?'selected':'' ?>>Inactive</option>
@@ -74,13 +71,13 @@ $totalRiders = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE city_id = ? A
             <?php foreach ($stages as $s): ?>
                 <tr>
                     <td><?= h($s['name']) ?></td>
-                    <td><?= h($s['location'] ?: '—') ?></td>
+                    <td><?= h($s['location'] ?: '–') ?></td>
                     <td><?= ucfirst($s['status']) ?></td>
                     <td><?= (int) $s['rider_count'] ?></td>
                     <td><?= h(formatCurrency($s['revenue'])) ?></td>
                     <td><?= (float) ($s['compliance_pct'] ?? 0) ?>%</td>
-                    <td><?= h($s['chairperson_name'] ?: '—') ?></td>
-                    <td><?= h($s['chairperson_phone'] ?: '—') ?></td>
+                    <td><?= h($s['chairperson_name'] ?: '–') ?></td>
+                    <td><?= h($s['chairperson_phone'] ?: '–') ?></td>
                 </tr>
             <?php endforeach; ?>
             </tbody>

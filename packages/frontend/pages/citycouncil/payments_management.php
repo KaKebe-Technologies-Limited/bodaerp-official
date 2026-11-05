@@ -20,7 +20,7 @@ $recent = fetchAll("SELECT p.*, r.full_name, s.name AS stage_name FROM payments 
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <?php $pageTitle = get_setting('nav_payments') . ' - ' . get_setting('site_name') ?? 'Payments - BodaERP'; require __DIR__ . '/../../partials/head-assets.php'; ?>
+    <?php $pageTitle = get_setting('nav_payments') . ' | ' . get_setting('site_name') ?? 'Payments | BodaERP'; require __DIR__ . '/../../partials/head-assets.php'; ?>
     <style>
         .method-card { background: white; border-radius: 12px; padding: 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.04); text-align: center; }
     </style>
@@ -30,28 +30,21 @@ $recent = fetchAll("SELECT p.*, r.full_name, s.name AS stage_name FROM payments 
 <?php require __DIR__ . '/../../partials/sidebar-citycouncil.php'; ?>
 
 <div class="main-content" id="mainContent">
-    <header class="top-header">
-        <div class="d-flex justify-content-between align-items-center">
-            <div class="d-flex align-items-center gap-3">
-                <button class="btn btn-light d-lg-none" id="toggleSidebar"><i class="fas fa-bars"></i></button>
-                <h5 class="mb-0 fw-bold"><span class="text-gradient-blue">Payments Management</span></h5>
-            </div>
-            <div class="d-flex gap-2">
-                <button type="button" class="btn btn-outline-primary btn-sm" id="reconcileBtn" onclick="reconcilePending()" title="Re-check pending ioTec payments — catches ones that succeeded but never got marked confirmed">
-                    <i class="fas fa-sync-alt me-1"></i>Reconcile Pending
-                </button>
-                <a href="<?= BASE_URL ?>/pages/citycouncil/payment-transactions.php" class="btn btn-primary btn-sm"><i class="fas fa-list me-1"></i>All Transactions</a>
-            </div>
-        </div>
-    </header>
+    <?php ob_start(); ?>
+<button type="button" class="btn btn-outline-primary btn-sm" id="reconcileBtn" data-call="reconcilePending" title="Ask ioTec again about pending mobile-money payments, to confirm ones that went through"><i class="fas fa-rotate me-1" aria-hidden="true"></i>Re-check pending</button>
+<a href="<?= BASE_URL ?>/pages/citycouncil/payment-transactions.php" class="btn btn-primary btn-sm"><i class="fas fa-list me-1" aria-hidden="true"></i>All transactions</a>
+    <?php $headerActions = ob_get_clean();
+    $pageTitle = 'Payments';
+    $pageSubtitle = '';
+    require __DIR__ . '/../../partials/topheader.php'; ?>
 
     <div class="content-area">
         <p id="reconcileStatus" class="small mb-3 d-none"></p>
         <div class="row g-3 mb-4">
-            <div class="col-md-3 col-6"><div class="stat-hero-card grad-blue"><div class="stat-hero-icon"><i class="fas fa-money-bill-wave"></i></div><div><div class="stat-hero-value"><?= h(formatCurrency($totalCollected)) ?></div><div class="stat-hero-label">Total Collected</div></div></div></div>
-            <div class="col-md-3 col-6"><div class="stat-hero-card grad-blue"><div class="stat-hero-icon"><i class="fas fa-exchange-alt"></i></div><div><div class="stat-hero-value"><?= number_format($txnCount) ?></div><div class="stat-hero-label">Transactions</div></div></div></div>
-            <div class="col-md-3 col-6"><div class="stat-hero-card grad-gold"><div class="stat-hero-icon"><i class="fas fa-clock"></i></div><div><div class="stat-hero-value"><?= h(formatCurrency($pendingAmt)) ?></div><div class="stat-hero-label">Pending</div></div></div></div>
-            <div class="col-md-3 col-6"><div class="stat-hero-card grad-red"><div class="stat-hero-icon"><i class="fas fa-times-circle"></i></div><div><div class="stat-hero-value"><?= h(formatCurrency($failedAmt)) ?></div><div class="stat-hero-label">Failed</div></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card tone-blue"><div class="stat-hero-icon"><i class="fas fa-money-bill-wave"></i></div><div><div class="stat-hero-value"><?= h(formatCurrency($totalCollected)) ?></div><div class="stat-hero-label">Total Collected</div></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card tone-blue"><div class="stat-hero-icon"><i class="fas fa-exchange-alt"></i></div><div><div class="stat-hero-value"><?= number_format($txnCount) ?></div><div class="stat-hero-label">Transactions</div></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card tone-gold"><div class="stat-hero-icon"><i class="fas fa-clock"></i></div><div><div class="stat-hero-value"><?= h(formatCurrency($pendingAmt)) ?></div><div class="stat-hero-label">Pending</div></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card tone-red"><div class="stat-hero-icon"><i class="fas fa-times-circle"></i></div><div><div class="stat-hero-value"><?= h(formatCurrency($failedAmt)) ?></div><div class="stat-hero-label">Failed</div></div></div></div>
         </div>
 
         <div class="row g-3 mb-4">
@@ -108,10 +101,10 @@ $recent = fetchAll("SELECT p.*, r.full_name, s.name AS stage_name FROM payments 
         status.classList.add('d-none');
 
         const fd = new FormData();
-        fd.append('csrf_token', <?= json_encode(csrf_token()) ?>);
+        fd.append('csrf_token', <?= js_json(csrf_token()) ?>);
 
         try {
-            const res = await fetch('<?= BASE_URL ?>/packages/backend/payments.php?action=reconcile', { method: 'POST', body: fd });
+            const res = await fetch('<?= BASE_URL ?>/api/payments.php?action=reconcile', { method: 'POST', body: fd });
             const d = await res.json();
             btn.disabled = false;
             btn.innerHTML = '<i class="fas fa-sync-alt me-1"></i>Reconcile Pending';

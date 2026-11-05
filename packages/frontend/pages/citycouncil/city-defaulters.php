@@ -39,7 +39,7 @@ $amountOwed = array_sum(array_map(fn($d) => (float) $d['annual_tax'], $defaulter
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <?php $pageTitle = 'City Defaulters - BodaERP'; require __DIR__ . '/../../partials/head-assets.php'; ?>
+    <?php $pageTitle = 'City Defaulters | BodaERP'; require __DIR__ . '/../../partials/head-assets.php'; ?>
     <style>
     </style>
 </head>
@@ -48,28 +48,24 @@ $amountOwed = array_sum(array_map(fn($d) => (float) $d['annual_tax'], $defaulter
 <?php require __DIR__ . '/../../partials/sidebar-citycouncil.php'; ?>
 
 <div class="main-content" id="mainContent">
-    <header class="top-header">
-        <div class="d-flex justify-content-between align-items-center">
-            <div class="d-flex align-items-center gap-3">
-                <button class="btn btn-light d-lg-none" id="toggleSidebar"><i class="fas fa-bars"></i></button>
-                <h5 class="mb-0 fw-bold"><span class="text-gradient-blue">City Defaulters</span></h5>
-            </div>
-        </div>
-    </header>
+    <?php
+    $pageTitle = 'Defaulters';
+    $pageSubtitle = 'Riders in this city whose permit has expired';
+    require __DIR__ . '/../../partials/topheader.php'; ?>
 
     <div class="content-area">
         <div class="row g-3 mb-4">
-            <div class="col-md-3 col-6"><div class="stat-hero-card grad-red"><div class="stat-hero-icon"><i class="fas fa-exclamation-triangle"></i></div><div><div class="stat-hero-value"><?= number_format($totalDefaulters) ?></div><div class="stat-hero-label">Total Defaulters</div></div></div></div>
-            <div class="col-md-3 col-6"><div class="stat-hero-card grad-red"><div class="stat-hero-icon"><i class="fas fa-fire"></i></div><div><div class="stat-hero-value"><?= number_format($critical) ?></div><div class="stat-hero-label">Critical (&gt;90 days)</div></div></div></div>
-            <div class="col-md-3 col-6"><div class="stat-hero-card grad-gold"><div class="stat-hero-icon"><i class="fas fa-clock"></i></div><div><div class="stat-hero-value"><?= number_format($warning) ?></div><div class="stat-hero-label">Warning</div></div></div></div>
-            <div class="col-md-3 col-6"><div class="stat-hero-card grad-blue"><div class="stat-hero-icon"><i class="fas fa-money-bill-wave"></i></div><div><div class="stat-hero-value"><?= h(formatCurrency($amountOwed)) ?></div><div class="stat-hero-label">Amount Owed</div></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card tone-red"><div class="stat-hero-icon"><i class="fas fa-exclamation-triangle"></i></div><div><div class="stat-hero-value"><?= number_format($totalDefaulters) ?></div><div class="stat-hero-label">Total Defaulters</div></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card tone-red"><div class="stat-hero-icon"><i class="fas fa-fire"></i></div><div><div class="stat-hero-value"><?= number_format($critical) ?></div><div class="stat-hero-label">Critical (&gt;90 days)</div></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card tone-gold"><div class="stat-hero-icon"><i class="fas fa-clock"></i></div><div><div class="stat-hero-value"><?= number_format($warning) ?></div><div class="stat-hero-label">Warning</div></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card tone-blue"><div class="stat-hero-icon"><i class="fas fa-money-bill-wave"></i></div><div><div class="stat-hero-value"><?= h(formatCurrency($amountOwed)) ?></div><div class="stat-hero-label">Amount Owed</div></div></div></div>
         </div>
 
         <div class="card mb-3 no-print">
             <div class="card-body">
                 <form class="row g-2 align-items-center">
                     <div class="col-md-4">
-                        <select class="form-select" name="stage" onchange="this.form.submit()">
+                        <select class="form-select" name="stage" data-autosubmit>
                             <option value="">All Stages</option>
                             <?php foreach ($stages as $s): ?><option value="<?= (int)$s['id'] ?>" <?= $stageFilter===(int)$s['id']?'selected':'' ?>><?= h($s['name']) ?></option><?php endforeach; ?>
                         </select>
@@ -89,7 +85,7 @@ $amountOwed = array_sum(array_map(fn($d) => (float) $d['annual_tax'], $defaulter
                         <thead><tr><th>#</th><th>Rider</th><th>Plate</th><th>Stage</th><th>Phone</th><th>Amount</th><th>Last Payment</th><th>Overdue</th><th>Status</th><th class="no-export">Actions</th></tr></thead>
                         <tbody>
                         <?php if (!$defaulters): ?>
-                            <tr><td colspan="10"><div class="empty-state" style="padding:36px 20px;"><i class="fas fa-inbox"></i><h5>No defaulters — great compliance!</h5></div></td></tr>
+                            <tr><td colspan="10"><div class="empty-state" style="padding:36px 20px;"><i class="fas fa-inbox"></i><h5>No defaulters: great compliance!</h5></div></td></tr>
                         <?php endif; ?>
                         <?php foreach ($defaulters as $i => $d):
                             $days = (int) $d['overdue_days'];
@@ -106,7 +102,7 @@ $amountOwed = array_sum(array_map(fn($d) => (float) $d['annual_tax'], $defaulter
                                 <td><?= $days ?> days</td>
                                 <td><span class="badge <?= $badge ?>"><?= $label ?></span></td>
                                 <td class="no-export">
-                                    <form method="post" class="d-inline" onsubmit="return confirm('Send a renewal reminder to <?= h(addslashes($d['full_name'])) ?>?');">
+                                    <form method="post" class="d-inline" data-confirm="Send a renewal reminder to <?= h($d['full_name']) ?>?">
                                         <?= csrf_field() ?>
                                         <input type="hidden" name="rider_id" value="<?= (int) $d['id'] ?>">
                                         <button type="submit" class="btn btn-sm btn-outline-warning"><i class="fas fa-bell"></i> Remind</button>

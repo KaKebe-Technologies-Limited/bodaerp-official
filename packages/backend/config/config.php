@@ -1,7 +1,5 @@
 <?php
-// ============================================================
-// BodaERP — App-wide configuration
-// ============================================================
+// BodaERP: App-wide configuration
 
 date_default_timezone_set('Africa/Kampala');
 
@@ -31,5 +29,6 @@ function app_base_url(): string {
 define('BASE_URL', app_base_url());
 define('SESSION_NAME', 'bodaerp_session');
 define('SESSION_TIMEOUT', 1800); // 30 minutes idle timeout
-define('UPLOAD_DIR', __DIR__ . '/../../../uploads/riders/');
+require_once __DIR__ . '/../app.php';
+define('UPLOAD_DIR', upload_path('riders') . '/');
 define('UPLOAD_URL', BASE_URL . '/uploads/riders/');

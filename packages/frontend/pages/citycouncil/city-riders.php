@@ -11,13 +11,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         runQuery("UPDATE riders SET deleted_at = NOW() WHERE id = ? AND city_id = ?", [$riderId, $cityId]);
         audit_log('DELETE', 'rider', (string) $riderId, 'Rider soft-deleted');
     } else {
-        $status = $_POST['status'] ?? 'pending';
+        $status = in_array($_POST['status'] ?? '', ['active', 'pending', 'expired'], true) ? $_POST['status'] : 'pending';
         $stageId = (int) ($_POST['stage_id'] ?? 0);
+        $expiry = ($_POST['expiry_date'] ?? '') !== '' && strtotime($_POST['expiry_date']) ? date('Y-m-d', strtotime($_POST['expiry_date'])) : null;
+        if (!fetchValue("SELECT COUNT(*) FROM stages WHERE id = ? AND city_id = ?", [$stageId, $cityId]) || trim($_POST['full_name'] ?? '') === '') {
+            flash('error', 'Choose a stage in your city and enter the rider\'s name.');
+            redirect('/pages/citycouncil/city-riders.php');
+        }
         runQuery("UPDATE riders SET full_name=?,phone=?,stage_id=?,status=?,expiry_date=? WHERE id=? AND city_id=?", [
             trim($_POST['full_name'] ?? ''), trim($_POST['phone'] ?? ''), $stageId, $status,
-            $_POST['expiry_date'] ?: null, $riderId, $cityId,
+            $expiry, $riderId, $cityId,
         ]);
         audit_log('UPDATE', 'rider', (string) $riderId, 'Rider updated');
+        flash('success', 'Rider details saved.');
     }
     redirect('/pages/citycouncil/city-riders.php' . (isset($_GET['page']) ? '?page=' . (int)$_GET['page'] : ''));
 }
@@ -68,14 +74,19 @@ $totalPages = max(1, (int) ceil($total / $perPage));
 $page = min($page, $totalPages);
 $offset = ($page - 1) * $perPage;
 
-$riders = fetchAll("SELECT r.*, s.name AS stage_name FROM riders r LEFT JOIN stages s ON s.id = r.stage_id $where ORDER BY $orderBy LIMIT $perPage OFFSET $offset", $params);
+$riders = fetchAll("SELECT r.*, s.name AS stage_name FROM riders r LEFT JOIN stages s ON s.id = r.stage_id $where ORDER BY $orderBy LIMIT " . (int) $perPage . " OFFSET " . (int) $offset, $params);
 $stages = fetchAll("SELECT id, name FROM stages WHERE city_id = ? ORDER BY name", [$cityId]);
 
 $totalRiders = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE city_id = ? AND deleted_at IS NULL", [$cityId]);
 $activeRiders = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE city_id = ? AND status='active' AND deleted_at IS NULL", [$cityId]);
 $expiredRiders = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE city_id = ? AND status='expired' AND deleted_at IS NULL", [$cityId]);
 $stageCount = count($stages);
-$ridersById = array_column($riders, null, 'id');
+// Only what the edit form needs goes into the page's JavaScript.
+$ridersById = [];
+foreach ($riders as $r) {
+    $ridersById[$r['id']] = ['id' => (int) $r['id'], 'full_name' => $r['full_name'], 'phone' => $r['phone'],
+        'stage_id' => (int) $r['stage_id'], 'status' => $r['status'], 'expiry_date' => $r['expiry_date']];
+}
 
 function qsMerge(array $overrides): string {
     return '?' . http_build_query(array_merge($_GET, $overrides));
@@ -84,7 +95,7 @@ function qsMerge(array $overrides): string {
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <?php $pageTitle = 'City Riders - BodaERP'; require __DIR__ . '/../../partials/head-assets.php'; ?>
+    <?php $pageTitle = 'City Riders | BodaERP'; require __DIR__ . '/../../partials/head-assets.php'; ?>
     <style>
         .status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; }
         .status-dot.active { background: #198754; } .status-dot.expired { background: #dc3545; } .status-dot.pending { background: #ffc107; }
@@ -95,21 +106,17 @@ function qsMerge(array $overrides): string {
 <?php require __DIR__ . '/../../partials/sidebar-citycouncil.php'; ?>
 
 <div class="main-content" id="mainContent">
-    <header class="top-header">
-        <div class="d-flex justify-content-between align-items-center">
-            <div class="d-flex align-items-center gap-3">
-                <button class="btn btn-light d-lg-none" id="toggleSidebar"><i class="fas fa-bars"></i></button>
-                <h5 class="mb-0 fw-bold"><span class="text-gradient-blue">All Riders</span></h5>
-            </div>
-        </div>
-    </header>
+    <?php
+    $pageTitle = 'Riders';
+    $pageSubtitle = '';
+    require __DIR__ . '/../../partials/topheader.php'; ?>
 
     <div class="content-area">
         <div class="row g-3 mb-4">
-            <div class="col-md-3 col-6"><div class="stat-hero-card grad-blue"><div class="stat-hero-icon"><i class="fas fa-users"></i></div><div><div class="stat-hero-value"><?= number_format($totalRiders) ?></div><div class="stat-hero-label">Total Riders</div></div></div></div>
-            <div class="col-md-3 col-6"><div class="stat-hero-card grad-green"><div class="stat-hero-icon"><i class="fas fa-check-circle"></i></div><div><div class="stat-hero-value"><?= number_format($activeRiders) ?></div><div class="stat-hero-label">Active (Paid)</div></div></div></div>
-            <div class="col-md-3 col-6"><div class="stat-hero-card grad-red"><div class="stat-hero-icon"><i class="fas fa-exclamation-circle"></i></div><div><div class="stat-hero-value"><?= number_format($expiredRiders) ?></div><div class="stat-hero-label">Expired</div></div></div></div>
-            <div class="col-md-3 col-6"><div class="stat-hero-card grad-gold"><div class="stat-hero-icon"><i class="fas fa-map-marker-alt"></i></div><div><div class="stat-hero-value"><?= $stageCount ?></div><div class="stat-hero-label">Stages</div></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card tone-blue"><div class="stat-hero-icon"><i class="fas fa-users"></i></div><div><div class="stat-hero-value"><?= number_format($totalRiders) ?></div><div class="stat-hero-label">Total Riders</div></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card tone-green"><div class="stat-hero-icon"><i class="fas fa-check-circle"></i></div><div><div class="stat-hero-value"><?= number_format($activeRiders) ?></div><div class="stat-hero-label">Active (Paid)</div></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card tone-red"><div class="stat-hero-icon"><i class="fas fa-exclamation-circle"></i></div><div><div class="stat-hero-value"><?= number_format($expiredRiders) ?></div><div class="stat-hero-label">Expired</div></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card tone-gold"><div class="stat-hero-icon"><i class="fas fa-map-marker-alt"></i></div><div><div class="stat-hero-value"><?= $stageCount ?></div><div class="stat-hero-label">Stages</div></div></div></div>
         </div>
 
         <div class="card mb-4">
@@ -117,13 +124,13 @@ function qsMerge(array $overrides): string {
                 <form class="row g-3 align-items-center" method="get">
                     <div class="col-md-3"><input type="text" class="form-control" name="q" value="<?= h($search) ?>" placeholder="Search by name, plate, phone, or ID number..."></div>
                     <div class="col-md-2">
-                        <select class="form-select" name="stage" onchange="this.form.submit()">
+                        <select class="form-select" name="stage" data-autosubmit>
                             <option value="">All Stages</option>
                             <?php foreach ($stages as $s): ?><option value="<?= (int)$s['id'] ?>" <?= $stageFilter === (int)$s['id'] ? 'selected' : '' ?>><?= h($s['name']) ?></option><?php endforeach; ?>
                         </select>
                     </div>
                     <div class="col-md-2">
-                        <select class="form-select" name="status" onchange="this.form.submit()">
+                        <select class="form-select" name="status" data-autosubmit>
                             <option value="">All Status</option>
                             <option value="active" <?= $statusFilter==='active'?'selected':'' ?>>Active</option>
                             <option value="expired" <?= $statusFilter==='expired'?'selected':'' ?>>Expired</option>
@@ -131,7 +138,7 @@ function qsMerge(array $overrides): string {
                         </select>
                     </div>
                     <div class="col-md-2">
-                        <select class="form-select" name="sort" onchange="this.form.submit()">
+                        <select class="form-select" name="sort" data-autosubmit>
                             <option value="name" <?= $sort==='name'?'selected':'' ?>>Name A-Z</option>
                             <option value="name-desc" <?= $sort==='name-desc'?'selected':'' ?>>Name Z-A</option>
                             <option value="latest" <?= $sort==='latest'?'selected':'' ?>>Latest First</option>
@@ -177,8 +184,8 @@ function qsMerge(array $overrides): string {
                                 <td><span class="badge <?= $statusBadge ?>"><span class="status-dot <?= h($r['status']) ?>"></span><?= ucfirst($r['status']) ?></span></td>
                                 <td><?= formatDate($r['expiry_date']) ?></td>
                                 <td class="no-export">
-                                    <button class="btn btn-sm btn-outline-warning" onclick="openEdit(<?= (int) $r['id'] ?>)"><i class="fas fa-edit"></i></button>
-                                    <form method="post" class="d-inline" onsubmit="return confirm('Delete this rider? This cannot be undone.');">
+                                    <button class="btn btn-sm btn-outline-warning" data-call="openEdit" data-call-args="<?= h(js_json([(int) $r['id']])) ?>"><i class="fas fa-edit"></i></button>
+                                    <form method="post" class="d-inline" data-confirm="Delete this rider? This cannot be undone.">
                                         <?= csrf_field() ?>
                                         <input type="hidden" name="action" value="delete">
                                         <input type="hidden" name="id" value="<?= (int) $r['id'] ?>">
@@ -214,9 +221,9 @@ function qsMerge(array $overrides): string {
             <form method="post" id="editRiderForm">
                 <?= csrf_field() ?>
                 <input type="hidden" name="id" id="editRiderId">
-                <div class="modal-header" style="background: linear-gradient(135deg, #f59e0b, #d97706); color: white;">
-                    <h5 class="modal-title fw-bold"><i class="fas fa-edit me-2"></i>Edit Rider</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold">Edit Rider</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body p-4">
                     <div class="mb-3"><label class="form-label fw-semibold">Full Name <span class="text-danger">*</span></label><input type="text" class="form-control" name="full_name" id="editName" required></div>
@@ -242,7 +249,7 @@ function qsMerge(array $overrides): string {
 
 <?php require __DIR__ . '/../../partials/scripts-footer.php'; ?>
 <script>
-    const ridersData = <?= json_encode($ridersById) ?>;
+    const ridersData = <?= js_json($ridersById) ?>;
     function openEdit(id) {
         const r = ridersData[id];
         if (!r) return;
