@@ -88,7 +88,7 @@ $totalRidersAll  = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE deleted_a
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <?php $pageTitle = 'Manage Cities | BodaERP'; require __DIR__ . '/../../partials/head-assets.php'; ?>
+    <?php $pageTitle = 'Manage cities | ' . get_setting('site_name', 'BodaERP'); require __DIR__ . '/../../partials/head-assets.php'; ?>
     <style>
         .city-logo-preview { width:60px;height:60px;object-fit:contain;border-radius:12px;border:2px solid var(--light-gray);background:var(--off-white);padding:4px; }
         .split-total { font-weight:700; font-size:0.9rem; }
@@ -115,18 +115,18 @@ $totalRidersAll  = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE deleted_a
         <?php endif; ?>
 
         <div class="row g-3 row-cols-2 row-cols-xl-4 mb-4">
-            <div class="col"><div class="stat-hero-card tone-blue"><div class="stat-hero-icon"><i class="fas fa-city"></i></div><div><div class="stat-hero-value"><?= $totalCitiesAll ?></div><div class="stat-hero-label">Total Cities</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-blue"><div class="stat-hero-icon"><i class="fas fa-city"></i></div><div><div class="stat-hero-value"><?= $totalCitiesAll ?></div><div class="stat-hero-label">Total cities</div></div></div></div>
             <div class="col"><div class="stat-hero-card tone-green"><div class="stat-hero-icon"><i class="fas fa-check-circle"></i></div><div><div class="stat-hero-value"><?= $activeCitiesAll ?></div><div class="stat-hero-label">Active</div></div></div></div>
             <div class="col"><div class="stat-hero-card tone-gold"><div class="stat-hero-icon"><i class="fas fa-hourglass-half"></i></div><div><div class="stat-hero-value"><?= $pendingCitiesAll ?></div><div class="stat-hero-label">Pending</div></div></div></div>
-            <div class="col"><div class="stat-hero-card tone-dark"><div class="stat-hero-icon"><i class="fas fa-users"></i></div><div><div class="stat-hero-value"><?= number_format($totalRidersAll) ?></div><div class="stat-hero-label">Platform Riders</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-dark"><div class="stat-hero-icon"><i class="fas fa-users"></i></div><div><div class="stat-hero-value"><?= number_format($totalRidersAll) ?></div><div class="stat-hero-label">Platform riders</div></div></div></div>
         </div>
 
         <div class="card mb-3 no-print">
             <div class="card-body">
                 <form class="row g-2 align-items-center" method="get">
-                    <div class="col-md-4"><input type="text" class="form-control" name="q" value="<?= h($search) ?>" placeholder="Search by name or code..."></div>
+                    <div class="col-md-4"><input aria-label="Search" type="text" class="form-control" name="q" value="<?= h($search) ?>" placeholder="Search by name or code..."></div>
                     <div class="col-md-3">
-                        <select class="form-select" name="status">
+                        <select aria-label="Filter by status" class="form-select" name="status">
                             <option value="">All Status</option>
                             <option value="active" <?= $statusFilter==='active'?'selected':'' ?>>Active</option>
                             <option value="pending" <?= $statusFilter==='pending'?'selected':'' ?>>Pending</option>
@@ -145,14 +145,14 @@ $totalRidersAll  = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE deleted_a
                 <div class="table-responsive">
                     <table class="table table-hover align-middle" id="citiesTable">
                         <thead>
-                            <tr><th>City</th><th>Annual Fee</th><th>Revenue Split (City / Assoc / Gov / Platform)</th><th>Stages</th><th>Riders</th><th>Status</th><th class="no-export">Actions</th></tr>
+                            <tr><th>City</th><th>Annual fee</th><th>Revenue split (city / assoc / gov / platform)</th><th>Stages</th><th>Riders</th><th>Status</th><th class="no-export">Actions</th></tr>
                         </thead>
                         <tbody>
                         <?php foreach ($cities as $t): $sc = ['active'=>'success','pending'=>'warning','inactive'=>'secondary']; ?>
                             <tr id="row-<?= h($t['id']) ?>">
                                 <td>
                                     <div class="d-flex align-items-center gap-2">
-                                        <img src="<?= h(BASE_URL . $t['logo_path']) ?>" class="city-cell-logo border" data-fallback-src="<?= BASE_URL ?>/assets/images/logo-mark.png">
+                                        <img alt="" src="<?= h(BASE_URL . $t['logo_path']) ?>" class="city-cell-logo border" data-fallback-src="<?= BASE_URL ?>/assets/images/logo-mark.png">
                                         <div><strong><?= h($t['name']) ?></strong><br><small class="text-muted"><?= h($t['id']) ?> · <?= h($t['country']) ?></small></div>
                                     </div>
                                 </td>
@@ -160,20 +160,20 @@ $totalRidersAll  = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE deleted_a
                                 <td>
                                     <span class="badge bg-primary"><?= (int)$t['revenue_split_city'] ?>%</span>
                                     <span class="badge bg-success ms-1"><?= (int)$t['revenue_split_association'] ?>%</span>
-                                    <span class="badge ms-1" style="background:#d97706;"><?= (int)$t['revenue_split_government'] ?>%</span>
+                                    <span class="badge ms-1" style="background:#b45309;"><?= (int)$t['revenue_split_government'] ?>%</span>
                                     <span class="badge bg-info text-dark ms-1"><?= (int)$t['revenue_split_platform'] ?>%</span>
                                 </td>
                                 <td><?= (int) $t['stage_count'] ?></td>
                                 <td><?= number_format($t['rider_count']) ?></td>
-                                <td><span class="badge bg-<?= $sc[$t['status']] ?? 'secondary' ?>"><?= strtoupper($t['status']) ?></span></td>
+                                <td><span class="badge bg-<?= $sc[$t['status']] ?? 'secondary' ?>"><?= h(ucfirst(str_replace('_', ' ', $t['status']))) ?></span></td>
                                 <td class="no-export">
-                                    <button class="btn btn-sm btn-outline-primary" data-call="openEditCity" data-call-args="<?= h(js_json([(string) $t['id']])) ?>"><i class="fas fa-edit"></i></button>
-                                    <a href="<?= BASE_URL ?>/pages/superadmin/users.php?city=<?= h($t['id']) ?>" class="btn btn-sm btn-outline-success"><i class="fas fa-users"></i></a>
+                                    <button class="btn btn-sm btn-outline-primary" data-call="openEditCity" data-call-args="<?= h(js_json([(string) $t['id']])) ?>" aria-label="Edit <?= h($t['name']) ?>" title="Edit"><i class="fas fa-edit" aria-hidden="true"></i></button>
+                                    <a href="<?= BASE_URL ?>/pages/superadmin/users.php?city=<?= h($t['id']) ?>" class="btn btn-sm btn-outline-success" aria-label="Users in <?= h($t['name']) ?>" title="Users"><i class="fas fa-users" aria-hidden="true"></i></a>
                                     <form method="post" class="d-inline" data-confirm="Delete this city? This cannot be undone.">
                                         <?= csrf_field() ?>
                                         <input type="hidden" name="action" value="delete">
                                         <input type="hidden" name="id" value="<?= h($t['id']) ?>">
-                                        <button type="submit" class="btn btn-sm btn-outline-danger"><i class="fas fa-trash"></i></button>
+                                        <button type="submit" class="btn btn-sm btn-outline-danger" aria-label="Delete <?= h($t['name']) ?>" title="Delete"><i class="fas fa-trash" aria-hidden="true"></i></button>
                                     </form>
                                 </td>
                             </tr>
@@ -199,82 +199,82 @@ $totalRidersAll  = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE deleted_a
             <form method="post" id="cityForm">
                 <?= csrf_field() ?>
                 <input type="hidden" name="edit_city_id" id="editCityId">
-                <div class="modal-header" style="background:var(--primary-blue-gradient);color:white;border-bottom:none;">
-                    <h5 class="modal-title fw-bold" id="cityModalTitle">Add New City</h5>
+                <div class="modal-header" style="background:var(--primary-blue);color:white;border-bottom:none;">
+                    <h5 class="modal-title fw-bold" id="cityModalTitle">Add new city</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body p-4">
                     <div class="row g-3">
                         <div class="col-md-4">
-                            <label class="form-label fw-semibold">City Code <span class="text-danger">*</span> <small class="text-muted">(3 letters)</small></label>
+                            <label for="cityId" class="form-label fw-semibold">City code <span class="text-danger">*</span> <small class="text-muted">(3 letters)</small></label>
                             <input type="text" class="form-control" name="city_id" id="cityId" placeholder="LIR" maxlength="3" style="text-transform:uppercase;" required>
                         </div>
                         <div class="col-md-8">
-                            <label class="form-label fw-semibold">City Name <span class="text-danger">*</span></label>
+                            <label for="cityName" class="form-label fw-semibold">City name <span class="text-danger">*</span></label>
                             <input type="text" class="form-control" name="city_name" id="cityName" placeholder="e.g. Lira City" required>
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label fw-semibold">Country</label>
+                            <label for="cityCountry" class="form-label fw-semibold">Country</label>
                             <select class="form-select" name="country" id="cityCountry">
                                 <option value="Uganda">Uganda</option><option value="Kenya">Kenya</option><option value="Tanzania">Tanzania</option><option value="Rwanda">Rwanda</option>
                             </select>
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label fw-semibold">Currency</label>
+                            <label for="cityCurrency" class="form-label fw-semibold">Currency</label>
                             <select class="form-select" name="currency" id="cityCurrency">
-                                <option value="UGX">UGX - Uganda Shilling</option><option value="KES">KES - Kenya Shilling</option><option value="TZS">TZS - Tanzania Shilling</option><option value="RWF">RWF - Rwanda Franc</option>
+                                <option value="UGX">UGX - Uganda shilling</option><option value="KES">KES - Kenya shilling</option><option value="TZS">TZS - Tanzania shilling</option><option value="RWF">RWF - Rwanda franc</option>
                             </select>
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label fw-semibold">Annual Fee</label>
+                            <label for="cityFee" class="form-label fw-semibold">Annual fee</label>
                             <input type="number" class="form-control" name="annual_fee" id="cityFee" value="50000">
                         </div>
                         <div class="col-md-8">
-                            <label class="form-label fw-semibold">Logo Path / URL</label>
+                            <label for="cityLogo" class="form-label fw-semibold">Logo path / URL</label>
                             <input type="text" class="form-control" name="logo_path" id="cityLogo" placeholder="/assets/images/lcc.png" data-preview-target="logoPreview" data-preview-base="<?= h(BASE_URL) ?>">
                             <small class="text-muted">Upload to assets/images/ and enter the path here.</small>
                         </div>
                         <div class="col-md-4 d-flex align-items-end">
-                            <img id="logoPreview" src="<?= BASE_URL ?>/assets/images/logo.png" class="city-logo-preview" data-fallback-src="<?= BASE_URL ?>/assets/images/logo-mark.png">
+                            <img id="logoPreview" alt="Logo preview" src="<?= BASE_URL ?>/assets/images/logo.png" class="city-logo-preview" data-fallback-src="<?= BASE_URL ?>/assets/images/logo-mark.png">
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label fw-semibold">Contact Email</label>
+                            <label for="cityEmail" class="form-label fw-semibold">Contact email</label>
                             <input type="email" class="form-control" name="contact_email" id="cityEmail" placeholder="council@city.go.ug">
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label fw-semibold">Contact Phone</label>
+                            <label for="cityPhone" class="form-label fw-semibold">Contact phone</label>
                             <input type="text" class="form-control" name="contact_phone" id="cityPhone" placeholder="+256 471 000 000">
                         </div>
                         <div class="col-12">
-                            <label class="form-label fw-semibold">Address</label>
+                            <label for="cityAddress" class="form-label fw-semibold">Address</label>
                             <input type="text" class="form-control" name="address" id="cityAddress" placeholder="City Council Building, ...">
                         </div>
                         <div class="col-12">
-                            <label class="form-label fw-semibold">Revenue Split <span class="text-danger">*</span> <small class="text-muted">– must total 100%</small></label>
+                            <label class="form-label fw-semibold">Revenue split <span class="text-danger">*</span> <small class="text-muted">– must total 100%</small></label>
                             <div class="row g-2 align-items-end">
-                                <div class="col-3"><label class="small text-muted">City Council %</label><input type="number" class="form-control" name="split_city" id="splitCity" value="55" min="0" max="100" data-call-input="updateSplitTotal"></div>
-                                <div class="col-3"><label class="small text-muted">Boda Association %</label><input type="number" class="form-control" name="split_assoc" id="splitAssoc" value="26" min="0" max="100" data-call-input="updateSplitTotal"></div>
-                                <div class="col-3"><label class="small text-muted">Government %</label><input type="number" class="form-control" name="split_government" id="splitGovernment" value="10" min="0" max="100" data-call-input="updateSplitTotal"></div>
-                                <div class="col-3"><label class="small text-muted">Kakebe Tech (Platform) %</label><input type="number" class="form-control" name="split_platform" id="splitPlatform" value="9" min="0" max="100" data-call-input="updateSplitTotal"></div>
+                                <div class="col-3"><label for="splitCity" class="small text-muted">City council %</label><input type="number" class="form-control" name="split_city" id="splitCity" value="55" min="0" max="100" data-call-input="updateSplitTotal"></div>
+                                <div class="col-3"><label for="splitAssoc" class="small text-muted">Boda association %</label><input type="number" class="form-control" name="split_assoc" id="splitAssoc" value="26" min="0" max="100" data-call-input="updateSplitTotal"></div>
+                                <div class="col-3"><label for="splitGovernment" class="small text-muted">Government %</label><input type="number" class="form-control" name="split_government" id="splitGovernment" value="10" min="0" max="100" data-call-input="updateSplitTotal"></div>
+                                <div class="col-3"><label for="splitPlatform" class="small text-muted">Kakebe Tech (platform) %</label><input type="number" class="form-control" name="split_platform" id="splitPlatform" value="9" min="0" max="100" data-call-input="updateSplitTotal"></div>
                             </div>
                             <div class="mt-2">Total: <span id="splitTotal" class="split-total ok">100%</span></div>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label fw-semibold">Payment Gateway</label>
+                            <label for="cityPayGW" class="form-label fw-semibold">Payment gateway</label>
                             <select class="form-select" name="payment_gateway" id="cityPayGW">
                                 <option value="MTN MoMo">MTN MoMo</option><option value="Airtel Money">Airtel Money</option><option value="Both">Both</option>
                             </select>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label fw-semibold">Fiscal Year</label>
+                            <label for="cityFiscal" class="form-label fw-semibold">Fiscal year</label>
                             <input type="text" class="form-control" name="fiscal_year" id="cityFiscal" value="2026/2027">
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label fw-semibold">Compliance Target %</label>
+                            <label for="cityCompliance" class="form-label fw-semibold">Compliance target %</label>
                             <input type="number" class="form-control" name="compliance_target" id="cityCompliance" value="70" min="1" max="100">
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label fw-semibold">Status</label>
+                            <label for="cityStatus" class="form-label fw-semibold">Status</label>
                             <select class="form-select" name="status" id="cityStatus">
                                 <option value="active">Active</option><option value="pending">Pending</option><option value="inactive">Inactive</option>
                             </select>
@@ -283,7 +283,7 @@ $totalRidersAll  = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE deleted_a
                 </div>
                 <div class="modal-footer border-0 pb-3">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary"><i class="fas fa-save me-2"></i>Save City</button>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-save me-2"></i>Save city</button>
                 </div>
             </form>
         </div>
@@ -291,7 +291,7 @@ $totalRidersAll  = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE deleted_a
 </div>
 
 <?php require __DIR__ . '/../../partials/scripts-footer.php'; ?>
-<script>
+<script nonce="<?= csp_nonce() ?>">
     const citiesData = <?= js_json($citiesById) ?>;
 
     function updateSplitTotal() {

@@ -12,7 +12,7 @@ if (!headers_sent()) http_response_code($status === 419 ? 400 : $status);   // 4
 
 $text = function (string $key, string $default): string {
     try { return function_exists('get_setting') ? get_setting($key, $default) : $default; }
-    catch (Throwable $e) { return $default; }
+    catch (Throwable $e) { error_log('BodaERP error page text ' . $key . ': ' . $e->getMessage()); return $default; }
 };
 [$title, $body] = match ($status) {
     403 => [$text('error_403_title', 'This page is not part of your account'), $text('error_403_text', 'Your role does not give access to this page.')],
@@ -23,7 +23,7 @@ $text = function (string $key, string $default): string {
 };
 $home = (defined('BASE_URL') ? BASE_URL : '') . '/';
 $loggedIn = function_exists('is_logged_in') && is_logged_in();
-$seo = ['title' => $title . ' | BodaERP', 'description' => $body, 'noindex' => true];
+$seo = ['title' => $title . ' | ' . $text('site_name', 'BodaERP'), 'description' => $body, 'noindex' => true];
 $canRenderChrome = function_exists('menu_items') && $status !== 500;
 ?>
 <!DOCTYPE html>
@@ -33,6 +33,7 @@ $canRenderChrome = function_exists('menu_items') && $status !== 500;
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex">
     <title><?= htmlspecialchars($title) ?></title>
     <link rel="icon" href="<?= htmlspecialchars($home) ?>assets/images/favicon.ico" sizes="any">
+    <link rel="stylesheet" href="<?= htmlspecialchars($home) ?>assets/vendor/inter/inter.css">
     <link rel="stylesheet" href="<?= htmlspecialchars($home) ?>assets/css/public.css">
 <?php endif; ?>
 </head>

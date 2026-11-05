@@ -1,7 +1,6 @@
 <?php
-require_once __DIR__ . '/../../../backend/auth.php';
+require_once __DIR__ . '/../../../backend/admin_ui.php';
 require_role(['rider']);
-$active = 'notifications';
 $riderId = $_SESSION['rider_id'];
 if (!$riderId) redirect('/login.php');
 
@@ -12,44 +11,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $notifications = fetchAll("SELECT * FROM notifications WHERE rider_id = ? ORDER BY created_at DESC", [$riderId]);
+$portalNoticesOff = (int) fetchValue("SELECT notify_in_app FROM users WHERE id = ?", [$_SESSION['user_id']]) !== 1;
 $icons = [
     'Renewal Reminder' => ['fa-bell', 'warning'], 'Payment Confirmed' => ['fa-check-circle', 'success'],
     'Important Update' => ['fa-info-circle', 'primary'], 'ID Card Issued' => ['fa-id-card', 'primary'],
-    'Registration Complete' => ['fa-user-check', 'success'],
+    'Registration Complete' => ['fa-user-check', 'success'], 'Payment Failed' => ['fa-times-circle', 'danger'],
+    'Data Request' => ['fa-file-shield', 'primary'],
 ];
+portal_start('rider', 'notifications', t('rider.notes.title', 'Messages'), [
+    'subtitle' => t('rider.notes.subtitle', 'Receipts, reminders and answers from the council'),
+    'actions' => $notifications ? '<form method="post">' . csrf_field() . '<button type="submit" class="btn btn-sm btn-outline-secondary"><i class="fas fa-check-double me-1" aria-hidden="true"></i>' . h(t('rider.notes.mark_read', 'Mark all as read')) . '</button></form>' : '',
+]);
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <?php $pageTitle = 'Notifications | BodaERP'; require __DIR__ . '/../../partials/head-assets.php'; ?>
-</head>
-<body>
-
-<?php require __DIR__ . '/../../partials/sidebar-rider.php'; ?>
-
-<div class="main-content" id="mainContent">
-    <?php $pageTitle = 'Notifications'; require __DIR__ . '/../../partials/topheader.php'; ?>
-
-    <div class="content-area">
-        <div class="d-flex justify-content-end mb-3">
-            <form method="post"><?= csrf_field() ?><button type="submit" class="btn btn-sm btn-outline-secondary"><i class="fas fa-check-double me-1"></i>Mark All Read</button></form>
-        </div>
-        <div class="card"><div class="card-body p-0">
-            <?php if (!$notifications): ?><div class="text-center py-5 text-muted">No notifications</div><?php endif; ?>
-            <?php foreach ($notifications as $n): [$icon, $color] = $icons[$n['type']] ?? ['fa-bell', 'secondary']; ?>
-                <div class="d-flex align-items-start gap-3 p-3 border-bottom <?= $n['is_read'] ? '' : 'bg-light' ?>">
-                    <div class="text-<?= $color ?>"><i class="fas <?= $icon ?> fa-lg"></i></div>
-                    <div class="flex-grow-1">
-                        <div class="fw-semibold"><?= h($n['type']) ?> <?= $n['is_read'] ? '' : '<span class="badge bg-primary ms-1">New</span>' ?></div>
-                        <div class="text-muted small"><?= h($n['message']) ?></div>
-                        <div class="text-muted" style="font-size:0.7rem;"><?= timeAgo($n['created_at']) ?></div>
-                    </div>
+<?php if ($portalNoticesOff): ?>
+    <div class="alert alert-info d-flex align-items-center gap-2" data-keep><i class="fas fa-bell-slash" aria-hidden="true"></i><span><?= h(t('rider.notes.off', 'New messages are switched off for your account, so only older ones appear here.')) ?> <a href="<?= BASE_URL ?>/pages/account/settings.php#notifications"><?= h(t('rider.notes.turn_on', 'Turn them back on')) ?></a></span></div>
+<?php endif; ?>
+<section class="card measure-wide">
+    <div class="card-body p-0">
+        <?php if (!$notifications): ?>
+            <?= empty_state('fa-bell', t('rider.notes.empty', 'No messages yet'), t('rider.notes.empty_text', 'Payment receipts and renewal reminders will appear here.')) ?>
+        <?php endif; ?>
+        <ul class="list-unstyled mb-0 notification-list">
+        <?php foreach ($notifications as $n): [$icon, $color] = $icons[$n['type']] ?? ['fa-bell', 'secondary']; ?>
+            <li class="<?= $n['is_read'] ? '' : 'is-unread' ?>">
+                <span class="text-<?= $color ?>"><i class="fas <?= $icon ?> fa-lg" aria-hidden="true"></i></span>
+                <div>
+                    <div class="fw-semibold"><?= h(notification_label($n['type'])) ?><?= $n['is_read'] ? '' : ' <span class="badge bg-primary ms-1">' . h(t('rider.notes.new', 'New')) . '</span>' ?></div>
+                    <p class="mb-1"><?= h($n['message']) ?></p>
+                    <div class="small text-muted"><?= h(timeAgo($n['created_at'])) ?></div>
                 </div>
-            <?php endforeach; ?>
-        </div></div>
+            </li>
+        <?php endforeach; ?>
+        </ul>
     </div>
-</div>
-
-<?php require __DIR__ . '/../../partials/scripts-footer.php'; ?>
-</body>
-</html>
+</section>
+<?php portal_end(); ?>

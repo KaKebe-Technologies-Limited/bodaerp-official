@@ -14,14 +14,14 @@ anomaly_scan_if_stale('auto');
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <?php $pageTitle = 'Data Integrity Flags | BodaERP'; require __DIR__ . '/../../partials/head-assets.php'; ?>
+    <?php $pageTitle = 'Data integrity flags | ' . get_setting('site_name', 'BodaERP'); require __DIR__ . '/../../partials/head-assets.php'; ?>
 </head>
 <body>
 
 <?php require __DIR__ . '/../../partials/sidebar-citycouncil.php'; ?>
 
 <div class="main-content" id="mainContent">
-    <?php $pageTitle = 'Data Integrity Flags'; $pageSubtitle = 'Records in your city that need attention (read-only)'; require __DIR__ . '/../../partials/topheader.php'; ?>
+    <?php $pageTitle = 'Data integrity flags'; $pageSubtitle = 'Records in your city that need attention (read-only)'; require __DIR__ . '/../../partials/topheader.php'; ?>
     <div class="content-area">
         <?php require __DIR__ . '/../../partials/flags-panel.php'; ?>
     </div>

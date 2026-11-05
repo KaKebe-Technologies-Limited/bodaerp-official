@@ -6,6 +6,7 @@ require_once __DIR__ . '/config/config.php';
 require_once __DIR__ . '/functions.php';
 require_once __DIR__ . '/security.php';
 require_once __DIR__ . '/mailer.php';
+require_once __DIR__ . '/sms.php';
 require_once __DIR__ . '/automation.php';
 require_once __DIR__ . '/uploads.php';
 
@@ -130,10 +131,8 @@ function attempt_login(string $email, string $password): array {
 
     if (two_factor_required($user)) {
         session_regenerate_id(true);
-        $code = (string) random_int(100000, 999999);
-        $_SESSION['pending_2fa'] = ['user_id' => (int) $user['id'], 'code_hash' => password_hash($code, PASSWORD_DEFAULT),
-            'expires' => time() + 600, 'tries' => 0];
-        send_template_email('two_factor_code', $user['email'], ['name' => $user['name'], 'code' => $code]);
+        $_SESSION['pending_2fa'] = ['user_id' => (int) $user['id']];
+        two_factor_send_code($user);
         return ['ok' => true, 'needs_code' => true, 'user' => $user];
     }
 
@@ -141,13 +140,47 @@ function attempt_login(string $email, string $password): array {
     return ['ok' => true, 'user' => $user];
 }
 
+/**
+ * Where this person's sign-in codes can go right now: 'sms' (their confirmed mobile number, EgoSMS set up) and/or
+ * 'email' (SMTP set up). Their chosen channel comes first. There is no authenticator-app option by decision.
+ * @return list<'sms'|'email'>
+ */
+function two_factor_channels(array $user): array {
+    $channels = [];
+    if (sms_ready() && sms_normalize_phone($user['phone'] ?? '') && !empty($user['phone_verified_at'])) $channels[] = 'sms';
+    if (!empty($user['email']) && mail_transport_name() === 'smtp') $channels[] = 'email';
+    if (($user['two_factor_channel'] ?? 'email') === 'email') $channels = array_reverse($channels);
+    return $channels;
+}
+
 function two_factor_required(array $user): bool {
-    // Codes travel by email: without a working mail server (SMTP_HOST unset) nobody could read them,
-    // so two-step sign-in stays off rather than locking everyone out.
-    if (empty($user['email']) || mail_transport_name() !== 'smtp') return false;
+    // With no way to deliver a code (no SMTP and no SMS), two-step sign-in stays off rather than locking everyone out.
+    if (!two_factor_channels($user)) return false;
     if ((int) ($user['two_factor_enabled'] ?? 0) === 1 && setting_bool('feature_two_factor', true)) return true;
     $platform = fetchOne("SELECT require_2fa FROM platform_settings WHERE id = 1");
     return $platform && (int) $platform['require_2fa'] === 1 && in_array($user['role'], ['super_admin', 'city_admin', 'government'], true);
+}
+
+/**
+ * Sends a fresh 6-digit code for the sign-in waiting in $_SESSION['pending_2fa'], by the person's chosen channel,
+ * falling back to the other one when the first fails. Records where it went, for the code page.
+ */
+function two_factor_send_code(array $user): bool {
+    $code = (string) random_int(100000, 999999);
+    $_SESSION['pending_2fa'] = array_merge($_SESSION['pending_2fa'] ?? [], ['user_id' => (int) $user['id'],
+        'code_hash' => password_hash($code, PASSWORD_DEFAULT), 'expires' => time() + 600, 'tries' => 0]);
+    foreach (two_factor_channels($user) as $channel) {
+        $sent = $channel === 'sms'
+            ? send_template_sms('two_factor_code', $user['phone'], ['code' => $code])
+            : send_template_email('two_factor_code', $user['email'], ['name' => $user['name'], 'code' => $code]);
+        if ($sent) {
+            $_SESSION['pending_2fa']['channel'] = $channel;
+            $_SESSION['pending_2fa']['hint'] = $channel === 'sms' ? sms_phone_hint((string) $user['phone']) : preg_replace('/(?<=.).(?=[^@]*@)/', '•', (string) $user['email']);
+            return true;
+        }
+    }
+    $_SESSION['pending_2fa']['channel'] = 'none';
+    return false;
 }
 
 /** Second step of two-step sign-in. */
@@ -156,7 +189,7 @@ function verify_login_code(string $code): array {
     if (!$p || $p['expires'] < time()) { unset($_SESSION['pending_2fa']); return ['ok' => false, 'error' => 'The code expired. Sign in again to get a new one.', 'restart' => true]; }
     if ($p['tries'] >= 5) { unset($_SESSION['pending_2fa']); return ['ok' => false, 'error' => 'Too many wrong codes. Sign in again.', 'restart' => true]; }
     $_SESSION['pending_2fa']['tries']++;
-    if (!preg_match('/^\d{6}$/', $code) || !password_verify($code, $p['code_hash'])) return ['ok' => false, 'error' => 'That code is not right. Check the latest email and try again.'];
+    if (!preg_match('/^\d{6}$/', $code) || !password_verify($code, $p['code_hash'])) return ['ok' => false, 'error' => 'That code is not right. Check the latest ' . (($p['channel'] ?? '') === 'sms' ? 'text message' : 'email') . ' and try again.'];
     $user = fetchOne("SELECT * FROM users WHERE id = ? AND status = 'active' AND deleted_at IS NULL", [$p['user_id']]);
     unset($_SESSION['pending_2fa']);
     if (!$user) return ['ok' => false, 'error' => 'This account is no longer active.', 'restart' => true];

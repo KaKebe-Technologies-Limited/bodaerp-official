@@ -2,7 +2,7 @@
 // BodaERP: automatic schema sync
 // ("change it locally, the server follows")
 // 1. On your own computer the app watches the local database. Whenever tables, columns or indexes change:
-// however they changed (phpMyAdmin, a migration, Claude): their structure (never data) is saved to
+// however they changed (phpMyAdmin, a migration or a script): their structure (never data) is saved to
 // database/schema.snapshot.json. Commit that file with your code. 2. Any other copy of the app (the live
 // server, a teammate's laptop) compares the snapshot with its own database on the first request after the
 // new code arrives and ADDS whatever is missing: tables, columns, indexes, foreign keys, plus safe
@@ -35,8 +35,6 @@ function schema_ignored_table(string $t): bool {
     if ($t === 'schema_migrations' || in_array($t, $extra, true)) return true;
     return (bool) preg_match('/^(tmp|temp|bak|backup|old|zz)_|_(bak|backup|old|tmp)$/i', $t);
 }
-
-// Reading structure
 
 /** Splits the text of SHOW CREATE TABLE into columns / indexes / foreign keys / checks / options. */
 function schema_parse_create(string $sql): array {
@@ -99,8 +97,6 @@ function schema_unsupported_objects(?mysqli $db = null): array {
     ];
 }
 
-// Snapshot file
-
 function schema_snapshot_build(?mysqli $db = null): array {
     $db = $db ?? db();
     $tables = [];
@@ -136,7 +132,7 @@ function schema_snapshot_load(): ?array {
     $path = schema_snapshot_path();
     if (!is_file($path)) return null;
     $snapshot = json_decode((string) @file_get_contents($path), true);
-    return (is_array($snapshot) && isset($snapshot['tables']) && is_array($snapshot['tables'])) ? $data : null;
+    return (is_array($snapshot) && isset($snapshot['tables']) && is_array($snapshot['tables'])) ? $snapshot : null;
 }
 
 function schema_snapshot_md5(): ?string {
@@ -410,8 +406,6 @@ function schema_last_failure(): ?array {
     $st = schema_state_load();
     return ($st && !empty($st['failed'])) ? $st : null;
 }
-
-// Local auto-save of the snapshot
 
 /** Auto-save is only ever active on a developer machine, from the machine itself. */
 function schema_capture_possible(): bool {

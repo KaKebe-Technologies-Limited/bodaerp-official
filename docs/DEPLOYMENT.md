@@ -84,7 +84,43 @@ renewal reminders and the contact-form messages. Every template is editable at S
    contact-form messages.
 
 Without SMTP nothing is lost: each email is saved to `storage/mail/` and listed in the Sent log, but nobody
-receives it, and two-step sign-in stays off (the yellow banner on the Email Templates page says so).
+receives it, and sign-in codes by email stay off (the yellow banner on the Email Templates page says so).
+
+## SMS (EgoSMS)
+
+Riders get payment receipts, renewal reminders, overdue notices and reminders pressed by their chairperson by text
+message, and staff can choose to get their sign-in codes by SMS instead of email.
+
+1. Open an account at egosms.co and ask for a sender ID (at most 11 characters, for example `BodaERP`).
+2. Put `EGOSMS_USERNAME`, `EGOSMS_PASSWORD` and `EGOSMS_SENDER` in the server's `.env`. `EGOSMS_MODE` stays
+   `sandbox` until you have tested; then set `EGOSMS_MODE=live`.
+3. Super Admin → SMS → *Send test SMS* to your own phone. The same page shows the balance, every message sent
+   (last three digits of the number only) and the wording of each message, per language.
+
+Without the EgoSMS details nothing is sent: each message is saved to `storage/sms/` and listed in the log, and
+codes by SMS cannot be chosen. A chairperson's "Send reminder" texts a rider at most once a day.
+
+## USSD renewal (optional)
+
+Riders without a smartphone can renew by dialling a code. EgoSMS does not sell USSD codes, so the code comes from
+a USSD provider (for example Africa's Talking). The provider calls `https://your-domain/ussd.php?token=<USSD_TOKEN>`
+with the usual form fields (`sessionId`, `phoneNumber`, `text`); BodaERP answers `CON` / `END`.
+
+1. Generate a token (`php -r "echo bin2hex(random_bytes(24));"`) and put it in `.env` as `USSD_TOKEN`.
+   Optionally list the provider's addresses in `USSD_ALLOWED_IPS`.
+2. Give the provider the URL above with that token.
+3. When the code is live, enter it in Super Admin → Site Text & Branding → General → `ussd_code`; SMS reminders
+   then mention it.
+
+The menu: *1. Renew a permit* (the caller's own permit, or any permit number) and *2. Check my permit*. Paying
+starts an ordinary ioTec mobile-money request that the caller approves with their PIN, and the receipt comes by
+SMS. Callers only ever see a masked name and the amount.
+
+## Off-server backups
+
+The nightly backup can also be emailed to an address outside the server: Super Admin → Site Text & Branding →
+General → `backup_email`. Only encrypted backups are emailed, so set `BACKUP_KEY` first, and keep that key
+somewhere other than the mailbox. Files over 18 MB are not emailed (most mail servers refuse them).
 
 ## Mobile-money payments (ioTec)
 

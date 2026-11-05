@@ -18,7 +18,7 @@ $statusColor = $statusColors[$rider['status']] ?? '#6c757d';
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <?php $pageTitle = 'ID Card Preview | BodaERP'; require __DIR__ . '/../../partials/head-assets.php'; ?>
+    <?php $pageTitle = 'ID card preview | ' . get_setting('site_name', 'BodaERP'); require __DIR__ . '/../../partials/head-assets.php'; ?>
     <style>
         .id-card { width: 3.375in; height: 2.125in; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 12px 34px rgba(0,0,0,0.18); margin: 0 auto 20px; display: flex; flex-direction: column; border: 1px solid rgba(0,0,0,0.08); position: relative; }
 
@@ -46,7 +46,7 @@ $statusColor = $statusColors[$rider['status']] ?? '#6c757d';
 
         .id-fields-col { flex: 1; min-width: 0; padding: 5px 7px; display: flex; flex-direction: column; justify-content: center; gap: 3.5px; position: relative; background-image: repeating-linear-gradient(135deg, rgba(143,20,36,0.05) 0px, rgba(143,20,36,0.05) 1px, transparent 1px, transparent 7px); }
         .id-field { line-height: 1.15; position: relative; z-index: 1; }
-        .id-field .field-label { font-size: 0.22rem; color: #9aa2ab; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700; }
+        .id-field .field-label { font-size: 0.22rem; color: #5f6b7a; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700; }
         .id-field .field-value { font-size: 0.36rem; color: #1a1a2e; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
         .id-qr-col { width: 26%; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; padding: 4px; position: relative; }
@@ -61,9 +61,9 @@ $statusColor = $statusColors[$rider['status']] ?? '#6c757d';
         .id-footer { position: relative; z-index: 1; display: flex; align-items: flex-end; justify-content: space-between; gap: 4px; padding: 3px 8px; background: #f8f9fa; border-top: 1px solid #eee; flex-shrink: 0; }
         .id-sig { display: flex; flex-direction: column; align-items: flex-start; min-width: 0; }
         .id-sig .sig-line { font-family: 'Brush Script MT', cursive; font-size: 0.5rem; color: #001740; line-height: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 120px; }
-        .id-sig .sig-label { font-size: 0.24rem; color: #9aa2ab; text-transform: uppercase; letter-spacing: 0.3px; border-top: 1px solid #ccc; padding-top: 1px; margin-top: 1px; }
+        .id-sig .sig-label { font-size: 0.24rem; color: #5f6b7a; text-transform: uppercase; letter-spacing: 0.3px; border-top: 1px solid #ccc; padding-top: 1px; margin-top: 1px; }
         .id-expiry { text-align: right; flex-shrink: 0; }
-        .id-expiry .expiry-label { font-size: 0.24rem; color: #9aa2ab; text-transform: uppercase; letter-spacing: 0.3px; }
+        .id-expiry .expiry-label { font-size: 0.24rem; color: #5f6b7a; text-transform: uppercase; letter-spacing: 0.3px; }
         .id-expiry .expiry-date { font-size: 0.38rem; font-weight: 800; color: #8f1424; }
 
         /* back of card: centered return-to-authority notice */
@@ -73,7 +73,7 @@ $statusColor = $statusColors[$rider['status']] ?? '#6c757d';
         .id-back-body .back-statement { font-size: 0.32rem; font-weight: 700; color: #1a1a2e; line-height: 1.3; max-width: 92%; }
         .id-back-body .back-return-label { font-size: 0.25rem; color: #8f1424; font-weight: 800; text-transform: uppercase; letter-spacing: 0.6px; margin-top: 2px; }
         .id-back-body .back-contact { font-size: 0.29rem; color: #333; line-height: 1.45; }
-        .id-back-body .back-terms { font-size: 0.23rem; color: #9aa2ab; margin-top: 3px; }
+        .id-back-body .back-terms { font-size: 0.23rem; color: #5f6b7a; margin-top: 3px; }
 
         /* enlarge / preview */
         .id-stage { position: relative; display: inline-block; }
@@ -101,7 +101,7 @@ $statusColor = $statusColors[$rider['status']] ?? '#6c757d';
 <?php require __DIR__ . '/../../partials/sidebar-chairperson.php'; ?>
 
 <div class="main-content" id="mainContent">
-    <?php $pageTitle = 'ID Card Preview'; require __DIR__ . '/../../partials/topheader.php'; ?>
+    <?php $pageTitle = 'ID card preview'; require __DIR__ . '/../../partials/topheader.php'; ?>
 
     <div class="content-area text-center">
         <div class="id-stage">
@@ -109,10 +109,10 @@ $statusColor = $statusColors[$rider['status']] ?? '#6c757d';
             <div class="id-card">
                 <div class="id-watermark"><span><?= h(strtoupper($city['name'])) ?></span></div>
                 <div class="id-header">
-                    <div class="id-crest"><img src="<?= h(BASE_URL . $city['logo_path']) ?>" data-hide-broken></div>
+                    <div class="id-crest"><img alt="<?= h($city['name'] ?? 'City') ?> crest" src="<?= h(BASE_URL . $city['logo_path']) ?>" data-hide-broken></div>
                     <div class="id-header-text">
                         <div class="entity-name"><?= h(strtoupper($city['name'])) ?></div>
-                        <div class="doc-type">Boda Boda Operator License</div>
+                        <div class="doc-type">Boda boda operator license</div>
                     </div>
                     <div class="id-header-right">
                         <div class="doc-code"><?= h($city['id_prefix']) ?></div>
@@ -122,7 +122,7 @@ $statusColor = $statusColors[$rider['status']] ?? '#6c757d';
                 <div class="id-main">
                     <div class="id-photo-col">
                         <div class="photo-frame">
-                            <img src="<?= $rider['photo_path'] ? h(BASE_URL.$rider['photo_path']) : BASE_URL.'/assets/images/avatar-placeholder.png' ?>">
+                            <img alt="Photo of <?= h($rider['full_name']) ?>" src="<?= $rider['photo_path'] ? h(BASE_URL.$rider['photo_path']) : BASE_URL.'/assets/images/avatar-placeholder.png' ?>">
                             <div class="photo-flag"><?= h($city['id']) ?></div>
                         </div>
                         <div class="plate-badge"><?= h($rider['bike_plate']) ?></div>
@@ -130,7 +130,7 @@ $statusColor = $statusColors[$rider['status']] ?? '#6c757d';
                     </div>
                     <div class="id-fields-col">
                         <div class="id-field"><div class="field-label">Name</div><div class="field-value"><?= h($rider['full_name']) ?></div></div>
-                        <div class="id-field"><div class="field-label">Date of Birth</div><div class="field-value"><?= formatDate($rider['date_of_birth']) ?></div></div>
+                        <div class="id-field"><div class="field-label">Date of birth</div><div class="field-value"><?= formatDate($rider['date_of_birth']) ?></div></div>
                         <div class="id-field"><div class="field-label">Gender</div><div class="field-value"><?= h($rider['gender'] ?: '–') ?></div></div>
                         <div class="id-field"><div class="field-label">Stage</div><div class="field-value"><?= h($rider['stage_name']) ?></div></div>
                         <div class="id-field"><div class="field-label">Address</div><div class="field-value"><?= h($rider['physical_address'] ?: '–') ?></div></div>
@@ -139,8 +139,8 @@ $statusColor = $statusColors[$rider['status']] ?? '#6c757d';
                     <div class="id-qr-col">
                         <div class="id-holo"></div>
                         <div class="qr-title">Verify</div>
-                        <div class="qr-wrap" id="qrFront">
-                            <div class="qr-center-badge"><img src="<?= h(BASE_URL . $city['logo_path']) ?>" data-hide-broken></div>
+                        <div class="qr-wrap" id="qrFront" role="img" aria-label="QR code that verifies this permit">
+                            <div class="qr-center-badge"><img alt="" src="<?= h(BASE_URL . $city['logo_path']) ?>" data-hide-broken></div>
                         </div>
                         <div class="qr-caption">Scan to confirm</div>
                     </div>
@@ -151,7 +151,7 @@ $statusColor = $statusColors[$rider['status']] ?? '#6c757d';
                         <div class="sig-label">Issued By</div>
                     </div>
                     <div class="id-expiry">
-                        <div class="expiry-label">Valid Until</div>
+                        <div class="expiry-label">Valid until</div>
                         <div class="expiry-date"><?= formatDate($rider['expiry_date']) ?></div>
                     </div>
                 </div>
@@ -163,12 +163,12 @@ $statusColor = $statusColors[$rider['status']] ?? '#6c757d';
             <div class="id-card">
                 <div class="id-watermark"><span><?= h(strtoupper($city['name'])) ?></span></div>
                 <div class="id-header">
-                    <div class="id-header-text"><div class="entity-name">If Found, Please Return</div></div>
+                    <div class="id-header-text"><div class="entity-name">If found, please return</div></div>
                 </div>
                 <div class="id-back-body">
-                    <div class="back-crest"><img src="<?= h(BASE_URL . $city['logo_path']) ?>" data-hide-broken></div>
+                    <div class="back-crest"><img alt="" src="<?= h(BASE_URL . $city['logo_path']) ?>" data-hide-broken></div>
                     <div class="back-statement">This card is the property of <?= h($city['name']) ?> and must be surrendered on request.</div>
-                    <div class="back-return-label">Return To The Issuing Authority</div>
+                    <div class="back-return-label">Return to the issuing authority</div>
                     <div class="back-contact">
                         <?= h($city['name']) ?> Council<br>
                         <?= h($city['address'] ?: 'Uganda') ?><br>
@@ -180,9 +180,9 @@ $statusColor = $statusColors[$rider['status']] ?? '#6c757d';
         </div>
 
         <div class="mt-2">
-            <button class="btn btn-primary" data-print><i class="fas fa-print me-1"></i>Print ID Card</button>
-            <button class="btn btn-outline-dark" id="previewAllBtn"><i class="fas fa-magnifying-glass-plus me-1"></i>Preview / Enlarge</button>
-            <a href="<?= BASE_URL ?>/pages/chairperson/rider-profile.php?id=<?= $riderId ?>" class="btn btn-outline-secondary">Back to Profile</a>
+            <button class="btn btn-primary" data-print><i class="fas fa-print me-1"></i>Print ID card</button>
+            <button class="btn btn-outline-dark" id="previewAllBtn"><i class="fas fa-magnifying-glass-plus me-1"></i>Preview / enlarge</button>
+            <a href="<?= BASE_URL ?>/pages/chairperson/rider-profile.php?id=<?= $riderId ?>" class="btn btn-outline-secondary">Back to profile</a>
         </div>
     </div>
 </div>
@@ -197,8 +197,8 @@ $statusColor = $statusColors[$rider['status']] ?? '#6c757d';
 </div>
 
 <?php require __DIR__ . '/../../partials/scripts-footer.php'; ?>
-<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js" integrity="sha384-3zSEDfvllQohrq0PHL1fOXJuC/jSOO34H46t6UQfobFOmxE5BpjjaIJY5F2/bMnU" crossorigin="anonymous"></script>
-<script>
+<script src="<?= BASE_URL ?>/assets/vendor/qrcodejs/qrcode.min.js"></script>
+<script nonce="<?= csp_nonce() ?>">
     new QRCode(document.getElementById('qrFront'), {
         text: <?= js_json(verifyUrl((int) $rider['id'])) ?>,
         width: 160, height: 160,

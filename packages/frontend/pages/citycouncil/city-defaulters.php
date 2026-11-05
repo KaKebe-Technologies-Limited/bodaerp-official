@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../../../backend/auth.php';
+require_once __DIR__ . '/../../../backend/sms.php';
 require_role(['city_admin']);
 $active = 'city-defaulters';
 $cityId = $_SESSION['city_id'];
@@ -9,10 +10,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $riderId = (int) ($_POST['rider_id'] ?? 0);
     $rider = fetchOne("SELECT id, user_id, full_name FROM riders WHERE id = ? AND city_id = ?", [$riderId, $cityId]);
     if ($rider) {
-        if ($rider['user_id']) {
-            runQuery("INSERT INTO notifications (rider_id, type, message) VALUES (?, 'Renewal Reminder', ?)",
-                [$rider['id'], 'Your annual tax is overdue. Please renew to remain compliant.']);
-        }
+        flash('success', rider_send_reminder((int) $rider['id'], 'Your permit has expired. Renew it with your stage chairperson to keep riding legally.'));
         audit_log('CREATE', 'reminder', (string) $riderId, 'Reminder sent to ' . $rider['full_name']);
     }
     redirect('/pages/citycouncil/city-defaulters.php');
@@ -39,7 +37,7 @@ $amountOwed = array_sum(array_map(fn($d) => (float) $d['annual_tax'], $defaulter
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <?php $pageTitle = 'City Defaulters | BodaERP'; require __DIR__ . '/../../partials/head-assets.php'; ?>
+    <?php $pageTitle = 'City defaulters | ' . get_setting('site_name', 'BodaERP'); require __DIR__ . '/../../partials/head-assets.php'; ?>
     <style>
     </style>
 </head>
@@ -55,17 +53,17 @@ $amountOwed = array_sum(array_map(fn($d) => (float) $d['annual_tax'], $defaulter
 
     <div class="content-area">
         <div class="row g-3 mb-4">
-            <div class="col-md-3 col-6"><div class="stat-hero-card tone-red"><div class="stat-hero-icon"><i class="fas fa-exclamation-triangle"></i></div><div><div class="stat-hero-value"><?= number_format($totalDefaulters) ?></div><div class="stat-hero-label">Total Defaulters</div></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card tone-red"><div class="stat-hero-icon"><i class="fas fa-exclamation-triangle"></i></div><div><div class="stat-hero-value"><?= number_format($totalDefaulters) ?></div><div class="stat-hero-label">Total defaulters</div></div></div></div>
             <div class="col-md-3 col-6"><div class="stat-hero-card tone-red"><div class="stat-hero-icon"><i class="fas fa-fire"></i></div><div><div class="stat-hero-value"><?= number_format($critical) ?></div><div class="stat-hero-label">Critical (&gt;90 days)</div></div></div></div>
             <div class="col-md-3 col-6"><div class="stat-hero-card tone-gold"><div class="stat-hero-icon"><i class="fas fa-clock"></i></div><div><div class="stat-hero-value"><?= number_format($warning) ?></div><div class="stat-hero-label">Warning</div></div></div></div>
-            <div class="col-md-3 col-6"><div class="stat-hero-card tone-blue"><div class="stat-hero-icon"><i class="fas fa-money-bill-wave"></i></div><div><div class="stat-hero-value"><?= h(formatCurrency($amountOwed)) ?></div><div class="stat-hero-label">Amount Owed</div></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card tone-blue"><div class="stat-hero-icon"><i class="fas fa-money-bill-wave"></i></div><div><div class="stat-hero-value"><?= h(formatCurrency($amountOwed)) ?></div><div class="stat-hero-label">Amount owed</div></div></div></div>
         </div>
 
         <div class="card mb-3 no-print">
             <div class="card-body">
                 <form class="row g-2 align-items-center">
                     <div class="col-md-4">
-                        <select class="form-select" name="stage" data-autosubmit>
+                        <select aria-label="Filter by stage" class="form-select" name="stage" data-autosubmit>
                             <option value="">All Stages</option>
                             <?php foreach ($stages as $s): ?><option value="<?= (int)$s['id'] ?>" <?= $stageFilter===(int)$s['id']?'selected':'' ?>><?= h($s['name']) ?></option><?php endforeach; ?>
                         </select>
@@ -82,7 +80,7 @@ $amountOwed = array_sum(array_map(fn($d) => (float) $d['annual_tax'], $defaulter
             <div class="card-body p-0">
                 <div class="table-responsive">
                     <table class="table table-hover mb-0" id="defaultersTable">
-                        <thead><tr><th>#</th><th>Rider</th><th>Plate</th><th>Stage</th><th>Phone</th><th>Amount</th><th>Last Payment</th><th>Overdue</th><th>Status</th><th class="no-export">Actions</th></tr></thead>
+                        <thead><tr><th>#</th><th>Rider</th><th>Plate</th><th>Stage</th><th>Phone</th><th>Amount</th><th>Last payment</th><th>Overdue</th><th>Status</th><th class="no-export">Actions</th></tr></thead>
                         <tbody>
                         <?php if (!$defaulters): ?>
                             <tr><td colspan="10"><div class="empty-state" style="padding:36px 20px;"><i class="fas fa-inbox"></i><h5>No defaulters: great compliance!</h5></div></td></tr>

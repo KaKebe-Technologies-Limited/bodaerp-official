@@ -4,6 +4,7 @@
 // entry. Safe to call twice for the same payment: only the first call that moves it out of Pending has any
 // effect.
 require_once __DIR__ . '/auth.php';
+require_once __DIR__ . '/sms.php';
 
 const PAYMENT_METHODS = ['Cash', 'Mobile Money', 'Bank Transfer'];
 
@@ -37,15 +38,14 @@ function payment_confirm(int $paymentId, string $actorLabel = 'System (ioTec Pay
         runQuery("UPDATE riders SET status = 'active',
                     expiry_date = DATE_ADD(GREATEST(COALESCE(expiry_date, CURDATE()), CURDATE()), INTERVAL 1 YEAR)
                   WHERE id = ?", [$payment['rider_id']]);
-        runQuery("INSERT INTO notifications (rider_id, type, message) VALUES (?, 'Payment Confirmed', ?)",
-            [$payment['rider_id'], 'Your permit payment of ' . formatCurrency($payment['amount']) . " was confirmed. Receipt $receipt."]);
+        rider_notify((int) $payment['rider_id'], 'Payment Confirmed', 'Your permit payment of ' . formatCurrency($payment['amount']) . " was confirmed. Receipt $receipt.");
         $db->commit();
     } catch (Throwable $e) {
         $db->rollback();
         throw $e;
     }
 
-    $rider = fetchOne("SELECT r.full_name, r.email, r.expiry_date, r.city_id, u.email AS account_email, u.notify_email
+    $rider = fetchOne("SELECT r.full_name, r.id_number, r.email, r.expiry_date, r.city_id, u.email AS account_email, u.notify_email
         FROM riders r LEFT JOIN users u ON u.id = r.user_id WHERE r.id = ?", [$payment['rider_id']]);
     runQuery("INSERT INTO audit_logs (user_id,user_name_snapshot,role_snapshot,city_id,action,entity_type,entity_id,details,ip_address)
               VALUES (:uid,:name,:role,:city,'PAYMENT_CONFIRMED','payment',:pid,:details,:ip)", [
@@ -62,6 +62,10 @@ function payment_confirm(int $paymentId, string $actorLabel = 'System (ioTec Pay
             'portal_url' => app_url('pages/rider/payment-history.php'),
         ]);
     }
+    if ($sms = rider_sms_target((int) $payment['rider_id'])) {
+        send_template_sms('payment_receipt', $sms['phone'], ['amount' => formatCurrency($payment['amount']), 'receipt_number' => $receipt,
+            'id_number' => $rider['id_number'], 'expiry_date' => formatDate($rider['expiry_date'])], $sms['language']);
+    }
     return true;
 }
 
@@ -69,21 +73,24 @@ function payment_mark_failed(int $paymentId, string $reason = 'declined or cance
     if (runQuery("UPDATE payments SET status = 'Failed' WHERE id = ? AND status = 'Pending'", [$paymentId])->affected_rows !== 1) return;
     $p = fetchOne("SELECT p.amount, p.rider_id, r.full_name, r.email, u.email AS account_email, u.notify_email
         FROM payments p JOIN riders r ON r.id = p.rider_id LEFT JOIN users u ON u.id = r.user_id WHERE p.id = ?", [$paymentId]);
-    if ($p) runQuery("INSERT INTO notifications (rider_id, type, message) VALUES (?, 'Payment Failed', ?)",
-        [$p['rider_id'], 'Your mobile-money payment of ' . formatCurrency($p['amount']) . " was not completed ($reason). No money was taken."]);
+    if ($p) rider_notify((int) $p['rider_id'], 'Payment Failed', 'Your mobile-money payment of ' . formatCurrency($p['amount']) . " was not completed ($reason). No money was taken.");
     $to = $p ? ($p['account_email'] ?: $p['email']) : null;
     if ($to && ($p['notify_email'] === null || (int) $p['notify_email'] === 1)) {
         send_template_email('payment_failed', $to, ['name' => $p['full_name'], 'amount' => formatCurrency($p['amount']), 'reason' => $reason,
             'portal_url' => app_url('pages/rider/renewal-status.php')]);
+    }
+    if ($p && ($sms = rider_sms_target((int) $p['rider_id']))) {
+        send_template_sms('payment_failed', $sms['phone'], ['amount' => formatCurrency($p['amount']), 'reason' => $reason], $sms['language']);
     }
 }
 
 /** Records a cash/bank payment taken by a chairperson and confirms it. Returns the receipt number. */
 function record_manual_payment(array $rider, string $method, ?int $collectedBy): string {
     if (!in_array($method, PAYMENT_METHODS, true)) $method = 'Cash';
-    runQuery("INSERT INTO payments (rider_id, city_id, amount, payment_method, receipt_number, status, fiscal_year, paid_at, collected_by)
-              VALUES (?,?,?,?,?,'Pending',?,NOW(),?)",
-        [$rider['id'], $rider['city_id'], (float) $rider['annual_tax'], $method, 'TMP-' . bin2hex(random_bytes(6)), current_fiscal_year(), $collectedBy]);
+    $due = permit_amount_due($rider);
+    runQuery("INSERT INTO payments (rider_id, city_id, amount, late_fee, payment_method, channel, receipt_number, status, fiscal_year, paid_at, collected_by)
+              VALUES (?,?,?,?,?,'stage',?,'Pending',?,NOW(),?)",
+        [$rider['id'], $rider['city_id'], $due['total'], $due['late_fee'], $method, 'TMP-' . bin2hex(random_bytes(6)), current_fiscal_year(), $collectedBy]);
     $paymentId = (int) db()->insert_id;
     payment_confirm($paymentId, $_SESSION['name'] ?? 'Chairperson');
     return nextReceiptNumber($paymentId);

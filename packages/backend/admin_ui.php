@@ -9,7 +9,7 @@ require_once __DIR__ . '/auth.php';
  */
 function portal_start(string $sidebar, string $active, string $title, array $opts = []): void {
     $opts += ['subtitle' => '', 'breadcrumbs' => [], 'actions' => '', 'head' => ''];
-    $pageTitle = $title . ' - ' . get_setting('site_name', 'BodaERP');
+    $pageTitle = $title . ' | ' . get_setting('site_name', 'BodaERP');
     echo "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n";
     require __DIR__ . '/../frontend/partials/head-assets.php';
     echo $opts['head'] . "\n</head>\n<body>\n";

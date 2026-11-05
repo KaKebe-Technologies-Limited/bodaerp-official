@@ -82,6 +82,15 @@ function settings_all(bool $reload = false): array {
     return $all;
 }
 
+/**
+ * For probes that fall back to a default when a table is missing (first install, a migration not yet run):
+ * the fallback keeps the page working, and this records why, so a real database fault is still visible.
+ */
+function db_probe_failed(string $what, Throwable $e): void {
+    $message = "$what unavailable, using the default: " . $e->getMessage();
+    if (function_exists('app_log')) app_log('db', $message); else error_log('BodaERP ' . $message);
+}
+
 function get_setting(string $key, string $default = ''): string {
     $all = settings_all();
     return array_key_exists($key, $all) && $all[$key] !== '' ? $all[$key] : $default;

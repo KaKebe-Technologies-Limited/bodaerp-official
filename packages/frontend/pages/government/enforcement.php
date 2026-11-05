@@ -36,12 +36,17 @@ $repeatOffenders = fetchAll("SELECT r.id, r.full_name, r.bike_plate, c.name AS c
     LEFT JOIN cities c ON c.id = r.city_id
     GROUP BY r.id HAVING action_count > 1 ORDER BY action_count DESC LIMIT 10");
 
+// Roadside checks: counts per city only, so no rider or officer is identified in the national view.
+$checksByCity = fetchAll("SELECT c.name, COUNT(pc.id) AS checks, COALESCE(SUM(pc.status_seen <> 'active'), 0) AS not_valid, COALESCE(SUM(pc.outcome = 'impounded'), 0) AS impounded
+    FROM cities c LEFT JOIN permit_checks pc ON pc.city_id = c.id AND pc.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+    GROUP BY c.id ORDER BY checks DESC, c.name");
+
 $agencyLabel = $_SESSION['agency_name'] ?? 'Government Portal';
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <?php $pageTitle = 'National Enforcement | BodaERP'; require __DIR__ . '/../../partials/head-assets.php'; ?>
+    <?php $pageTitle = 'National enforcement | ' . get_setting('site_name', 'BodaERP'); require __DIR__ . '/../../partials/head-assets.php'; ?>
 </head>
 <body>
 
@@ -56,17 +61,29 @@ $agencyLabel = $_SESSION['agency_name'] ?? 'Government Portal';
     <div class="content-area">
 
         <div class="row g-3 row-cols-2 row-cols-xl-4 mb-4">
-            <div class="col"><div class="stat-hero-card tone-red"><div class="stat-hero-icon"><i class="fas fa-gavel"></i></div><div><div class="stat-hero-value"><?= number_format($totalActions) ?></div><div class="stat-hero-label">Total Actions</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-red"><div class="stat-hero-icon"><i class="fas fa-gavel"></i></div><div><div class="stat-hero-value"><?= number_format($totalActions) ?></div><div class="stat-hero-label">Total actions</div></div></div></div>
             <div class="col"><div class="stat-hero-card tone-gold"><div class="stat-hero-icon"><i class="fas fa-hourglass-half"></i></div><div><div class="stat-hero-value"><?= number_format($totalPending) ?></div><div class="stat-hero-label">Pending</div></div></div></div>
-            <div class="col"><div class="stat-hero-card tone-dark"><div class="stat-hero-icon"><i class="fas fa-motorcycle"></i></div><div><div class="stat-hero-value"><?= number_format($totalImpounded) ?></div><div class="stat-hero-label">Bikes Impounded</div></div></div></div>
-            <div class="col"><div class="stat-hero-card tone-blue"><div class="stat-hero-icon"><i class="fas fa-money-bill-wave"></i></div><div><div class="stat-hero-value">UGX <?= number_format($totalFinesValue) ?></div><div class="stat-hero-label">Fines Issued</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-dark"><div class="stat-hero-icon"><i class="fas fa-motorcycle"></i></div><div><div class="stat-hero-value"><?= number_format($totalImpounded) ?></div><div class="stat-hero-label">Bikes impounded</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-blue"><div class="stat-hero-icon"><i class="fas fa-money-bill-wave"></i></div><div><div class="stat-hero-value">UGX <?= number_format($totalFinesValue) ?></div><div class="stat-hero-label">Fines issued</div></div></div></div>
         </div>
+
+        <div class="card mb-4"><div class="card-body">
+            <h2 class="section-title">Roadside permit checks, last 30 days</h2>
+            <p class="small text-muted">Recorded when city staff or chairpersons scan a rider's ID card. The share of cards that were not valid shows compliance on the road, not only in the register.</p>
+            <div class="table-responsive"><table class="table table-sm align-middle mb-0">
+                <thead><tr><th scope="col">City</th><th scope="col" class="text-end">Checks</th><th scope="col" class="text-end">Not valid</th><th scope="col" class="text-end">Share not valid</th><th scope="col" class="text-end">Impounded</th></tr></thead>
+                <tbody><?php foreach ($checksByCity as $row): ?>
+                    <tr><td><?= h($row['name']) ?></td><td class="text-end"><?= (int) $row['checks'] ?></td><td class="text-end"><?= (int) $row['not_valid'] ?></td>
+                        <td class="text-end"><?= (int) $row['checks'] ? round(100 * (int) $row['not_valid'] / (int) $row['checks']) . '%' : '<span class="text-muted">No checks</span>' ?></td><td class="text-end"><?= (int) $row['impounded'] ?></td></tr>
+                <?php endforeach; ?></tbody>
+            </table></div>
+        </div></div>
 
         <div class="row g-3 g-md-4 mb-4">
             <div class="col-xl-5">
                 <div class="card h-100">
                     <div class="card-body">
-                        <h6 class="section-heading mb-3">Violations by Type</h6>
+                        <h6 class="section-heading mb-3">Violations by type</h6>
                         <div id="typeChart"></div>
                     </div>
                 </div>
@@ -74,7 +91,7 @@ $agencyLabel = $_SESSION['agency_name'] ?? 'Government Portal';
             <div class="col-xl-7">
                 <div class="card h-100">
                     <div class="card-body">
-                        <h6 class="section-heading mb-3">Enforcement Actions by City</h6>
+                        <h6 class="section-heading mb-3">Enforcement actions by city</h6>
                         <div id="cityChart"></div>
                     </div>
                 </div>
@@ -85,7 +102,7 @@ $agencyLabel = $_SESSION['agency_name'] ?? 'Government Portal';
             <div class="col-lg-6">
                 <div class="card h-100">
                     <div class="card-body">
-                        <h6 class="fw-bold mb-3">Repeat Offenders</h6>
+                        <h6 class="fw-bold mb-3">Repeat offenders</h6>
                         <?php if (!$repeatOffenders): ?>
                             <p class="text-muted small mb-0">No repeat offenders recorded.</p>
                         <?php else: ?>
@@ -108,7 +125,7 @@ $agencyLabel = $_SESSION['agency_name'] ?? 'Government Portal';
             <div class="col-lg-6">
                 <div class="card h-100">
                     <div class="card-body">
-                        <h6 class="fw-bold mb-3">Violation Type Breakdown</h6>
+                        <h6 class="fw-bold mb-3">Violation type breakdown</h6>
                         <?php $typeIcons = ['warning'=>['fa-exclamation-circle','warning'],'fine'=>['fa-money-bill-wave','danger'],'suspension'=>['fa-ban','dark'],'impound'=>['fa-motorcycle','danger']]; ?>
                         <?php foreach (['warning','fine','suspension','impound'] as $t): [$icon, $color] = $typeIcons[$t]; ?>
                             <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
@@ -124,17 +141,17 @@ $agencyLabel = $_SESSION['agency_name'] ?? 'Government Portal';
         <div class="card">
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-                    <h6 class="fw-bold mb-0">All Enforcement Actions</h6>
+                    <h6 class="fw-bold mb-0">All enforcement actions</h6>
                     <form class="d-flex gap-2 flex-wrap" method="get">
-                        <select class="form-select form-select-sm" style="width:auto;" name="city" data-autosubmit>
+                        <select aria-label="Filter by city" class="form-select form-select-sm" style="width:auto;" name="city" data-autosubmit>
                             <option value="">All Cities</option>
                             <?php foreach ($cities as $c): ?><option value="<?= h($c['id']) ?>" <?= $filterCity === $c['id'] ? 'selected' : '' ?>><?= h($c['name']) ?></option><?php endforeach; ?>
                         </select>
-                        <select class="form-select form-select-sm" style="width:auto;" name="type" data-autosubmit>
+                        <select aria-label="Filter by type" class="form-select form-select-sm" style="width:auto;" name="type" data-autosubmit>
                             <option value="">All Types</option>
                             <?php foreach (['warning','fine','suspension','impound'] as $t): ?><option value="<?= $t ?>" <?= $filterType === $t ? 'selected' : '' ?>><?= ucfirst($t) ?></option><?php endforeach; ?>
                         </select>
-                        <select class="form-select form-select-sm" style="width:auto;" name="status" data-autosubmit>
+                        <select aria-label="Filter by status" class="form-select form-select-sm" style="width:auto;" name="status" data-autosubmit>
                             <option value="">All Status</option>
                             <?php foreach (['pending','resolved','closed'] as $s): ?><option value="<?= $s ?>" <?= $filterStatus === $s ? 'selected' : '' ?>><?= ucfirst($s) ?></option><?php endforeach; ?>
                         </select>
@@ -143,7 +160,7 @@ $agencyLabel = $_SESSION['agency_name'] ?? 'Government Portal';
                 </div>
                 <div class="table-responsive">
                     <table class="table table-hover table-sm align-middle" id="enforcementTable">
-                        <thead><tr><th>Code</th><th>Rider / Plate</th><th>City</th><th>Type</th><th>Amount</th><th>Date</th><th>Status</th></tr></thead>
+                        <thead><tr><th>Code</th><th>Rider / plate</th><th>City</th><th>Type</th><th>Amount</th><th>Date</th><th>Status</th></tr></thead>
                         <tbody>
                         <?php $typeColors = ['warning'=>'warning','fine'=>'danger','suspension'=>'dark','impound'=>'danger']; $statusColors = ['pending'=>'warning','resolved'=>'success','closed'=>'secondary']; ?>
                         <?php foreach ($actions as $a): ?>
@@ -151,10 +168,10 @@ $agencyLabel = $_SESSION['agency_name'] ?? 'Government Portal';
                                 <td><code><?= h($a['action_code']) ?></code></td>
                                 <td style="font-size:0.82rem;"><?= h($a['rider_name'] ?? '–') ?><br><small class="text-muted"><?= h($a['plate'] ?: '–') ?></small></td>
                                 <td style="font-size:0.82rem;"><?= h($a['city_name'] ?? '–') ?></td>
-                                <td><span class="badge bg-<?= $typeColors[$a['type']] ?? 'secondary' ?>" style="font-size:0.65rem;"><?= strtoupper($a['type']) ?></span></td>
+                                <td><span class="badge bg-<?= $typeColors[$a['type']] ?? 'secondary' ?>" style="font-size:0.65rem;"><?= h(ucfirst(str_replace('_', ' ', $a['type']))) ?></span></td>
                                 <td style="font-size:0.82rem;"><?= $a['amount'] ? 'UGX ' . number_format($a['amount']) : '–' ?></td>
                                 <td style="font-size:0.8rem;"><?= formatDate($a['action_date']) ?></td>
-                                <td><span class="badge bg-<?= $statusColors[$a['status']] ?? 'secondary' ?>"><?= strtoupper($a['status']) ?></span></td>
+                                <td><span class="badge bg-<?= $statusColors[$a['status']] ?? 'secondary' ?>"><?= h(ucfirst(str_replace('_', ' ', $a['status']))) ?></span></td>
                             </tr>
                         <?php endforeach; ?>
                         </tbody>
@@ -174,7 +191,7 @@ $agencyLabel = $_SESSION['agency_name'] ?? 'Government Portal';
 </div>
 
 <?php require __DIR__ . '/../../partials/scripts-footer.php'; ?>
-<script>
+<script nonce="<?= csp_nonce() ?>">
     new ApexCharts(document.querySelector('#typeChart'), {
         series: [<?= (int)($typeMap['warning'] ?? 0) ?>, <?= (int)($typeMap['fine'] ?? 0) ?>, <?= (int)($typeMap['suspension'] ?? 0) ?>, <?= (int)($typeMap['impound'] ?? 0) ?>],
         chart: { type: 'donut', height: 240, animations: { enabled: true } },

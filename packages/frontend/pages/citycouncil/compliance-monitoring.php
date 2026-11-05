@@ -16,7 +16,7 @@ $overallRate = $totalRiders ? round(100 * $activeRiders / $totalRiders) : 0;
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <?php $pageTitle = 'Compliance Monitoring | BodaERP'; require __DIR__ . '/../../partials/head-assets.php'; ?>
+    <?php $pageTitle = 'Compliance monitoring | ' . get_setting('site_name', 'BodaERP'); require __DIR__ . '/../../partials/head-assets.php'; ?>
     <style>
     </style>
 </head>
@@ -32,15 +32,15 @@ $overallRate = $totalRiders ? round(100 * $activeRiders / $totalRiders) : 0;
 
     <div class="content-area">
         <div class="row g-3 mb-4">
-            <div class="col-md-3 col-6"><div class="stat-hero-card tone-gold"><div class="stat-hero-icon"><i class="fas fa-check-circle"></i></div><div><div class="stat-hero-value"><?= $overallRate ?>%</div><div class="stat-hero-label">Compliance Rate</div></div></div></div>
-            <div class="col-md-3 col-6"><div class="stat-hero-card tone-green"><div class="stat-hero-icon"><i class="fas fa-user-check"></i></div><div><div class="stat-hero-value"><?= number_format($activeRiders) ?></div><div class="stat-hero-label">Compliant Riders</div></div></div></div>
-            <div class="col-md-3 col-6"><div class="stat-hero-card tone-red"><div class="stat-hero-icon"><i class="fas fa-exclamation-circle"></i></div><div><div class="stat-hero-value"><?= number_format($defaulters) ?></div><div class="stat-hero-label">Non-Compliant</div></div></div></div>
-            <div class="col-md-3 col-6"><div class="stat-hero-card tone-blue"><div class="stat-hero-icon"><i class="fas fa-map-marker-alt"></i></div><div><div class="stat-hero-value"><?= count($stages) ?></div><div class="stat-hero-label">Stages Monitored</div></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card tone-gold"><div class="stat-hero-icon"><i class="fas fa-check-circle"></i></div><div><div class="stat-hero-value"><?= $overallRate ?>%</div><div class="stat-hero-label">Compliance rate</div></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card tone-green"><div class="stat-hero-icon"><i class="fas fa-user-check"></i></div><div><div class="stat-hero-value"><?= number_format($activeRiders) ?></div><div class="stat-hero-label">Compliant riders</div></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card tone-red"><div class="stat-hero-icon"><i class="fas fa-exclamation-circle"></i></div><div><div class="stat-hero-value"><?= number_format($defaulters) ?></div><div class="stat-hero-label">Non-compliant</div></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card tone-blue"><div class="stat-hero-icon"><i class="fas fa-map-marker-alt"></i></div><div><div class="stat-hero-value"><?= count($stages) ?></div><div class="stat-hero-label">Stages monitored</div></div></div></div>
         </div>
 
         <div class="card mb-4">
             <div class="card-body">
-                <h6 class="fw-bold mb-3">Compliance by Stage <small class="text-muted">(target: <?= (int)$city['compliance_target'] ?>%)</small></h6>
+                <h6 class="fw-bold mb-3">Compliance by stage <small class="text-muted">(target: <?= (int)$city['compliance_target'] ?>%)</small></h6>
                 <div id="complianceChart"></div>
             </div>
         </div>
@@ -52,7 +52,7 @@ $overallRate = $totalRiders ? round(100 * $activeRiders / $totalRiders) : 0;
             <div class="card-body p-0">
                 <div class="table-responsive">
                     <table class="table table-hover mb-0" id="complianceTable">
-                        <thead><tr><th>Stage</th><th>Chairperson</th><th>Total Riders</th><th>Compliant</th><th>Non-Compliant</th><th>Compliance Rate</th><th>Status</th></tr></thead>
+                        <thead><tr><th>Stage</th><th>Chairperson</th><th>Total riders</th><th>Compliant</th><th>Non-compliant</th><th>Compliance rate</th><th>Status</th></tr></thead>
                         <tbody>
                         <?php foreach ($stages as $s):
                             $c = (float) ($s['compliance_pct'] ?? 0);
@@ -77,7 +77,7 @@ $overallRate = $totalRiders ? round(100 * $activeRiders / $totalRiders) : 0;
 </div>
 
 <?php require __DIR__ . '/../../partials/scripts-footer.php'; ?>
-<script>
+<script nonce="<?= csp_nonce() ?>">
     new ApexCharts(document.querySelector('#complianceChart'), {
         series: [{ name: 'Compliance %', data: <?= js_json(array_map(fn($s) => (float)($s['compliance_pct'] ?? 0), $stages)) ?> }],
         chart: { type: 'bar', height: 320, toolbar: { show: false } },

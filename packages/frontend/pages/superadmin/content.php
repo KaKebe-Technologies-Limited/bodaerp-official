@@ -115,7 +115,7 @@ if ($tab === 'pages') {
     $rows = fetchAll("SELECT * FROM content_items WHERE group_code = ?" . ($q !== '' ? " AND (title LIKE ? OR body LIKE ?)" : '') . " ORDER BY sort_order, id", $q !== '' ? [$tab, $like, $like] : [$tab]);
 }
 
-portal_start('superadmin', 'content', 'Pages & Content', [
+portal_start('superadmin', 'content', 'Pages & content', [
     'subtitle' => 'Public website pages, menus, home page and FAQ',
     'breadcrumbs' => ['Super Admin' => '/pages/superadmin/dashboard.php', 'Pages & Content' => null],
     'actions' => '<form method="post" data-confirm="Put back any default page, menu link, FAQ, email template or setting that was deleted? Records you edited stay as they are." data-confirm-ok="Restore">'

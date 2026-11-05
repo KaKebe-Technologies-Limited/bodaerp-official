@@ -56,20 +56,18 @@ function anomaly_rules(): array {
     ];
 }
 
-// availability / small helpers
-
 function anomaly_tables_ready(): bool {
     static $ready = null;
     if ($ready !== null) return $ready;
     try { fetchValue("SELECT 1 FROM anomaly_flags LIMIT 1"); $ready = true; }
-    catch (\Throwable $e) { $ready = false; }
+    catch (\Throwable $e) { db_probe_failed('anomaly_flags', $e); $ready = false; }
     return $ready;
 }
 
 function anomaly_last_run(): ?array {
     if (!anomaly_tables_ready()) return null;
     try { return fetchOne("SELECT * FROM anomaly_scan_runs ORDER BY id DESC LIMIT 1"); }
-    catch (\Throwable $e) { return null; }
+    catch (\Throwable $e) { db_probe_failed('anomaly_scan_runs', $e); return null; }
 }
 
 function anomaly_open_count(string $severity = 'high', ?string $cityId = null): int {
@@ -79,7 +77,7 @@ function anomaly_open_count(string $severity = 'high', ?string $cityId = null): 
         $params = [$severity];
         if ($cityId) { $sql .= " AND city_id = ?"; $params[] = $cityId; }
         return (int) fetchValue($sql, $params);
-    } catch (\Throwable $e) { return 0; }
+    } catch (\Throwable $e) { db_probe_failed('anomaly count', $e); return 0; }
 }
 
 function anomaly_scan_if_stale(string $triggeredBy = 'auto'): ?array {
@@ -177,10 +175,11 @@ function anomaly_detectors(): array {
     },
     'PAYMENT_AMOUNT' => function () {
         $out = [];
-        $rows = fetchAll("SELECT p.id, p.rider_id, p.city_id, p.amount, c.annual_fee, p.receipt_number, DATE(p.paid_at) AS d
+        $rows = fetchAll("SELECT p.id, p.rider_id, p.city_id, p.amount - p.late_fee AS amount, p.late_fee, c.annual_fee, p.receipt_number, DATE(p.paid_at) AS d
             FROM payments p JOIN cities c ON c.id = p.city_id
-            WHERE p.status = 'Confirmed' AND p.paid_at >= DATE_SUB(CURDATE(), INTERVAL 365 DAY) AND p.amount <> c.annual_fee");
+            WHERE p.status = 'Confirmed' AND p.paid_at >= DATE_SUB(CURDATE(), INTERVAL 365 DAY) AND p.amount - p.late_fee <> c.annual_fee");
         foreach ($rows as $r) {
+            // A late fee is charged on top of the fee on purpose, so only the fee part is compared.
             $diff = (float) $r['amount'] - (float) $r['annual_fee'];
             $dir  = $diff < 0 ? 'under' : 'over';
             $out[] = _anomaly_row('PAYMENT_AMOUNT', (string) $r['id'], 'medium', 'payment', (string) $r['id'], (int) $r['rider_id'], $r['city_id'],
@@ -285,8 +284,6 @@ function anomaly_detectors(): array {
     ];
 }
 
-// scan
-
 function run_anomaly_scan(string $triggeredBy = 'manual'): array {
     if (!anomaly_tables_ready()) return ['error' => 'Anomaly tables are missing. Run: php database/migrate.php'];
     if (!(int) fetchValue("SELECT GET_LOCK('bodaerp_anomaly_scan', 0)")) return ['skipped' => true];
@@ -333,8 +330,6 @@ function run_anomaly_scan(string $triggeredBy = 'manual'): array {
         fetchValue("SELECT RELEASE_LOCK('bodaerp_anomaly_scan')");
     }
 }
-
-// reading
 
 function anomaly_summary(?string $cityId = null): array {
     $cityWhere = $cityId ? ' AND city_id = ?' : '';

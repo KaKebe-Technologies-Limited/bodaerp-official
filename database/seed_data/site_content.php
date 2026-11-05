@@ -10,6 +10,11 @@ $page = fn(string ...$paragraphs) => implode("\n", $paragraphs);
 return [
     // key, value, type, category, description, is_feature_flag, sort_order
     'settings' => [
+        ['languages_enabled', 'en', 'text', 'general', 'Languages riders can choose, comma separated: en (English), lg (Luganda), laj (Lango), ach (Acholi), nyn (Runyankole). Add a language only after a native speaker has reviewed its text in Super Admin → Languages.', 0, 30],
+        ['ussd_code', '', 'text', 'general', 'USSD code riders dial to renew, for example *217*55#. Leave empty until the code is live; messages then do not mention it.', 0, 31],
+        ['backup_email', '', 'email', 'general', 'Address that receives the nightly database backup (keep it outside this server). Empty = no backup email.', 0, 32],
+        ['feature_sms', 'true', 'boolean', 'features', 'Send SMS notices and sign-in codes (needs the EgoSMS details in .env)', 1, 20],
+        ['feature_ussd', 'true', 'boolean', 'features', 'Let riders renew by dialling the USSD code (needs USSD_TOKEN in .env and a code from a USSD provider)', 1, 21],
         ['site_tagline', 'Rider permits, fee collection and compliance for boda-boda stages', 'text', 'general', 'Short line shown under the logo and in search results', 0, 7],
         ['site_tagline_short', 'Boda-boda permits and compliance', 'text', 'general', 'Very short line beside the logo in the site header (hidden on phones)', 0, 8],
         ['logo_path', '/assets/images/logo-mark.png', 'image', 'branding', 'Logo icon (square, at least 128 px)', 0, 1],
@@ -67,7 +72,7 @@ return [
 
         ['feature_contact_form', 'true', 'boolean', 'features', 'Accept messages through the public contact form', 1, 4],
         ['feature_cookie_banner', 'true', 'boolean', 'features', 'Show the cookie notice to first-time visitors', 1, 5],
-        ['feature_two_factor', 'true', 'boolean', 'features', 'Let users turn on email sign-in codes (two-step sign-in)', 1, 6],
+        ['feature_two_factor', 'true', 'boolean', 'features', 'Let users turn on sign-in codes by SMS or email (two-step sign-in)', 1, 6],
         ['feature_remember_me', 'true', 'boolean', 'features', 'Offer "Keep me signed in" on the sign-in page', 1, 7],
 
         ['cookie_banner_text', 'BodaERP uses one cookie to keep you signed in, and stores this notice choice in your browser. We do not use advertising or tracking cookies.', 'textarea', 'messages', 'Cookie notice text', 0, 1],
@@ -193,6 +198,17 @@ return [
     ],
 
     // code, name, description, subject, body (HTML, placed inside the branded layout), variables
+    'sms' => [
+        // code, language, name, description, body, variables, active, needs review. Keep bodies under 160 characters where possible (one SMS).
+        ['two_factor_code', 'en', 'Sign-in code', 'Sent when someone signs in with two-step sign-in by SMS.', '{{code}} is your {{site_name}} sign-in code. It expires in 10 minutes. Never share it.', 'code, site_name', 1, 0],
+        ['payment_receipt', 'en', 'Payment receipt', 'Sent when a permit payment is confirmed.', '{{site_name}}: {{amount}} received. Receipt {{receipt_number}}. Permit {{id_number}} valid to {{expiry_date}}.', 'amount, receipt_number, id_number, expiry_date, site_name', 1, 0],
+        ['payment_failed', 'en', 'Payment not completed', 'Sent when a mobile-money payment fails or is cancelled.', '{{site_name}}: your payment of {{amount}} did not go through ({{reason}}). No money was taken. Try again or pay your chairperson.', 'amount, reason, site_name', 1, 0],
+        ['permit_expiring', 'en', 'Renewal reminder', 'Sent a few times before a permit expires.', '{{site_name}}: permit {{id_number}} expires {{expiry_date}} ({{days_left}} days). Renew with your stage chairperson{{ussd_hint}}.', 'id_number, expiry_date, days_left, ussd_hint, site_name', 1, 0],
+        ['permit_overdue', 'en', 'Permit expired', 'Sent 7, 30 and 60 days after a permit expired.', '{{site_name}}: permit {{id_number}} expired {{expiry_date}}. Amount due now {{amount_due}}. Renew with your chairperson{{ussd_hint}}.', 'id_number, expiry_date, amount_due, ussd_hint, site_name', 1, 0],
+        ['rider_reminder', 'en', 'Reminder from a chairperson or city', 'Sent when a chairperson or city admin presses "Send reminder".', '{{site_name}}: {{message}}', 'message, site_name', 1, 0],
+        ['handover_confirmed', 'en', 'Cash handover confirmed', 'Sent to a chairperson when the city confirms a cash handover.', '{{site_name}}: the city confirmed your cash handover of {{amount}} ({{count}} payments). Ref {{reference}}.', 'amount, count, reference, site_name', 1, 0],
+        ['handover_disputed', 'en', 'Cash handover queried', 'Sent to a chairperson when the city queries a cash handover.', '{{site_name}}: the city queried your cash handover {{reference}}: {{note}}. Contact the city office.', 'reference, note, site_name', 1, 0],
+    ],
     'emails' => [
         ['password_reset', 'Password reset link', 'Sent when someone asks to reset their password.', 'Reset your {{site_name}} password',
             '<p>Hello {{name}},</p><p>We received a request to reset the password for your {{site_name}} account. Use the button below within 30 minutes.</p><p style="text-align:center"><a class="button" href="{{reset_url}}">Choose a new password</a></p><p>If you did not ask for this, ignore this email: your password stays the same.</p><p>Request made from IP address {{ip_address}}.</p>',

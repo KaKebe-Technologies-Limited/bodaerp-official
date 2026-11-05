@@ -2,7 +2,34 @@
 // Public permit check. ?t=<token> (what the ID-card QR code opens) shows the photo and full name so an
 // officer can match the card to the rider. Typing a permit number shows only the status and a masked name,
 // because permit numbers are sequential and must not let anyone browse the rider register.
+// Signed-in chairpersons and city staff can also record the check (outcome, note, optional phone location);
+// those records feed Roadside checks for the city and the government enforcement view.
 require_once __DIR__ . '/packages/backend/site.php';
+
+const CHECK_ROLES = ['chairperson', 'city_admin', 'super_admin'];
+const CHECK_OUTCOMES = ['ok' => 'All in order', 'warned' => 'Warned the rider', 'impounded' => 'Motorcycle impounded', 'other' => 'Other (see note)'];
+$officer = is_logged_in() && in_array($_SESSION['role'] ?? '', CHECK_ROLES, true);
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && $officer) {
+    csrf_verify();
+    $checkToken = (string) ($_POST['t'] ?? '');
+    $checked = preg_match('/^[a-f0-9]{20}$/', $checkToken) ? fetchOne("SELECT id, city_id, status, expiry_date, id_number FROM riders WHERE verify_token = ? AND deleted_at IS NULL", [$checkToken]) : null;
+    $outcome = array_key_exists($_POST['outcome'] ?? '', CHECK_OUTCOMES) ? $_POST['outcome'] : 'ok';
+    $lat = is_numeric($_POST['lat'] ?? null) && abs((float) $_POST['lat']) <= 90 ? round((float) $_POST['lat'], 6) : null;
+    $lng = is_numeric($_POST['lng'] ?? null) && abs((float) $_POST['lng']) <= 180 ? round((float) $_POST['lng'], 6) : null;
+    $accuracy = is_numeric($_POST['acc'] ?? null) ? min(100000, max(0, (int) $_POST['acc'])) : null;
+    if ($checked && rate_limit('permit-check:' . (int) $_SESSION['user_id'], 300, 3600)) {
+        $seen = $checked['status'] === 'active' && $checked['expiry_date'] && $checked['expiry_date'] < date('Y-m-d') ? 'expired' : $checked['status'];
+        runQuery("INSERT INTO permit_checks (rider_id, city_id, checked_by, status_seen, outcome, note, latitude, longitude, accuracy_m) VALUES (?,?,?,?,?,?,?,?,?)",
+            [$checked['id'], $checked['city_id'], (int) $_SESSION['user_id'], $seen, $outcome, mb_substr(trim((string) ($_POST['note'] ?? '')), 0, 300) ?: null,
+             $lat, $lng, $lat !== null && $lng !== null ? $accuracy : null])->close();
+        audit_log('CREATE', 'permit_check', $checked['id_number'], 'Roadside check: ' . CHECK_OUTCOMES[$outcome]);
+        flash('success', 'Check recorded for ' . $checked['id_number'] . '.');
+    } else {
+        flash('error', 'The check could not be recorded. Scan the QR code again.');
+    }
+    redirect('/verify.php?t=' . urlencode($checkToken));
+}
 
 $token = trim((string) ($_GET['t'] ?? ''));
 $code = strtoupper(trim((string) ($_GET['code'] ?? '')));
@@ -84,6 +111,25 @@ $currentPath = '/verify.php';
                             </dl>
                             <div class="foot"><i class="fas fa-shield-halved me-1" aria-hidden="true"></i>Checked <?= date('j M Y, H:i') ?><?= $full ? '' : ' · scan the QR code to see the photo' ?></div>
                         </div>
+                        <?php foreach (flash_take() as [$flashType, $flashMsg]): ?>
+                            <div class="notice notice-<?= $flashType === 'error' ? 'error' : 'success' ?> mt-3" role="status"><?= h($flashMsg) ?></div>
+                        <?php endforeach; ?>
+                        <?php if ($officer && $full): ?>
+                        <form class="panel mt-3" method="post" action="<?= BASE_URL ?>/verify.php">
+                            <?= csrf_field() ?><input type="hidden" name="t" value="<?= h($token) ?>">
+                            <input type="hidden" name="lat" value=""><input type="hidden" name="lng" value=""><input type="hidden" name="acc" value="">
+                            <h2 class="h6 mb-3">Record this check</h2>
+                            <fieldset class="field"><legend class="visually-hidden">Outcome</legend>
+                                <?php foreach (CHECK_OUTCOMES as $key => $label): ?>
+                                    <label class="d-block"><input type="radio" name="outcome" value="<?= h($key) ?>"<?= $key === ($status === 'active' ? 'ok' : 'warned') ? ' checked' : '' ?>> <?= h($label) ?></label>
+                                <?php endforeach; ?>
+                            </fieldset>
+                            <div class="field"><label for="check-note">Note (optional)</label><input id="check-note" name="note" maxlength="300"></div>
+                            <label class="d-block mb-3"><input type="checkbox" name="with_location" value="1" data-officer-location> Add my location from this phone</label>
+                            <p class="hint mb-3" data-officer-location-status aria-live="polite"></p>
+                            <button class="btn-brand" type="submit"><i class="fas fa-clipboard-check" aria-hidden="true"></i> Save check</button>
+                        </form>
+                        <?php endif; ?>
                     <?php else: ?>
                         <div class="panel text-center">
                             <i class="fas fa-qrcode fa-3x mb-3" style="color: var(--brand)" aria-hidden="true"></i>

@@ -24,7 +24,8 @@ $cssV = fn(string $f) => @filemtime(__DIR__ . '/../assets/css/' . $f) ?: 1;
 <meta name="twitter:card" content="summary">
 <meta name="theme-color" content="<?= h(brand_color('brand_color_dark', BRAND_DEFAULT_DARK)) ?>">
 <?= brand_favicon_tags() ?>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha384-PPIZEGYM1v8zp5Py7UjFb79S58UeqCL9pYVnVPURKEqvioPROaVAJKKLzvH2rDnI" crossorigin="anonymous">
+<link rel="stylesheet" href="<?= BASE_URL ?>/assets/vendor/bootstrap/bootstrap.min.css">
+<link rel="stylesheet" href="<?= BASE_URL ?>/assets/vendor/inter/inter.css">
+<link rel="stylesheet" href="<?= BASE_URL ?>/assets/vendor/fontawesome/css/all.min.css">
 <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/public.css?v=<?= $cssV('public.css') ?>">
 <style><?= brand_css_vars() ?></style>

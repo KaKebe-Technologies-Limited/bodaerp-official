@@ -51,7 +51,7 @@ $agencyLabel = $_SESSION['agency_name'] ?? 'Government Portal';
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <?php $pageTitle = 'National Dashboard | BodaERP'; require __DIR__ . '/../../partials/head-assets.php'; ?>
+    <?php $pageTitle = 'National dashboard | ' . get_setting('site_name', 'BodaERP'); require __DIR__ . '/../../partials/head-assets.php'; ?>
     <style>
         .chart-card { border: none; border-radius: 14px; box-shadow: 0 2px 12px rgba(0,0,0,0.04); background: white; height: 100%; }
         .section-heading { font-weight: 700; font-size: 0.95rem; margin-bottom: 0; }
@@ -83,18 +83,18 @@ $agencyLabel = $_SESSION['agency_name'] ?? 'Government Portal';
 
         <div class="row g-3 row-cols-2 row-cols-md-3 row-cols-xl-6 mb-4">
             <div class="col"><div class="stat-hero-card tone-blue"><div class="stat-hero-icon"><i class="fas fa-city"></i></div><div><div class="stat-hero-value"><?= $totalCities ?></div><div class="stat-hero-label">Cities</div></div></div></div>
-            <div class="col"><div class="stat-hero-card tone-green"><div class="stat-hero-icon"><i class="fas fa-users"></i></div><div><div class="stat-hero-value"><?= number_format($totalRiders) ?></div><div class="stat-hero-label">Total Riders</div></div></div></div>
-            <div class="col"><div class="stat-hero-card tone-gold"><div class="stat-hero-icon"><i class="fas fa-check-circle"></i></div><div><div class="stat-hero-value"><?= $complianceRate ?>%</div><div class="stat-hero-label">Compliance Rate</div></div></div></div>
-            <div class="col"><div class="stat-hero-card tone-dark"><div class="stat-hero-icon"><i class="fas fa-map-marker-alt"></i></div><div><div class="stat-hero-value"><?= $totalStages ?></div><div class="stat-hero-label">Total Stages</div></div></div></div>
-            <div class="col"><div class="stat-hero-card tone-red"><div class="stat-hero-icon"><i class="fas fa-gavel"></i></div><div><div class="stat-hero-value"><?= number_format($totalEnforce) ?></div><div class="stat-hero-label">Enforcement Actions</div></div></div></div>
-            <div class="col"><div class="stat-hero-card tone-gold"><div class="stat-hero-icon"><i class="fas fa-university"></i></div><div><div class="stat-hero-value"><?= $totalRevenue >= 1000000 ? number_format($totalRevenue / 1000000, 1) . 'M' : number_format($totalRevenue) ?></div><div class="stat-hero-label">National Revenue (UGX)</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-green"><div class="stat-hero-icon"><i class="fas fa-users"></i></div><div><div class="stat-hero-value"><?= number_format($totalRiders) ?></div><div class="stat-hero-label">Total riders</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-gold"><div class="stat-hero-icon"><i class="fas fa-check-circle"></i></div><div><div class="stat-hero-value"><?= $complianceRate ?>%</div><div class="stat-hero-label">Compliance rate</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-dark"><div class="stat-hero-icon"><i class="fas fa-map-marker-alt"></i></div><div><div class="stat-hero-value"><?= $totalStages ?></div><div class="stat-hero-label">Total stages</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-red"><div class="stat-hero-icon"><i class="fas fa-gavel"></i></div><div><div class="stat-hero-value"><?= number_format($totalEnforce) ?></div><div class="stat-hero-label">Enforcement actions</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-gold"><div class="stat-hero-icon"><i class="fas fa-university"></i></div><div><div class="stat-hero-value"><?= $totalRevenue >= 1000000 ? number_format($totalRevenue / 1000000, 1) . 'M' : number_format($totalRevenue) ?></div><div class="stat-hero-label">National revenue (UGX)</div></div></div></div>
         </div>
 
         <div class="row g-3 g-md-4 mb-4">
             <div class="col-xl-8">
                 <div class="chart-card">
                     <div class="card-body">
-                        <h6 class="section-heading mb-3">National Revenue Trend (Last 12 Months)</h6>
+                        <h6 class="section-heading mb-3">National revenue trend (last 12 months)</h6>
                         <div id="revenueChart"></div>
                     </div>
                 </div>
@@ -102,7 +102,7 @@ $agencyLabel = $_SESSION['agency_name'] ?? 'Government Portal';
             <div class="col-xl-4">
                 <div class="chart-card">
                     <div class="card-body">
-                        <h6 class="section-heading mb-3">Rider Compliance Status</h6>
+                        <h6 class="section-heading mb-3">Rider compliance status</h6>
                         <div id="complianceChart"></div>
                     </div>
                 </div>
@@ -113,7 +113,7 @@ $agencyLabel = $_SESSION['agency_name'] ?? 'Government Portal';
             <div class="col-xl-7">
                 <div class="chart-card">
                     <div class="card-body">
-                        <h6 class="section-heading mb-3">Riders by City</h6>
+                        <h6 class="section-heading mb-3">Riders by city</h6>
                         <div id="ridersByCityChart"></div>
                     </div>
                 </div>
@@ -123,8 +123,8 @@ $agencyLabel = $_SESSION['agency_name'] ?? 'Government Portal';
                     <div class="card-body">
                         <h6 class="section-heading mb-3">Government &amp; Platform Revenue</h6>
                         <div class="mt-2">
-                            <div class="d-flex justify-content-between align-items-center py-2 border-bottom"><span><span class="badge me-2" style="background:#d97706;">●</span>Government Share</span><span class="fw-bold">UGX <?= number_format(round($splitGovTotal)) ?></span></div>
-                            <div class="d-flex justify-content-between align-items-center py-2"><span><span class="badge bg-info text-dark me-2">●</span>Kakebe Tech (Platform)</span><span class="fw-bold">UGX <?= number_format(round($splitPlatformTotal)) ?></span></div>
+                            <div class="d-flex justify-content-between align-items-center py-2 border-bottom"><span><span class="badge me-2" style="background:#b45309;">●</span>Government share</span><span class="fw-bold">UGX <?= number_format(round($splitGovTotal)) ?></span></div>
+                            <div class="d-flex justify-content-between align-items-center py-2"><span><span class="badge bg-info text-dark me-2">●</span>Kakebe Tech (platform)</span><span class="fw-bold">UGX <?= number_format(round($splitPlatformTotal)) ?></span></div>
                         </div>
                         <a href="<?= BASE_URL ?>/pages/government/comparison.php" class="btn btn-sm btn-outline-primary mt-3 w-100"><i class="fas fa-balance-scale me-1"></i>Full District &amp; City Comparison</a>
                     </div>
@@ -137,7 +137,7 @@ $agencyLabel = $_SESSION['agency_name'] ?? 'Government Portal';
                 <div class="card h-100">
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h6 class="fw-bold mb-0">City Performance Snapshot</h6>
+                            <h6 class="fw-bold mb-0">City performance snapshot</h6>
                             <a href="<?= BASE_URL ?>/pages/government/comparison.php" class="small">View all &raquo;</a>
                         </div>
                         <div class="table-responsive">
@@ -146,7 +146,7 @@ $agencyLabel = $_SESSION['agency_name'] ?? 'Government Portal';
                                 <tbody>
                                 <?php foreach ($cities as $t): ?>
                                     <tr>
-                                        <td><div class="d-flex align-items-center gap-2"><img src="<?= h(BASE_URL . $t['logo_path']) ?>" class="city-cell-logo border" data-fallback-src="<?= BASE_URL ?>/assets/images/logo-mark.png"><strong style="font-size:0.85rem;"><?= h($t['name']) ?></strong></div></td>
+                                        <td><div class="d-flex align-items-center gap-2"><img alt="" src="<?= h(BASE_URL . $t['logo_path']) ?>" class="city-cell-logo border" data-fallback-src="<?= BASE_URL ?>/assets/images/logo-mark.png"><strong style="font-size:0.85rem;"><?= h($t['name']) ?></strong></div></td>
                                         <td><?= number_format($t['rider_count']) ?></td>
                                         <td><span class="compliance-bar"><span style="width:<?= $t['compliance_pct'] ?>%;"></span></span> <small class="text-muted ms-1"><?= $t['compliance_pct'] ?>%</small></td>
                                         <td style="font-size:0.82rem;"><?= h($t['currency']) ?> <?= number_format($t['revenue_collected']) ?></td>
@@ -162,7 +162,7 @@ $agencyLabel = $_SESSION['agency_name'] ?? 'Government Portal';
                 <div class="card h-100">
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h6 class="fw-bold mb-0">Recent Enforcement Actions</h6>
+                            <h6 class="fw-bold mb-0">Recent enforcement actions</h6>
                             <a href="<?= BASE_URL ?>/pages/government/enforcement.php" class="small">View all &raquo;</a>
                         </div>
                         <?php if (!$recentEnforcement): ?>
@@ -176,7 +176,7 @@ $agencyLabel = $_SESSION['agency_name'] ?? 'Government Portal';
                                     <div class="activity-title"><?= h(ucfirst($e['type'])) ?> · <?= h($e['plate'] ?: 'N/A') ?></div>
                                     <div class="activity-sub"><?= h($e['city_name'] ?? '–') ?> · <?= formatDate($e['action_date']) ?></div>
                                 </div>
-                                <span class="badge bg-<?= $typeColors[$e['type']] ?? 'secondary' ?>" style="font-size:0.6rem;flex-shrink:0;"><?= strtoupper($e['status']) ?></span>
+                                <span class="badge bg-<?= $typeColors[$e['type']] ?? 'secondary' ?>" style="font-size:0.6rem;flex-shrink:0;"><?= h(ucfirst(str_replace('_', ' ', $e['status']))) ?></span>
                             </div>
                         <?php endforeach; ?>
                         </div>
@@ -190,7 +190,7 @@ $agencyLabel = $_SESSION['agency_name'] ?? 'Government Portal';
 </div>
 
 <?php require __DIR__ . '/../../partials/scripts-footer.php'; ?>
-<script>
+<script nonce="<?= csp_nonce() ?>">
     new ApexCharts(document.querySelector('#revenueChart'), {
         series: [{ name: 'Revenue (UGX M)', data: <?= js_json($chartValues) ?> }],
         chart: { type: 'area', height: 280, toolbar: { show: false }, animations: { enabled: true } },

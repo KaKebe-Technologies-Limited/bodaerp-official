@@ -31,13 +31,13 @@ $avgGovernment = $cityCount ? round(array_sum(array_column($cities, 'revenue_spl
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <?php $pageTitle = 'Revenue Splits | BodaERP'; require __DIR__ . '/../../partials/head-assets.php'; ?>
+    <?php $pageTitle = 'Revenue splits | ' . get_setting('site_name', 'BodaERP'); require __DIR__ . '/../../partials/head-assets.php'; ?>
     <style>
         :root {
-            --split-city: #7a6cf0;
-            --split-assoc: #17a672;
-            --split-government: #d97706;
-            --split-platform: #f0a020;
+            --split-city: #0459d4;
+            --split-assoc: #0f7a52;
+            --split-government: #001740;
+            --split-platform: #c21f27;
         }
 
         .split-card {
@@ -77,9 +77,8 @@ $avgGovernment = $cityCount ? round(array_sum(array_column($cities, 'revenue_spl
         .split-legend-row .name { color: var(--text-muted); font-weight: 500; }
         .split-legend-row .val { font-weight: 700; color: var(--text-dark); }
 
-        /* Sliders */
         .split-section-label { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
-        .split-section-label .lbl { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: var(--text-muted); }
+        .split-section-label .lbl { font-size: 0.8rem; font-weight: 600; color: var(--text-muted); }
         .split-section-label .hint { font-size: 0.68rem; color: var(--text-muted); }
 
         .split-slider-row { margin-bottom: 16px; }
@@ -146,16 +145,16 @@ $avgGovernment = $cityCount ? round(array_sum(array_column($cities, 'revenue_spl
     <div class="content-area">
 
         <div class="row g-3 row-cols-2 row-cols-xl-5 mb-4">
-            <div class="col"><div class="stat-hero-card tone-dark"><div class="stat-hero-icon"><i class="fas fa-city"></i></div><div><div class="stat-hero-value"><?= $cityCount ?></div><div class="stat-hero-label">Cities Configured</div></div></div></div>
-            <div class="col"><div class="stat-hero-card tone-blue"><div class="stat-hero-icon"><i class="fas fa-landmark"></i></div><div><div class="stat-hero-value"><?= $avgCity ?>%</div><div class="stat-hero-label">Avg. City Council</div></div></div></div>
-            <div class="col"><div class="stat-hero-card tone-green"><div class="stat-hero-icon"><i class="fas fa-handshake"></i></div><div><div class="stat-hero-value"><?= $avgAssoc ?>%</div><div class="stat-hero-label">Avg. Association</div></div></div></div>
-            <div class="col"><div class="stat-hero-card tone-gold"><div class="stat-hero-icon"><i class="fas fa-university"></i></div><div><div class="stat-hero-value"><?= $avgGovernment ?>%</div><div class="stat-hero-label">Avg. Government</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-dark"><div class="stat-hero-icon"><i class="fas fa-city"></i></div><div><div class="stat-hero-value"><?= $cityCount ?></div><div class="stat-hero-label">Cities configured</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-blue"><div class="stat-hero-icon"><i class="fas fa-landmark"></i></div><div><div class="stat-hero-value"><?= $avgCity ?>%</div><div class="stat-hero-label">Avg. city council</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-green"><div class="stat-hero-icon"><i class="fas fa-handshake"></i></div><div><div class="stat-hero-value"><?= $avgAssoc ?>%</div><div class="stat-hero-label">Avg. association</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-gold"><div class="stat-hero-icon"><i class="fas fa-university"></i></div><div><div class="stat-hero-value"><?= $avgGovernment ?>%</div><div class="stat-hero-label">Avg. government</div></div></div></div>
             <div class="col"><div class="stat-hero-card tone-gold"><div class="stat-hero-icon"><i class="fas fa-microchip"></i></div><div><div class="stat-hero-value"><?= $avgPlatform ?>%</div><div class="stat-hero-label">Avg. Kakebe Tech</div></div></div></div>
         </div>
 
         <div class="alert alert-primary mb-4">
             <i class="fas fa-info-circle me-2"></i>
-            Revenue splits define how each payment is distributed between <strong>City Council</strong>, <strong>Boda Association</strong>, <strong>Government</strong>, and <strong>Kakebe Tech (Platform)</strong>.
+            Revenue splits define how each payment is distributed between <strong>City council</strong>, <strong>Boda association</strong>, <strong>Government</strong>, and <strong>Kakebe Tech (platform)</strong>.
             Drag any slider and the other three <strong>auto-balance</strong> to keep every city at exactly 100%.
         </div>
         <?php if ($errors): ?><div class="alert alert-danger"><?php foreach ($errors as $e) echo h($e); ?></div><?php endif; ?>
@@ -166,7 +165,7 @@ $avgGovernment = $cityCount ? round(array_sum(array_column($cities, 'revenue_spl
             <div class="split-card" id="card-<?= h($id) ?>">
 
                 <div class="d-flex align-items-center gap-3">
-                    <img src="<?= h(BASE_URL . $t['logo_path']) ?>" class="split-card-logo border" data-fallback-src="<?= BASE_URL ?>/assets/images/logo-mark.png">
+                    <img alt="" src="<?= h(BASE_URL . $t['logo_path']) ?>" class="split-card-logo border" data-fallback-src="<?= BASE_URL ?>/assets/images/logo-mark.png">
                     <div class="flex-1" style="min-width:0;">
                         <h6 class="mb-0 fw-bold text-truncate"><?= h($t['name']) ?></h6>
                         <small class="text-muted"><?= h($id) ?> · Fee: <?= h($t['currency']) ?> <?= number_format($t['annual_fee']) ?></small>
@@ -177,8 +176,8 @@ $avgGovernment = $cityCount ? round(array_sum(array_column($cities, 'revenue_spl
                 <div class="split-overview">
                     <div class="split-donut" id="chart-<?= h($id) ?>"></div>
                     <div class="split-legend">
-                        <div class="split-legend-row"><span class="name"><span class="dot c-city"></span>City Council</span><span class="val" id="lbl-city-<?= h($id) ?>"><?= (int)$t['revenue_split_city'] ?>%</span></div>
-                        <div class="split-legend-row"><span class="name"><span class="dot c-assoc"></span>Boda Association</span><span class="val" id="lbl-assoc-<?= h($id) ?>"><?= (int)$t['revenue_split_association'] ?>%</span></div>
+                        <div class="split-legend-row"><span class="name"><span class="dot c-city"></span>City council</span><span class="val" id="lbl-city-<?= h($id) ?>"><?= (int)$t['revenue_split_city'] ?>%</span></div>
+                        <div class="split-legend-row"><span class="name"><span class="dot c-assoc"></span>Boda association</span><span class="val" id="lbl-assoc-<?= h($id) ?>"><?= (int)$t['revenue_split_association'] ?>%</span></div>
                         <div class="split-legend-row"><span class="name"><span class="dot c-government"></span>Government</span><span class="val" id="lbl-government-<?= h($id) ?>"><?= (int)$t['revenue_split_government'] ?>%</span></div>
                         <div class="split-legend-row"><span class="name"><span class="dot c-platform"></span>Kakebe Tech</span><span class="val" id="lbl-platform-<?= h($id) ?>"><?= (int)$t['revenue_split_platform'] ?>%</span></div>
                     </div>
@@ -193,30 +192,30 @@ $avgGovernment = $cityCount ? round(array_sum(array_column($cities, 'revenue_spl
                     <input type="hidden" name="split_platform" id="hidden-platform-<?= h($id) ?>" value="<?= (int)$t['revenue_split_platform'] ?>">
 
                     <div class="split-section-label">
-                        <span class="lbl">Adjust Distribution</span>
+                        <span class="lbl">Adjust distribution</span>
                         <span class="hint"><i class="fas fa-sync-alt me-1"></i>Auto-balances to 100%</span>
                     </div>
 
                     <div class="split-slider-row row-city">
-                        <div class="slider-label"><span class="name"><span class="dot" style="background:var(--split-city);"></span>City Council</span><span class="val" id="city-val-<?= h($id) ?>"><?= (int)$t['revenue_split_city'] ?>%</span></div>
-                        <input type="range" min="0" max="100" value="<?= (int)$t['revenue_split_city'] ?>" id="city-<?= h($id) ?>" data-call-input="onSliderInput" data-call-args="<?= h(js_json([(string) $id, 'city'])) ?>">
+                        <div class="slider-label"><span class="name"><span class="dot" style="background:var(--split-city);"></span>City council</span><span class="val" id="city-val-<?= h($id) ?>"><?= (int)$t['revenue_split_city'] ?>%</span></div>
+                        <input type="range" min="0" max="100" value="<?= (int)$t['revenue_split_city'] ?>" id="city-<?= h($id) ?>" aria-label="City Council share for <?= h($t['name']) ?>, percent" data-call-input="onSliderInput" data-call-args="<?= h(js_json([(string) $id, 'city'])) ?>">
                     </div>
                     <div class="split-slider-row row-assoc">
-                        <div class="slider-label"><span class="name"><span class="dot" style="background:var(--split-assoc);"></span>Boda Association</span><span class="val" id="assoc-val-<?= h($id) ?>"><?= (int)$t['revenue_split_association'] ?>%</span></div>
-                        <input type="range" min="0" max="100" value="<?= (int)$t['revenue_split_association'] ?>" id="assoc-<?= h($id) ?>" data-call-input="onSliderInput" data-call-args="<?= h(js_json([(string) $id, 'assoc'])) ?>">
+                        <div class="slider-label"><span class="name"><span class="dot" style="background:var(--split-assoc);"></span>Boda association</span><span class="val" id="assoc-val-<?= h($id) ?>"><?= (int)$t['revenue_split_association'] ?>%</span></div>
+                        <input type="range" min="0" max="100" value="<?= (int)$t['revenue_split_association'] ?>" id="assoc-<?= h($id) ?>" aria-label="Boda Association share for <?= h($t['name']) ?>, percent" data-call-input="onSliderInput" data-call-args="<?= h(js_json([(string) $id, 'assoc'])) ?>">
                     </div>
                     <div class="split-slider-row row-government">
                         <div class="slider-label"><span class="name"><span class="dot" style="background:var(--split-government);"></span>Government</span><span class="val" id="government-val-<?= h($id) ?>"><?= (int)$t['revenue_split_government'] ?>%</span></div>
-                        <input type="range" min="0" max="100" value="<?= (int)$t['revenue_split_government'] ?>" id="government-<?= h($id) ?>" data-call-input="onSliderInput" data-call-args="<?= h(js_json([(string) $id, 'government'])) ?>">
+                        <input type="range" min="0" max="100" value="<?= (int)$t['revenue_split_government'] ?>" id="government-<?= h($id) ?>" aria-label="Government share for <?= h($t['name']) ?>, percent" data-call-input="onSliderInput" data-call-args="<?= h(js_json([(string) $id, 'government'])) ?>">
                     </div>
                     <div class="split-slider-row row-platform">
-                        <div class="slider-label"><span class="name"><span class="dot" style="background:var(--split-platform);"></span>Kakebe Tech (Platform)</span><span class="val" id="platform-val-<?= h($id) ?>"><?= (int)$t['revenue_split_platform'] ?>%</span></div>
-                        <input type="range" min="0" max="100" value="<?= (int)$t['revenue_split_platform'] ?>" id="platform-<?= h($id) ?>" data-call-input="onSliderInput" data-call-args="<?= h(js_json([(string) $id, 'platform'])) ?>">
+                        <div class="slider-label"><span class="name"><span class="dot" style="background:var(--split-platform);"></span>Kakebe Tech (platform)</span><span class="val" id="platform-val-<?= h($id) ?>"><?= (int)$t['revenue_split_platform'] ?>%</span></div>
+                        <input type="range" min="0" max="100" value="<?= (int)$t['revenue_split_platform'] ?>" id="platform-<?= h($id) ?>" aria-label="Platform share for <?= h($t['name']) ?>, percent" data-call-input="onSliderInput" data-call-args="<?= h(js_json([(string) $id, 'platform'])) ?>">
                     </div>
 
                     <div class="split-card-footer">
                         <button type="button" class="btn btn-outline-secondary btn-sm" data-call="resetSplit" data-call-args="<?= h(js_json([(string) $id])) ?>">Reset</button>
-                        <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-save me-1"></i>Save Changes</button>
+                        <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-save me-1"></i>Save changes</button>
                     </div>
                 </form>
             </div>
@@ -227,7 +226,7 @@ $avgGovernment = $cityCount ? round(array_sum(array_column($cities, 'revenue_spl
 </div>
 
 <?php require __DIR__ . '/../../partials/scripts-footer.php'; ?>
-<script>
+<script nonce="<?= csp_nonce() ?>">
     const KEYS = ['city', 'assoc', 'government', 'platform'];
     const charts = {};
     const state = {};   // id -> { city, assoc, government, platform } : always sums to 100
@@ -241,7 +240,7 @@ $avgGovernment = $cityCount ? round(array_sum(array_column($cities, 'revenue_spl
         series: [state['<?= $id ?>'].city, state['<?= $id ?>'].assoc, state['<?= $id ?>'].government, state['<?= $id ?>'].platform],
         chart: { type: 'donut', height: 92, width: 92, animations: { enabled: true } },
         labels: ['City Council', 'Association', 'Government', 'Kakebe Tech'],
-        colors: ['#7a6cf0', '#17a672', '#d97706', '#f0a020'],
+        colors: ['#0459d4', '#0f7a52', '#001740', '#c21f27'],
         legend: { show: false },
         plotOptions: { pie: { donut: { size: '68%' } } },
         dataLabels: { enabled: false },

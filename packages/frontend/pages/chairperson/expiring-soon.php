@@ -17,14 +17,14 @@ $riders = fetchAll(
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <?php $pageTitle = 'Expiring Soon | BodaERP'; require __DIR__ . '/../../partials/head-assets.php'; ?>
+    <?php $pageTitle = 'Expiring soon | ' . get_setting('site_name', 'BodaERP'); require __DIR__ . '/../../partials/head-assets.php'; ?>
 </head>
 <body>
 
 <?php require __DIR__ . '/../../partials/sidebar-chairperson.php'; ?>
 
 <div class="main-content" id="mainContent">
-    <?php $pageTitle = 'Expiring Soon'; require __DIR__ . '/../../partials/topheader.php'; ?>
+    <?php $pageTitle = 'Expiring soon'; require __DIR__ . '/../../partials/topheader.php'; ?>
 
     <div class="content-area">
         <div class="row g-3 mb-4">
@@ -34,13 +34,13 @@ $riders = fetchAll(
         </div>
 
         <div class="d-flex justify-content-between align-items-center mb-2 no-print">
-            <a href="<?= BASE_URL ?>/pages/chairperson/expiry-alerts.php" class="btn btn-sm btn-outline-secondary"><i class="fas fa-bell me-1"></i>Back to Expiry Alerts</a>
+            <a href="<?= BASE_URL ?>/pages/chairperson/expiry-alerts.php" class="btn btn-sm btn-outline-secondary"><i class="fas fa-bell me-1"></i>Back to expiry alerts</a>
             <?php $exportTableId='expiringSoonTable'; $exportFilename='expiring_soon'; $exportTitle='Expiring Soon'; require __DIR__ . '/../../partials/export-toolbar.php'; ?>
         </div>
         <div class="card"><div class="card-body p-0">
             <div class="table-responsive">
                 <table class="table table-hover mb-0" id="expiringSoonTable">
-                    <thead><tr><th>#</th><th>Rider</th><th>Plate</th><th>Expiry Date</th><th>Days Left</th><th class="no-export">Status</th></tr></thead>
+                    <thead><tr><th>#</th><th>Rider</th><th>Plate</th><th>Expiry date</th><th>Days left</th><th class="no-export">Status</th></tr></thead>
                     <tbody>
                     <?php if (!$riders): ?><tr><td colspan="6"><div class="empty-state" style="padding:36px 20px;"><i class="fas fa-inbox"></i><h5>No riders expiring soon</h5></div></td></tr><?php endif; ?>
                     <?php foreach ($riders as $i => $r): $days = (int) $r['days_left']; $badge = $days <= 7 ? 'bg-danger' : ($days <= 14 ? 'bg-warning text-dark' : 'bg-secondary'); ?>
@@ -50,7 +50,7 @@ $riders = fetchAll(
                             <td><?= h($r['bike_plate']) ?></td>
                             <td><?= formatDate($r['expiry_date']) ?></td>
                             <td><span class="badge <?= $badge ?>"><?= $days ?> days</span></td>
-                            <td class="no-export"><a href="<?= BASE_URL ?>/pages/chairperson/rider-profile.php?id=<?= (int)$r['id'] ?>" class="btn btn-sm btn-outline-primary"><i class="fas fa-eye"></i></a></td>
+                            <td class="no-export"><a href="<?= BASE_URL ?>/pages/chairperson/rider-profile.php?id=<?= (int)$r['id'] ?>" class="btn btn-sm btn-outline-primary" aria-label="View <?= h($r['full_name']) ?>" title="View"><i class="fas fa-eye" aria-hidden="true"></i></a></td>
                         </tr>
                     <?php endforeach; ?>
                     </tbody>

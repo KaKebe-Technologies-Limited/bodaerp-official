@@ -39,7 +39,7 @@ $statusTone = ['active' => 'success', 'expired' => 'danger', 'pending' => 'warni
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <?php $pageTitle = 'Rider registry | BodaERP'; require __DIR__ . '/../../partials/head-assets.php'; ?>
+    <?php $pageTitle = 'Rider registry | ' . get_setting('site_name', 'BodaERP'); require __DIR__ . '/../../partials/head-assets.php'; ?>
 </head>
 <body>
 

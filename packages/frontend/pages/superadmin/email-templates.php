@@ -66,7 +66,7 @@ if ($tab === 'log') {
 }
 $templates = fetchAll("SELECT id, code, name, description, subject, is_active, updated_at FROM email_templates ORDER BY code = '_layout', name");
 
-portal_start('superadmin', 'email-templates', 'Email Templates', [
+portal_start('superadmin', 'email-templates', 'Email templates', [
     'subtitle' => 'Every email BodaERP sends, and a log of what was sent',
     'breadcrumbs' => ['Super Admin' => '/pages/superadmin/dashboard.php', 'Email Templates' => $tpl ? '/pages/superadmin/email-templates.php' : null] + ($tpl ? [$tpl['name'] => null] : []),
 ]);

@@ -16,7 +16,7 @@ body.auth-page {
     background: #e6ecf5;
     -webkit-font-smoothing: antialiased;
 }
-body.auth-page a { color: var(--brand); text-decoration: none; }
+body.auth-page a { color: var(--brand-ink, #0459d4); text-decoration: none; }
 body.auth-page a:hover { color: var(--brand-ink); text-decoration: underline; }
 body.auth-page :focus-visible { outline: 3px solid color-mix(in srgb, var(--brand) 45%, transparent); outline-offset: 2px; }
 
@@ -108,7 +108,7 @@ body.auth-page a.logo-section:hover { text-decoration: none; }
 .input-box .reveal { border: 0; background: none; color: #8a93a6; padding: 0 14px; align-self: stretch; cursor: pointer; border-radius: 0 10px 10px 0; }
 .input-box .reveal:hover { color: var(--brand); }
 .input-box.code input { text-align: center; font-size: 1.6rem; font-weight: 700; letter-spacing: 10px; padding-left: 14px; }
-.field-hint { font-size: .78rem; color: #6b7487; margin-top: 6px; }
+.field-hint { font-size: .78rem; color: #566074; margin-top: 6px; }
 .strength { height: 4px; background: #e3e8f0; border-radius: 2px; margin-top: 8px; overflow: hidden; }
 .strength span { display: block; height: 100%; width: 0; transition: width .2s ease; }
 
@@ -167,12 +167,12 @@ body.auth-page a.btn-login { color: #fff; }
     cursor: pointer;
 }
 .demo-row:hover { background: #fff; }
-.demo-row .who { font-weight: 700; color: var(--role); white-space: nowrap; }
+.demo-row .who { font-weight: 700; color: color-mix(in srgb, var(--role) 78%, #001740); white-space: nowrap; }
 .demo-row .who::before { content: ''; display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--role); margin-right: 6px; vertical-align: 1px; }
 .demo-row code { background: #fff; color: #3a4357; padding: 1px 8px; border-radius: 4px; font-weight: 600; font-size: .7rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
-.demo-credentials .demo-keys { color: #6b7487; margin-top: 6px; }
+.demo-credentials .demo-keys { color: #566074; margin-top: 6px; }
 
-.login-footer { text-align: center; margin: 22px 0 0; color: #6b7487; font-size: .74rem; }
+.login-footer { text-align: center; margin: 22px 0 0; color: #566074; font-size: .74rem; }
 
 @media (max-width: 575.98px) {
     .login-card { padding: 30px 20px 22px; border-radius: 16px; }

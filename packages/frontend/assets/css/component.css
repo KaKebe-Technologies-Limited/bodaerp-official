@@ -81,7 +81,7 @@
 }
 
 .nav-tabs .nav-link.active {
-    color: var(--primary-blue);
+    color: var(--brand-ink, #0459d4);
     background: transparent;
 }
 

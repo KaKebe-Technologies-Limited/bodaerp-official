@@ -13,17 +13,15 @@ function automation_tables_ready(): bool {
     static $ready = null;
     if ($ready !== null) return $ready;
     try { fetchValue("SELECT 1 FROM automation_jobs LIMIT 1"); $ready = true; }
-    catch (\Throwable $e) { $ready = false; }
+    catch (\Throwable $e) { db_probe_failed('automation_jobs', $e); $ready = false; }
     return $ready;
 }
-
-// system settings (key/value)
 
 function system_setting(string $key, ?string $default = null): ?string {
     try {
         $v = fetchValue("SELECT setting_value FROM system_settings WHERE setting_key = ?", [$key]);
         return $v === null ? $default : (string) $v;
-    } catch (\Throwable $e) { return $default; }
+    } catch (\Throwable $e) { db_probe_failed("system setting $key", $e); return $default; }
 }
 
 function system_setting_set(string $key, ?string $value): void {
@@ -37,8 +35,6 @@ function automation_cron_token(bool $regenerate = false): string {
     if (!$t) { $t = bin2hex(random_bytes(16)); system_setting_set('cron_token', $t); }
     return $t;
 }
-
-// job registry
 
 function automation_audit(string $details, string $entity = 'automation'): void {
     runQuery("INSERT INTO audit_logs (user_id, user_name_snapshot, role_snapshot, action, entity_type, details, ip_address)
@@ -98,8 +94,6 @@ function automation_register_job(string $code): void {
     runQuery("INSERT IGNORE INTO automation_jobs (job_code, enabled) VALUES (?, ?)", [$code, empty($job['off_by_default']) ? 1 : 0])->close();
 }
 
-// state
-
 /** Jobs merged with their stored state; creates missing rows. */
 function automation_state(): array {
     $jobs = automation_jobs();
@@ -125,8 +119,6 @@ function automation_every_label(int $minutes): string {
     if ($minutes % 60 === 0)   return $minutes === 60 ? 'Hourly' : 'Every ' . ($minutes / 60) . ' hours';
     return "Every {$minutes} min";
 }
-
-// running
 
 function automation_run_job(string $code, string $by = 'manual'): array {
     $jobs = automation_jobs();

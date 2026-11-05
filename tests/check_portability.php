@@ -53,6 +53,13 @@ foreach ($files as $f) {
         if (preg_match_all('/\s(data-[a-z][a-z0-9-]*)(?=[\s=>])/', $src, $dm)) {
             foreach ($dm[1] as $attr) $markupAttrs[$attr] = $rel;
         }
+        $code = implode('', array_map(fn($t) => is_array($t) && in_array($t[0], [T_COMMENT, T_DOC_COMMENT], true) ? '' : (is_array($t) ? $t[1] : $t), token_get_all($src)));
+        if (preg_match('#<script(?![^>]*\s(?:src|nonce)=)(?![^>]*\stype=["\']application/(?:ld\+)?json)[^>]*>#i', $code, $hit)) {
+            $problems[] = "$rel: inline <script> without nonce=\"<?= csp_nonce() ?>\" (the CSP blocks it): " . substr($hit[0], 0, 80);
+        }
+        if (preg_match('#<(?:script[^>]*\ssrc|link[^>]*\shref)=["\']https?://#i', $src, $hit)) {
+            $problems[] = "$rel: loads a script or stylesheet from another site (self-host it in assets/vendor/, see VERSIONS.json): " . substr($hit[0], 0, 80);
+        }
         if (preg_match('/<[a-z][^>]*\son(?:click|change|input|submit|load|error|keyup|keydown|blur|focus)=["\']/i', $src, $hit)) {
             $problems[] = "$rel: inline event handler (use a data attribute, see main.js): " . substr($hit[0], 0, 80);
         }

@@ -6,6 +6,7 @@ require_once __DIR__ . '/app.php';
 require_once __DIR__ . '/functions.php';
 require_once __DIR__ . '/mailer.php';
 require_once __DIR__ . '/backup.php';
+require_once __DIR__ . '/sms.php';
 
 const AUTOMATION_EMAIL_BATCH = 100;
 
@@ -45,6 +46,40 @@ function automation_send_batch(string $kind, array $messages): int {
     return $sent;
 }
 
+/** Same once-only rule as email. A failed SMS is released for the next run and stops the batch (gateway down or out of credit). */
+function automation_sms_batch(string $kind, array $messages): int {
+    if (!sms_ready()) return 0;
+    $sent = 0;
+    foreach ($messages as $message) {
+        if ($sent >= AUTOMATION_EMAIL_BATCH) break;
+        if (!automation_claim($kind, $message['target'], $message['period'])) continue;
+        if (!send_template_sms($message['template'], $message['phone'], $message['vars'], $message['language'])) {
+            runQuery("DELETE FROM automation_sends WHERE kind = ? AND target = ? AND period = ?", [$kind, $message['target'], $message['period']])->close();
+            throw new RuntimeException("Stopped after {$sent} SMS: EgoSMS refused {$message['template']}.");
+        }
+        $sent++;
+    }
+    return $sent;
+}
+
+/** Riders who can be texted, keyed by rider id, from one query instead of one per rider. */
+function automation_sms_targets(array $riderIds): array {
+    if (!$riderIds || !sms_ready()) return [];
+    $marks = implode(',', array_fill(0, count($riderIds), '?'));
+    $rows = fetchAll("SELECT r.id, r.phone, r.language, u.phone AS account_phone FROM riders r LEFT JOIN users u ON u.id = r.user_id
+        WHERE r.id IN ($marks) AND r.sms_opt_out = 0 AND COALESCE(u.notify_sms, 1) = 1", array_map('intval', $riderIds));
+    $out = [];
+    foreach ($rows as $r) {
+        $phone = sms_normalize_phone($r['phone']) ?? sms_normalize_phone($r['account_phone']);
+        if ($phone) $out[(int) $r['id']] = ['phone' => $phone, 'language' => language_or_default($r['language'])];
+    }
+    return $out;
+}
+
+function automation_sms_note(int $sent): string {
+    return sms_ready() ? " Texted {$sent}." : '';
+}
+
 function automation_email_note(int $sent): string {
     if (!automation_email_ready()) return 'Email is not configured, so nothing was emailed.';
     return "Emailed {$sent}.";
@@ -60,7 +95,23 @@ function job_renewal_reminders(): string {
                           AND n.created_at >= DATE_SUB(NOW(), INTERVAL 14 DAY))");
     $inAppCount = max(0, $inApp->affected_rows);
     $inApp->close();
-    if (!automation_email_ready()) return "{$inAppCount} in-app reminder(s). " . automation_email_note(0);
+
+    $smsRiders = fetchAll("SELECT r.id, r.id_number, r.expiry_date, DATEDIFF(r.expiry_date, CURDATE()) AS days_left
+        FROM riders r JOIN cities c ON c.id = r.city_id LEFT JOIN users u ON u.id = r.user_id
+        WHERE r.status = 'active' AND r.deleted_at IS NULL AND c.status = 'active' AND (u.id IS NULL OR u.status = 'active')
+          AND r.expiry_date BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL c.reminder_days DAY)");
+    $targets = automation_sms_targets(array_column($smsRiders, 'id'));
+    $texts = [];
+    foreach ($smsRiders as $rider) {
+        if (!isset($targets[(int) $rider['id']])) continue;
+        $daysLeft = (int) $rider['days_left'];
+        // SMS costs money, so two texts per permit: entering the window and three days out.
+        $texts[] = ['target' => (string) $rider['id'], 'period' => $rider['expiry_date'] . '|' . ($daysLeft <= 3 ? 'd3' : 'window'), 'template' => 'permit_expiring']
+            + $targets[(int) $rider['id']] + ['vars' => ['id_number' => $rider['id_number'], 'expiry_date' => formatDate($rider['expiry_date']),
+                'days_left' => $daysLeft, 'ussd_hint' => sms_ussd_hint()]];
+    }
+    $smsNote = automation_sms_note(automation_sms_batch('sms_permit_expiring', $texts));
+    if (!automation_email_ready()) return "{$inAppCount} in-app reminder(s). " . automation_email_note(0) . $smsNote;
 
     $riders = fetchAll("SELECT r.id, r.full_name, r.id_number, r.expiry_date, DATEDIFF(r.expiry_date, CURDATE()) AS days_left,
             COALESCE(NULLIF(u.email, ''), NULLIF(r.email, '')) AS to_email
@@ -80,11 +131,11 @@ function job_renewal_reminders(): string {
             'days_left' => $daysLeft, 'portal_url' => app_url('pages/rider/renewal-status.php'),
         ]];
     }
-    return "{$inAppCount} in-app reminder(s). " . automation_email_note(automation_send_batch('permit_expiring', $messages));
+    return "{$inAppCount} in-app reminder(s). " . automation_email_note(automation_send_batch('permit_expiring', $messages)) . $smsNote;
 }
 
 function job_overdue_notices(): string {
-    $riders = fetchAll("SELECT r.id, r.user_id, r.full_name, r.id_number, r.expiry_date, DATEDIFF(CURDATE(), r.expiry_date) AS days_overdue,
+    $riders = fetchAll("SELECT r.id, r.user_id, r.full_name, r.id_number, r.city_id, r.annual_tax, r.expiry_date, DATEDIFF(CURDATE(), r.expiry_date) AS days_overdue,
             COALESCE(NULLIF(u.email, ''), NULLIF(r.email, '')) AS to_email, COALESCE(u.notify_email, 1) AS wants_email, COALESCE(u.notify_in_app, 0) AS wants_in_app
         FROM riders r JOIN cities c ON c.id = r.city_id LEFT JOIN users u ON u.id = r.user_id
         WHERE r.status IN ('active', 'expired') AND r.deleted_at IS NULL AND c.status = 'active'
@@ -92,14 +143,21 @@ function job_overdue_notices(): string {
         ORDER BY r.expiry_date DESC");
     $inAppCount = 0;
     $messages = [];
+    $texts = [];
+    $targets = automation_sms_targets(array_column($riders, 'id'));
     foreach ($riders as $rider) {
         $overdue = (int) $rider['days_overdue'];
         $milestone = $overdue >= 60 ? 'd60' : ($overdue >= 30 ? 'd30' : 'd7');
         $period = $rider['expiry_date'] . '|' . $milestone;
         if ((int) $rider['wants_in_app'] === 1 && automation_claim('overdue_in_app', (string) $rider['id'], $period)) {
-            runQuery("INSERT INTO notifications (rider_id, type, message) VALUES (?, 'Renewal Reminder', ?)",
-                [$rider['id'], 'Your permit expired on ' . formatDate($rider['expiry_date']) . ". Renew it to keep riding legally."])->close();
+            rider_notify((int) $rider['id'], 'Renewal Reminder', 'Your permit expired on ' . formatDate($rider['expiry_date']) . '. Renew it to keep riding legally.');
             $inAppCount++;
+        }
+        if (isset($targets[(int) $rider['id']])) {
+            $texts[] = ['target' => (string) $rider['id'], 'period' => $period, 'template' => 'permit_overdue'] + $targets[(int) $rider['id']] + ['vars' => [
+                'id_number' => $rider['id_number'], 'expiry_date' => formatDate($rider['expiry_date']),
+                'amount_due' => formatCurrency(permit_amount_due($rider)['total']), 'ussd_hint' => sms_ussd_hint(),
+            ]];
         }
         if ($rider['to_email'] && (int) $rider['wants_email'] === 1) {
             $messages[] = ['target' => (string) $rider['id'], 'period' => $period, 'to' => $rider['to_email'], 'template' => 'permit_overdue', 'vars' => [
@@ -108,8 +166,9 @@ function job_overdue_notices(): string {
             ]];
         }
     }
+    $smsNote = automation_sms_note(automation_sms_batch('sms_permit_overdue', $texts));
     $sent = automation_email_ready() ? automation_send_batch('permit_overdue', $messages) : 0;
-    return "{$inAppCount} in-app notice(s). " . automation_email_note($sent);
+    return "{$inAppCount} in-app notice(s). " . automation_email_note($sent) . $smsNote;
 }
 
 function job_digest_chairpersons(): string {
@@ -182,7 +241,29 @@ function job_backup_database(): string {
     $backup = backup_create();
     $removed = backup_prune(max(1, (int) env('BACKUP_KEEP_DAYS', '14')));
     automation_audit("Automatic backup {$backup['name']} (" . number_format($backup['bytes'] / 1048576, 1) . ' MB)', 'backup');
-    return number_format($backup['bytes'] / 1048576, 1) . ' MB, verified, ' . ($backup['encrypted'] ? 'encrypted' : 'NOT encrypted') . ". Removed {$removed} old backup(s).";
+    return number_format($backup['bytes'] / 1048576, 1) . ' MB, verified, ' . ($backup['encrypted'] ? 'encrypted' : 'NOT encrypted') . ". Removed {$removed} old backup(s)."
+        . backup_send_offsite($backup);
+}
+
+const BACKUP_EMAIL_MAX_BYTES = 18 * 1048576;
+
+/**
+ * Emails the backup to the backup_email setting so a copy lives off this server. Only encrypted backups leave
+ * the server: an unencrypted dump would put every rider's NIN and phone in someone's inbox.
+ */
+function backup_send_offsite(array $backup): string {
+    $to = trim(get_setting('backup_email', ''));
+    if ($to === '') return '';
+    if (!$backup['encrypted']) return ' Not emailed: set BACKUP_KEY so the copy is encrypted first.';
+    if (!automation_email_ready()) return ' Not emailed: email is not configured.';
+    if ($backup['bytes'] > BACKUP_EMAIL_MAX_BYTES) return ' Not emailed: the file is larger than most mail servers accept (18 MB).';
+    $site = get_setting('site_name', 'BodaERP');
+    $html = '<p>The nightly ' . h($site) . ' database backup is attached (' . h($backup['name']) . ', ' . number_format($backup['bytes'] / 1048576, 1) . ' MB).</p>'
+        . '<p>It is encrypted with the BACKUP_KEY from the server\'s .env file. Keep that key somewhere safe and separate from this mailbox: without it the file cannot be restored.</p>';
+    $ok = send_email($to, "$site backup " . date('Y-m-d'), $html, '', 'backup_offsite', null,
+        [['name' => $backup['name'], 'path' => $backup['path'], 'type' => 'application/octet-stream']]);
+    if (!$ok) throw new RuntimeException('The backup was saved on the server, but emailing it to the backup address failed.');
+    return ' Emailed to the backup address.';
 }
 
 function job_retention_cleanup(): string {

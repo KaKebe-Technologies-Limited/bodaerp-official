@@ -24,7 +24,7 @@ $worst = $stages ? end($stages)['performance'] : 0;
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <?php $pageTitle = 'Stage Performance | BodaERP'; require __DIR__ . '/../../partials/head-assets.php'; ?>
+    <?php $pageTitle = 'Stage performance | ' . get_setting('site_name', 'BodaERP'); require __DIR__ . '/../../partials/head-assets.php'; ?>
     <style>
     </style>
 </head>
@@ -40,13 +40,13 @@ $worst = $stages ? end($stages)['performance'] : 0;
 
     <div class="content-area">
         <div class="row g-3 mb-4">
-            <div class="col-md-4"><div class="stat-hero-card tone-green"><div class="stat-hero-icon"><i class="fas fa-trophy"></i></div><div><div class="stat-hero-value"><?= $best ?>%</div><div class="stat-hero-label">Best Performing</div></div></div></div>
-            <div class="col-md-4"><div class="stat-hero-card tone-gold"><div class="stat-hero-icon"><i class="fas fa-chart-line"></i></div><div><div class="stat-hero-value"><?= $avg ?>%</div><div class="stat-hero-label">Average Score</div></div></div></div>
-            <div class="col-md-4"><div class="stat-hero-card tone-red"><div class="stat-hero-icon"><i class="fas fa-exclamation-triangle"></i></div><div><div class="stat-hero-value"><?= $worst ?>%</div><div class="stat-hero-label">Needs Attention</div></div></div></div>
+            <div class="col-md-4"><div class="stat-hero-card tone-green"><div class="stat-hero-icon"><i class="fas fa-trophy"></i></div><div><div class="stat-hero-value"><?= $best ?>%</div><div class="stat-hero-label">Best performing</div></div></div></div>
+            <div class="col-md-4"><div class="stat-hero-card tone-gold"><div class="stat-hero-icon"><i class="fas fa-chart-line"></i></div><div><div class="stat-hero-value"><?= $avg ?>%</div><div class="stat-hero-label">Average score</div></div></div></div>
+            <div class="col-md-4"><div class="stat-hero-card tone-red"><div class="stat-hero-icon"><i class="fas fa-exclamation-triangle"></i></div><div><div class="stat-hero-value"><?= $worst ?>%</div><div class="stat-hero-label">Needs attention</div></div></div></div>
         </div>
 
         <div class="card mb-4"><div class="card-body">
-            <h6 class="fw-bold mb-3">Performance Score by Stage <small class="text-muted">(60% compliance + 40% revenue share)</small></h6>
+            <h6 class="fw-bold mb-3">Performance score by stage <small class="text-muted">(60% compliance + 40% revenue share)</small></h6>
             <div id="performanceChart"></div>
         </div></div>
 
@@ -83,7 +83,7 @@ $worst = $stages ? end($stages)['performance'] : 0;
 </div>
 
 <?php require __DIR__ . '/../../partials/scripts-footer.php'; ?>
-<script>
+<script nonce="<?= csp_nonce() ?>">
     new ApexCharts(document.querySelector('#performanceChart'), {
         series: [{ name: 'Performance %', data: <?= js_json(array_column($stages, 'performance')) ?> }],
         chart: { type: 'bar', height: 320, toolbar: { show: false } },

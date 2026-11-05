@@ -61,10 +61,10 @@ if ($type === 'image') $where .= " AND m.mime LIKE 'image/%'";
 if ($type === 'pdf') $where .= " AND m.mime = 'application/pdf'";
 if ($q !== '') { $where .= ' AND (m.original_name LIKE ? OR m.alt_text LIKE ?)'; $params[] = "%$q%"; $params[] = "%$q%"; }
 $pg = paginate((int) fetchValue("SELECT COUNT(*) FROM media m $where", $params), 24);
-$items = fetchAll("SELECT m.*, u.name AS uploader FROM media m LEFT JOIN users u ON u.id = m.uploaded_by $where ORDER BY m.id DESC LIMIT {$pg['per_page']} OFFSET {$pg['offset']}", $params);
+$mediaFiles = fetchAll("SELECT m.*, u.name AS uploader FROM media m LEFT JOIN users u ON u.id = m.uploaded_by $where ORDER BY m.id DESC LIMIT {$pg['per_page']} OFFSET {$pg['offset']}", $params);
 $fmtSize = fn(int $b) => $b >= 1048576 ? round($b / 1048576, 1) . ' MB' : max(1, round($b / 1024)) . ' KB';
 
-portal_start('superadmin', 'media', 'Media Library', [
+portal_start('superadmin', 'media', 'Media library', [
     'subtitle' => 'Images and PDFs for pages, emails and branding',
     'breadcrumbs' => ['Super Admin' => '/pages/superadmin/dashboard.php', 'Media Library' => null],
 ]);
@@ -83,13 +83,13 @@ portal_start('superadmin', 'media', 'Media Library', [
         <div class="col-md-3"><select class="form-select" name="type" aria-label="File type" data-autosubmit><option value="">All files</option><option value="image"<?= $type === 'image' ? ' selected' : '' ?>>Images</option><option value="pdf"<?= $type === 'pdf' ? ' selected' : '' ?>>PDF documents</option></select></div>
         <div class="col-auto"><button class="btn btn-outline-primary">Filter</button></div>
     </form>
-    <?php if (!$items): echo empty_state('fa-photo-film', 'No files yet', 'Upload an image or PDF above.'); else: ?>
+    <?php if (!$mediaFiles): echo empty_state('fa-photo-film', 'No files yet', 'Upload an image or PDF above.'); else: ?>
     <form method="post" id="bulkMedia" data-confirm="Delete the selected files? Files still used on a page, in an email or in settings are kept.">
         <?= csrf_field() ?><input type="hidden" name="action" value="bulk_delete">
         <button class="btn btn-sm btn-outline-danger mb-3"><i class="fas fa-trash me-1"></i>Delete selected</button>
     </form>
     <div class="row g-3">
-        <?php foreach ($items as $m): $url = media_url($m['path']); $isImg = str_starts_with($m['mime'], 'image/'); ?>
+        <?php foreach ($mediaFiles as $m): $url = media_url($m['path']); $isImg = str_starts_with($m['mime'], 'image/'); ?>
         <div class="col-6 col-md-4 col-xl-3">
             <div class="media-tile">
                 <div class="thumb"><?= $isImg ? '<img src="' . h($url) . '" alt="' . h($m['alt_text'] ?? '') . '" loading="lazy">' : '<i class="fas fa-file-pdf fa-3x text-danger" aria-hidden="true"></i>' ?></div>

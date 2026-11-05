@@ -32,14 +32,14 @@ if (!$flagScanResult) anomaly_scan_if_stale('auto');
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <?php $pageTitle = 'Data Quality & Flags | BodaERP'; require __DIR__ . '/../../partials/head-assets.php'; ?>
+    <?php $pageTitle = 'Data quality & flags | ' . get_setting('site_name', 'BodaERP'); require __DIR__ . '/../../partials/head-assets.php'; ?>
 </head>
 <body>
 
 <?php require __DIR__ . '/../../partials/sidebar-superadmin.php'; ?>
 
 <div class="main-content" id="mainContent">
-    <?php $pageTitle = 'Data Quality & Flags'; $pageSubtitle = 'Detect duplicates, fraud signals and inconsistent records'; require __DIR__ . '/../../partials/topheader.php'; ?>
+    <?php $pageTitle = 'Data quality & flags'; $pageSubtitle = 'Detect duplicates, fraud signals and inconsistent records'; require __DIR__ . '/../../partials/topheader.php'; ?>
     <div class="content-area">
         <?php require __DIR__ . '/../../partials/flags-panel.php'; ?>
     </div>

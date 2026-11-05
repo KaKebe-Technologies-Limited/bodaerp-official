@@ -1,9 +1,7 @@
-# ============================================================
-# BodaERP - URL mapping and protection (needs mod_rewrite, AllowOverride All)
+# BodaERP: URL mapping and protection (needs mod_rewrite, AllowOverride All)
 # All rules use paths relative to this folder, so the site works in any XAMPP
 # subfolder (http://localhost/bodaerp-official/) and at a domain root alike:
 # no RewriteBase is needed.
-# ============================================================
 Options -Indexes
 DirectoryIndex index.php
 
@@ -14,7 +12,7 @@ DirectoryIndex index.php
 RewriteEngine On
 
 # Never serve secrets, tooling, docs, VCS metadata or SQL dumps
-RewriteRule (^|/)\.(env|git|claude|vscode|docker) - [F,L]
+RewriteRule (^|/)\.(?!well-known/) - [F,L]
 RewriteRule \.(sql|md|yml|yaml|log|sh|ini|lock|dist)$ - [F,L]
 RewriteRule ^(database|tests|storage|docker|docs)(/|$) - [F,L]
 RewriteRule ^ipn_logs\.txt$ - [F,L]

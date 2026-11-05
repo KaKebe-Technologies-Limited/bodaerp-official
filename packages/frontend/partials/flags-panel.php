@@ -47,7 +47,7 @@ $cityList = $flagScopeCity ? [] : fetchAll("SELECT id, name FROM cities ORDER BY
 $qs = function (array $over = []) use ($filters) {
     return http_build_query(array_filter(array_merge($filters, $over), fn($v) => $v !== '' && $v !== null));
 };
-$sevStyle = ['high' => 'background:#e5484d;', 'medium' => 'background:#f59e0b;color:#1f1b3a;', 'low' => 'background:#2cc6a8;'];
+$sevStyle = ['high' => 'background:#e5484d;', 'medium' => 'background:#f59e0b;color:#1f1b3a;', 'low' => 'background:#0f766e;'];
 $stBadge  = ['open' => ['Open', 'danger'], 'confirmed' => ['Confirmed', 'warning text-dark'], 'dismissed' => ['Dismissed', 'secondary'], 'resolved' => ['Auto-resolved', 'success']];
 $ruleLabels = array_map(fn($r) => $r[0], $rules);
 ?>
@@ -56,7 +56,7 @@ $ruleLabels = array_map(fn($r) => $r[0], $rules);
     .flag-rule-card .ico { width:38px; height:38px; border-radius:12px; display:flex; align-items:center; justify-content:center; flex-shrink:0; color:#fff; font-size:0.9rem; }
     .flag-rule-card h6 { font-size:0.84rem; font-weight:700; margin:0 0 3px; }
     .flag-rule-card p { font-size:0.75rem; color:var(--text-muted); margin:0; line-height:1.45; }
-    .flag-sev { display:inline-block; padding:3px 11px; border-radius:99px; font-size:0.66rem; font-weight:800; color:#fff; letter-spacing:.4px; text-transform:uppercase; }
+    .flag-sev { display:inline-block; padding:3px 11px; border-radius:99px; font-size:0.75rem; font-weight:600; color:#fff; }
     .flag-title { font-weight:700; font-size:0.85rem; color:var(--text-dark); }
     .flag-detail { font-size:0.76rem; color:var(--text-muted); line-height:1.45; max-width:460px; }
     .flag-note { font-size:0.72rem; color:var(--primary-blue-dark); background:var(--primary-blue-light); border-radius:8px; padding:3px 9px; display:inline-block; margin-top:4px; }
@@ -80,7 +80,7 @@ $ruleLabels = array_map(fn($r) => $r[0], $rules);
 <div class="dash-banner theme-dark">
     <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 dash-banner-row">
         <div>
-            <h4>Data Integrity Monitor</h4>
+            <h4>Data integrity monitor</h4>
             <p>Explainable AI-assisted checks across riders, payments, enforcement and sign-ins. Every flag states its reason, is reviewed by a person, and clears itself once the data is fixed.</p>
         </div>
         <div class="text-end">
@@ -96,11 +96,11 @@ $ruleLabels = array_map(fn($r) => $r[0], $rules);
 </div>
 
 <div class="row g-3 row-cols-2 row-cols-xl-5 mb-4">
-    <div class="col"><div class="stat-hero-card tone-dark"><div class="stat-hero-icon"><i class="fas fa-flag"></i></div><div><div class="stat-hero-value"><?= number_format($sum['open']) ?></div><div class="stat-hero-label">Open Flags</div></div></div></div>
-    <div class="col"><div class="stat-hero-card tone-red"><div class="stat-hero-icon"><i class="fas fa-exclamation-circle"></i></div><div><div class="stat-hero-value"><?= number_format($sum['sev']['high']) ?></div><div class="stat-hero-label">High Severity</div></div></div></div>
-    <div class="col"><div class="stat-hero-card tone-gold"><div class="stat-hero-icon"><i class="fas fa-exclamation-triangle"></i></div><div><div class="stat-hero-value"><?= number_format($sum['sev']['medium']) ?></div><div class="stat-hero-label">Medium Severity</div></div></div></div>
-    <div class="col"><div class="stat-hero-card tone-blue"><div class="stat-hero-icon"><i class="fas fa-user-tag"></i></div><div><div class="stat-hero-value"><?= number_format($sum['flagged_riders']) ?></div><div class="stat-hero-label">Riders Flagged</div></div></div></div>
-    <div class="col"><div class="stat-hero-card tone-green"><div class="stat-hero-icon"><i class="fas fa-heartbeat"></i></div><div><div class="stat-hero-value"><?= $sum['health'] ?>%</div><div class="stat-hero-label">Data Health Score</div></div></div></div>
+    <div class="col"><div class="stat-hero-card tone-dark"><div class="stat-hero-icon"><i class="fas fa-flag"></i></div><div><div class="stat-hero-value"><?= number_format($sum['open']) ?></div><div class="stat-hero-label">Open flags</div></div></div></div>
+    <div class="col"><div class="stat-hero-card tone-red"><div class="stat-hero-icon"><i class="fas fa-exclamation-circle"></i></div><div><div class="stat-hero-value"><?= number_format($sum['sev']['high']) ?></div><div class="stat-hero-label">High severity</div></div></div></div>
+    <div class="col"><div class="stat-hero-card tone-gold"><div class="stat-hero-icon"><i class="fas fa-exclamation-triangle"></i></div><div><div class="stat-hero-value"><?= number_format($sum['sev']['medium']) ?></div><div class="stat-hero-label">Medium severity</div></div></div></div>
+    <div class="col"><div class="stat-hero-card tone-blue"><div class="stat-hero-icon"><i class="fas fa-user-tag"></i></div><div><div class="stat-hero-value"><?= number_format($sum['flagged_riders']) ?></div><div class="stat-hero-label">Riders flagged</div></div></div></div>
+    <div class="col"><div class="stat-hero-card tone-green"><div class="stat-hero-icon"><i class="fas fa-heartbeat"></i></div><div><div class="stat-hero-value"><?= $sum['health'] ?>%</div><div class="stat-hero-label">Data health score</div></div></div></div>
 </div>
 
 <div class="row g-3 g-md-4 mb-4">
@@ -142,22 +142,22 @@ $ruleLabels = array_map(fn($r) => $r[0], $rules);
 
 <div class="card mb-3 no-print"><div class="card-body">
     <form class="row g-2 align-items-center" method="get">
-        <div class="col-lg-3 col-md-6"><input type="text" class="form-control" name="q" value="<?= h($filters['q']) ?>" placeholder="Search rider, plate, finding..."></div>
+        <div class="col-lg-3 col-md-6"><input aria-label="Search" type="text" class="form-control" name="q" value="<?= h($filters['q']) ?>" placeholder="Search rider, plate, finding..."></div>
         <div class="col-lg-2 col-md-6">
-            <select class="form-select" name="status">
+            <select aria-label="Filter by status" class="form-select" name="status">
                 <?php foreach (['active' => 'Needs review', 'open' => 'Open only', 'confirmed' => 'Confirmed', 'dismissed' => 'Dismissed', 'resolved' => 'Auto-resolved', 'all' => 'All'] as $v => $l): ?>
                     <option value="<?= $v ?>" <?= $filters['status'] === $v ? 'selected' : '' ?>><?= $l ?></option>
                 <?php endforeach; ?>
             </select>
         </div>
         <div class="col-lg-2 col-md-4">
-            <select class="form-select" name="severity">
+            <select aria-label="Filter by severity" class="form-select" name="severity">
                 <option value="">All severities</option>
                 <?php foreach (['high', 'medium', 'low'] as $s): ?><option value="<?= $s ?>" <?= $filters['severity'] === $s ? 'selected' : '' ?>><?= ucfirst($s) ?></option><?php endforeach; ?>
             </select>
         </div>
         <div class="col-lg-<?= $flagScopeCity ? 4 : 2 ?> col-md-4">
-            <select class="form-select" name="rule">
+            <select aria-label="Filter by check" class="form-select" name="rule">
                 <option value="">All checks</option>
                 <?php foreach ($cats as $ck => [$cl]): ?>
                     <optgroup label="<?= h($cl) ?>">
@@ -170,13 +170,13 @@ $ruleLabels = array_map(fn($r) => $r[0], $rules);
         </div>
         <?php if (!$flagScopeCity): ?>
         <div class="col-lg-2 col-md-4">
-            <select class="form-select" name="city">
+            <select aria-label="Filter by city" class="form-select" name="city">
                 <option value="">All cities</option>
                 <?php foreach ($cityList as $c): ?><option value="<?= h($c['id']) ?>" <?= $filters['city'] === $c['id'] ? 'selected' : '' ?>><?= h($c['name']) ?></option><?php endforeach; ?>
             </select>
         </div>
         <?php endif; ?>
-        <div class="col-lg-1 col-md-12"><button type="submit" class="btn btn-primary w-100"><i class="fas fa-filter"></i></button></div>
+        <div class="col-lg-1 col-md-12"><button type="submit" class="btn btn-primary w-100" aria-label="Apply filters" title="Apply filters"><i class="fas fa-filter" aria-hidden="true"></i></button></div>
     </form>
 </div></div>
 
@@ -242,14 +242,14 @@ $ruleLabels = array_map(fn($r) => $r[0], $rules);
     <form method="post">
         <?= csrf_field() ?>
         <input type="hidden" name="action" value="review"><input type="hidden" name="flag_id" id="rvFlagId"><input type="hidden" name="decision" id="rvDecision">
-        <div class="modal-header" style="background:var(--primary-blue-gradient);color:#fff;border-bottom:none;">
+        <div class="modal-header" style="background:var(--primary-blue);color:#fff;border-bottom:none;">
             <h5 class="modal-title fw-bold" id="rvTitle">Review flag</h5>
             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body p-4">
             <p class="fw-semibold mb-2" id="rvFinding"></p>
-            <label class="form-label fw-semibold">Note <span class="text-muted fw-normal">(optional, visible to government viewers)</span></label>
-            <textarea class="form-control" name="note" rows="3" maxlength="300" placeholder="e.g. Verified with the chairperson: plate was re-registered after a sale."></textarea>
+            <label for="f-note" class="form-label fw-semibold">Note <span class="text-muted fw-normal">(optional, visible to government viewers)</span></label>
+            <textarea id="f-note" class="form-control" name="note" rows="3" maxlength="300" placeholder="e.g. Verified with the chairperson: plate was re-registered after a sale."></textarea>
         </div>
         <div class="modal-footer border-0 pb-3">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
@@ -257,7 +257,7 @@ $ruleLabels = array_map(fn($r) => $r[0], $rules);
         </div>
     </form>
 </div></div></div>
-<script>
+<script nonce="<?= csp_nonce() ?>">
     function openReview(id, decision, finding) {
         const t = { confirm: ['Confirm as real issue', 'Confirm'], dismiss: ['Dismiss as false positive', 'Dismiss'], reopen: ['Reopen flag', 'Reopen'] }[decision];
         document.getElementById('rvFlagId').value = id;
@@ -270,7 +270,7 @@ $ruleLabels = array_map(fn($r) => $r[0], $rules);
 </script>
 <?php endif; ?>
 
-<script>
+<script nonce="<?= csp_nonce() ?>">
     <?php if ($sum['open'] > 0): ?>
     new ApexCharts(document.querySelector('#sevChart'), {
         series: [<?= $sum['sev']['high'] ?>, <?= $sum['sev']['medium'] ?>, <?= $sum['sev']['low'] ?>],

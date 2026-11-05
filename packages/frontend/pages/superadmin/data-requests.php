@@ -16,8 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             [$status, $response ?: null, $_SESSION['user_id'], $status, $id]);
         $req = fetchOne("SELECT rider_id, type FROM data_requests WHERE id = ?", [$id]);
         if ($req && $req['rider_id'] && $status !== 'open') {
-            runQuery("INSERT INTO notifications (rider_id, type, message) VALUES (?, 'Data Request', ?)",
-                [$req['rider_id'], 'Your request "' . ($types[$req['type']] ?? $req['type']) . '" was ' . $status . ': ' . mb_substr($response, 0, 400)]);
+            rider_notify((int) $req['rider_id'], 'Data Request', 'Your request "' . ($types[$req['type']] ?? $req['type']) . '" was ' . $status . ($response !== '' ? ': ' . $response : '.'));
         }
         audit_log('UPDATE', 'data_request', (string) $id, "Marked $status");
         flash('success', 'Request updated and the rider was notified in their portal.');
@@ -31,7 +30,7 @@ $rows = fetchAll("SELECT d.*, r.full_name, r.id_number, r.id AS rid, c.name AS c
     FROM data_requests d LEFT JOIN riders r ON r.id = d.rider_id LEFT JOIN cities c ON c.id = r.city_id LEFT JOIN stages s ON s.id = r.stage_id
     LEFT JOIN users h ON h.id = d.handled_by WHERE d.status = ? ORDER BY d.created_at " . ($status === 'open' ? 'ASC' : 'DESC') . " LIMIT {$pg['per_page']} OFFSET {$pg['offset']}", [$status]);
 
-portal_start('superadmin', 'data-requests', 'Rider Data Requests', [
+portal_start('superadmin', 'data-requests', 'Rider data requests', [
     'subtitle' => 'Corrections and deletion requests sent from the rider portal',
     'breadcrumbs' => ['Super Admin' => '/pages/superadmin/dashboard.php', 'Rider Data Requests' => null],
 ]);
@@ -40,7 +39,7 @@ portal_start('superadmin', 'data-requests', 'Rider Data Requests', [
     <?php foreach (['open' => 'Open', 'completed' => 'Completed', 'rejected' => 'Rejected'] as $k => $l): ?><li class="nav-item"><a class="nav-link<?= $status === $k ? ' active' : '' ?>" href="?status=<?= $k ?>"><?= $l ?></a></li><?php endforeach; ?>
 </ul>
 <?php if (!$rows): ?>
-    <div class="card"><div class="card-body"><?= empty_state('fa-user-shield', 'No ' . $status . ' requests', 'Riders send these from My Account in their portal.') ?></div></div>
+    <div class="card"><div class="card-body"><?= empty_state('fa-user-shield', 'No ' . $status . ' requests', 'Riders send these from My account in their portal.') ?></div></div>
 <?php endif; ?>
 <?php foreach ($rows as $r): ?>
 <div class="card mb-3"><div class="card-body">

@@ -29,7 +29,7 @@ $agencyLabel = $_SESSION['agency_name'] ?? 'Government Portal';
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <?php $pageTitle = 'National Reports | BodaERP'; require __DIR__ . '/../../partials/head-assets.php'; ?>
+    <?php $pageTitle = 'National reports | ' . get_setting('site_name', 'BodaERP'); require __DIR__ . '/../../partials/head-assets.php'; ?>
 </head>
 <body>
 
@@ -44,17 +44,17 @@ $agencyLabel = $_SESSION['agency_name'] ?? 'Government Portal';
     <div class="content-area">
 
         <div class="row g-3 row-cols-2 row-cols-xl-4 mb-4">
-            <div class="col"><div class="stat-hero-card tone-blue"><div class="stat-hero-icon"><i class="fas fa-city"></i></div><div><div class="stat-hero-value"><?= count($rows) ?></div><div class="stat-hero-label">Total Cities</div></div></div></div>
-            <div class="col"><div class="stat-hero-card tone-green"><div class="stat-hero-icon"><i class="fas fa-users"></i></div><div><div class="stat-hero-value"><?= number_format($totalRiders) ?></div><div class="stat-hero-label">Total Riders</div></div></div></div>
-            <div class="col"><div class="stat-hero-card tone-gold"><div class="stat-hero-icon"><i class="fas fa-money-bill-wave"></i></div><div><div class="stat-hero-value">UGX <?= $totalRevenue >= 1000000 ? number_format($totalRevenue/1000000,1).'M' : number_format($totalRevenue) ?></div><div class="stat-hero-label">National Revenue</div></div></div></div>
-            <div class="col"><div class="stat-hero-card tone-gold"><div class="stat-hero-icon"><i class="fas fa-university"></i></div><div><div class="stat-hero-value">UGX <?= $totalGovShare >= 1000000 ? number_format($totalGovShare/1000000,1).'M' : number_format(round($totalGovShare)) ?></div><div class="stat-hero-label">Government Share</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-blue"><div class="stat-hero-icon"><i class="fas fa-city"></i></div><div><div class="stat-hero-value"><?= count($rows) ?></div><div class="stat-hero-label">Total cities</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-green"><div class="stat-hero-icon"><i class="fas fa-users"></i></div><div><div class="stat-hero-value"><?= number_format($totalRiders) ?></div><div class="stat-hero-label">Total riders</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-gold"><div class="stat-hero-icon"><i class="fas fa-money-bill-wave"></i></div><div><div class="stat-hero-value">UGX <?= $totalRevenue >= 1000000 ? number_format($totalRevenue/1000000,1).'M' : number_format($totalRevenue) ?></div><div class="stat-hero-label">National revenue</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-gold"><div class="stat-hero-icon"><i class="fas fa-university"></i></div><div><div class="stat-hero-value">UGX <?= $totalGovShare >= 1000000 ? number_format($totalGovShare/1000000,1).'M' : number_format(round($totalGovShare)) ?></div><div class="stat-hero-label">Government share</div></div></div></div>
         </div>
 
         <div class="row g-3 g-md-4 mb-4">
             <div class="col-lg-6">
                 <div class="card h-100">
                     <div class="card-body">
-                        <h6 class="section-heading mb-3">Rider Demographics (Gender)</h6>
+                        <h6 class="section-heading mb-3">Rider demographics (gender)</h6>
                         <div id="genderChart"></div>
                     </div>
                 </div>
@@ -62,7 +62,7 @@ $agencyLabel = $_SESSION['agency_name'] ?? 'Government Portal';
             <div class="col-lg-6">
                 <div class="card h-100">
                     <div class="card-body">
-                        <h6 class="section-heading mb-3">Registration Status</h6>
+                        <h6 class="section-heading mb-3">Registration status</h6>
                         <div id="statusChart"></div>
                     </div>
                 </div>
@@ -72,22 +72,22 @@ $agencyLabel = $_SESSION['agency_name'] ?? 'Government Portal';
         <div class="card">
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-                    <h6 class="fw-bold mb-0">National Revenue Report by City</h6>
+                    <h6 class="fw-bold mb-0">National revenue report by city</h6>
                     <?php $exportTableId='natReportsTable'; $exportFilename='national_revenue_report'; $exportTitle='National Revenue Report'; require __DIR__ . '/../../partials/export-toolbar.php'; ?>
                 </div>
                 <div class="table-responsive">
                     <table class="table table-hover align-middle" id="natReportsTable">
-                        <thead><tr><th>City</th><th>Riders</th><th>Stages</th><th>Annual Fee</th><th>Revenue Collected</th><th>Government Share</th><th>Status</th></tr></thead>
+                        <thead><tr><th>City</th><th>Riders</th><th>Stages</th><th>Annual fee</th><th>Revenue collected</th><th>Government share</th><th>Status</th></tr></thead>
                         <tbody>
                         <?php foreach ($rows as $t): $sc = ['active'=>'success','pending'=>'warning','inactive'=>'secondary']; ?>
                             <tr>
-                                <td><div class="d-flex align-items-center gap-2"><img src="<?= h(BASE_URL . $t['logo_path']) ?>" width="28" height="28" class="rounded border" style="object-fit:contain;background:white;border-radius:8px!important;" data-fallback-src="<?= BASE_URL ?>/assets/images/logo-mark.png"><strong><?= h($t['name']) ?></strong></div></td>
+                                <td><div class="d-flex align-items-center gap-2"><img alt="" src="<?= h(BASE_URL . $t['logo_path']) ?>" width="28" height="28" class="rounded border" style="object-fit:contain;background:white;border-radius:8px!important;" data-fallback-src="<?= BASE_URL ?>/assets/images/logo-mark.png"><strong><?= h($t['name']) ?></strong></div></td>
                                 <td><?= number_format($t['rider_count']) ?></td>
                                 <td><?= (int) $t['stage_count'] ?></td>
                                 <td><?= h($t['currency']) ?> <?= number_format($t['annual_fee']) ?></td>
                                 <td><?= h($t['currency']) ?> <?= number_format($t['revenue_collected']) ?></td>
                                 <td><?= h($t['currency']) ?> <?= number_format(round($t['government_share'])) ?></td>
-                                <td><span class="badge bg-<?= $sc[$t['status']] ?? 'secondary' ?>"><?= strtoupper($t['status']) ?></span></td>
+                                <td><span class="badge bg-<?= $sc[$t['status']] ?? 'secondary' ?>"><?= h(ucfirst(str_replace('_', ' ', $t['status']))) ?></span></td>
                             </tr>
                         <?php endforeach; ?>
                         </tbody>
@@ -100,7 +100,7 @@ $agencyLabel = $_SESSION['agency_name'] ?? 'Government Portal';
 </div>
 
 <?php require __DIR__ . '/../../partials/scripts-footer.php'; ?>
-<script>
+<script nonce="<?= csp_nonce() ?>">
     new ApexCharts(document.querySelector('#genderChart'), {
         series: [<?= (int)($genderMap['Male'] ?? 0) ?>, <?= (int)($genderMap['Female'] ?? 0) ?>, <?= (int)($genderMap['Other'] ?? 0) ?>],
         chart: { type: 'donut', height: 220 },

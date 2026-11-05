@@ -14,7 +14,7 @@ function datapacks_tables_ready(): bool {
     static $ready = null;
     if ($ready !== null) return $ready;
     try { fetchValue("SELECT 1 FROM data_pack_runs LIMIT 1"); $ready = true; }
-    catch (\Throwable $e) { $ready = false; }
+    catch (\Throwable $e) { db_probe_failed('data_pack_runs', $e); $ready = false; }
     return $ready;
 }
 

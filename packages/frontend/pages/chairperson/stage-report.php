@@ -25,20 +25,20 @@ for ($i = 11; $i >= 0; $i--) {
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <?php $pageTitle = 'Stage Report | BodaERP'; require __DIR__ . '/../../partials/head-assets.php'; ?>
+    <?php $pageTitle = 'Stage report | ' . get_setting('site_name', 'BodaERP'); require __DIR__ . '/../../partials/head-assets.php'; ?>
 </head>
 <body>
 
 <?php require __DIR__ . '/../../partials/sidebar-chairperson.php'; ?>
 
 <div class="main-content" id="mainContent">
-    <?php $pageTitle = 'Stage Report'; $pageSubtitle = 'Performance summary for ' . ($stage['name'] ?? 'your stage'); require __DIR__ . '/../../partials/topheader.php'; ?>
+    <?php $pageTitle = 'Stage report'; $pageSubtitle = 'Performance summary for ' . ($stage['name'] ?? 'your stage'); require __DIR__ . '/../../partials/topheader.php'; ?>
 
     <div class="content-area">
         <div class="dash-banner theme-blue">
             <div class="d-flex justify-content-between align-items-center flex-wrap dash-banner-row">
                 <div>
-                    <h4><?= h($stage['name']) ?>: Performance Report</h4>
+                    <h4><?= h($stage['name']) ?>: Performance report</h4>
                     <p>A snapshot of riders, compliance, and revenue for your stage.</p>
                 </div>
                 <span class="dash-meta">Generated <?= date('M d, Y') ?></span>
@@ -46,21 +46,21 @@ for ($i = 11; $i >= 0; $i--) {
         </div>
 
         <div class="row g-3 row-cols-2 row-cols-md-4 mb-4">
-            <div class="col"><div class="stat-hero-card tone-blue"><div class="stat-hero-icon"><i class="fas fa-users"></i></div><div><div class="stat-hero-value"><?= $totalRiders ?></div><div class="stat-hero-label">Total Riders</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-blue"><div class="stat-hero-icon"><i class="fas fa-users"></i></div><div><div class="stat-hero-value"><?= $totalRiders ?></div><div class="stat-hero-label">Total riders</div></div></div></div>
             <div class="col"><div class="stat-hero-card tone-green"><div class="stat-hero-icon"><i class="fas fa-user-check"></i></div><div><div class="stat-hero-value"><?= $active_ ?></div><div class="stat-hero-label">Active</div></div></div></div>
             <div class="col"><div class="stat-hero-card tone-red"><div class="stat-hero-icon"><i class="fas fa-user-times"></i></div><div><div class="stat-hero-value"><?= $expired ?></div><div class="stat-hero-label">Expired</div></div></div></div>
-            <div class="col"><div class="stat-hero-card tone-gold"><div class="stat-hero-icon"><i class="fas fa-percentage"></i></div><div><div class="stat-hero-value"><?= $compliance ?>%</div><div class="stat-hero-label">Compliance Rate</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-gold"><div class="stat-hero-icon"><i class="fas fa-percentage"></i></div><div><div class="stat-hero-value"><?= $compliance ?>%</div><div class="stat-hero-label">Compliance rate</div></div></div></div>
         </div>
 
         <div class="card"><div class="card-body">
-            <h6 class="fw-bold mb-3">Revenue Trend (Last 12 Months)</h6>
+            <h6 class="fw-bold mb-3">Revenue trend (last 12 months)</h6>
             <div id="stageReportChart" style="height: 250px;"></div>
         </div></div>
     </div>
 </div>
 
 <?php require __DIR__ . '/../../partials/scripts-footer.php'; ?>
-<script>
+<script nonce="<?= csp_nonce() ?>">
     new ApexCharts(document.querySelector('#stageReportChart'), {
         series: [{ name: 'Revenue (UGX K)', data: <?= js_json($chartValues) ?> }],
         chart: { type: 'bar', height: 250, toolbar: { show: false } },

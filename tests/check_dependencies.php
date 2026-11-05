@@ -1,18 +1,24 @@
 <?php
 // Checks every library version the pages load against the public OSV vulnerability database.
 //   php tests/check_dependencies.php
-// CDN links are invisible to package scanners such as Dependabot, so this reads them from the source.
+// Self-hosted files are invisible to package scanners such as Dependabot, so the versions come from
+// packages/frontend/assets/vendor/VERSIONS.json (and any CDN link that may still appear in a page).
 // Exits 1 when a pinned version has a known advisory, 2 when the database could not be reached.
 if (php_sapi_name() !== 'cli') { http_response_code(403); exit; }
 $root = realpath(__DIR__ . '/..');
+
+$found = [];
+$manifest = json_decode((string) @file_get_contents("$root/packages/frontend/assets/vendor/VERSIONS.json"), true);
+foreach ($manifest['libraries'] ?? [] as $name => $lib) {
+    if (!is_dir("$root/packages/frontend/assets/vendor/" . explode('/', $lib['path'])[0])) { fwrite(STDERR, "VERSIONS.json lists $name but its folder is missing\n"); exit(1); }
+    $found["$name@{$lib['version']}"] = [$name, $lib['version']];
+}
 
 $patterns = [
     '#cdn\.jsdelivr\.net/npm/((?:@[a-z0-9-]+/)?[a-z0-9.-]+)@(\d[\w.-]*)/#i',
     '#cdnjs\.cloudflare\.com/ajax/libs/([a-z0-9.-]+)/(\d[\w.-]*)/#i',
 ];
 $npmNames = ['font-awesome' => '@fortawesome/fontawesome-free'];
-
-$found = [];
 $files = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($root, FilesystemIterator::SKIP_DOTS));
 foreach ($files as $file) {
     if ($file->getExtension() !== 'php' || str_contains($file->getPathname(), '/tests/')) continue;

@@ -69,10 +69,15 @@ foreach ($roles as $dir => [$email, $password]) {
     }
     $t->page("$dir/public home while signed in", http("$base/", $jar));
     $t->page("$dir/account/settings.php", http("$base/pages/account/settings.php", $jar)); $count++;
+    if ($dir === 'citycouncil') {
+        foreach (['cash-handovers.php?status=confirmed', 'cash-handovers.php?status=queried', 'permit-checks.php?days=365&outcome=warned'] as $extra) {
+            $t->page("$dir/$extra", http("$base/pages/citycouncil/$extra", $jar)); $count++;
+        }
+    }
     if ($dir === 'superadmin') {
         foreach (['content.php?tab=menus', 'content.php?tab=home_feature', 'content.php?tab=home_step', 'content.php?tab=home_role', 'content.php?tab=faq', 'content-edit.php', 'content-edit.php?id=1',
                   'site-settings.php?cat=home', 'site-settings.php?cat=branding', 'site-settings.php?cat=features', 'email-templates.php?tab=log',
-                  'email-templates.php?id=1', 'inbox.php?status=archived', 'data-requests.php?status=completed', 'media.php?type=image'] as $extra) {
+                  'email-templates.php?id=1', 'inbox.php?status=archived', 'data-requests.php?status=completed', 'media.php?type=image', 'sms.php?tab=log', 'languages.php?lang=ach'] as $extra) {
             $t->page("$dir/$extra", http("$base/pages/superadmin/$extra", $jar)); $count++;
         }
     }

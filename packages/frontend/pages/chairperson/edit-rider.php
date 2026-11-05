@@ -32,39 +32,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <?php $pageTitle = 'Edit Rider | BodaERP'; require __DIR__ . '/../../partials/head-assets.php'; ?>
+    <?php $pageTitle = 'Edit rider | ' . get_setting('site_name', 'BodaERP'); require __DIR__ . '/../../partials/head-assets.php'; ?>
 </head>
 <body>
 
 <?php require __DIR__ . '/../../partials/sidebar-chairperson.php'; ?>
 
 <div class="main-content" id="mainContent">
-    <?php $pageTitle = 'Edit Rider'; require __DIR__ . '/../../partials/topheader.php'; ?>
+    <?php $pageTitle = 'Edit rider'; require __DIR__ . '/../../partials/topheader.php'; ?>
 
     <div class="content-area">
         <div class="card"><div class="card-body p-5">
             <?php if ($errors): ?><div class="alert alert-danger"><?php foreach ($errors as $e) echo h($e); ?></div><?php endif; ?>
-            <h4 class="fw-bold mb-4">Edit Rider</h4>
+            <h4 class="fw-bold mb-4">Edit rider</h4>
             <form method="post">
                 <?= csrf_field() ?>
                 <div class="row">
-                    <div class="col-md-6 mb-3"><label class="form-label fw-semibold">Full Name <span class="text-danger">*</span></label><input type="text" name="full_name" class="form-control form-control-lg" value="<?= h($rider['full_name']) ?>" required></div>
-                    <div class="col-md-6 mb-3"><label class="form-label fw-semibold">Phone <span class="text-danger">*</span></label>
-                        <div class="input-group"><span class="input-group-text">+256</span><input type="tel" name="phone" class="form-control form-control-lg" value="<?= h(preg_replace('/^\+256/', '', $rider['phone'])) ?>" required></div>
+                    <div class="col-md-6 mb-3"><label for="f-full-name" class="form-label fw-semibold">Full name <span class="text-danger">*</span></label><input id="f-full-name" type="text" name="full_name" class="form-control form-control-lg" value="<?= h($rider['full_name']) ?>" required></div>
+                    <div class="col-md-6 mb-3"><label for="f-phone" class="form-label fw-semibold">Phone <span class="text-danger">*</span></label>
+                        <div class="input-group"><span class="input-group-text">+256</span><input id="f-phone" type="tel" name="phone" class="form-control form-control-lg" value="<?= h(preg_replace('/^\+256/', '', $rider['phone'])) ?>" required></div>
                     </div>
-                    <div class="col-md-6 mb-3"><label class="form-label fw-semibold">Email</label><input type="email" name="email" class="form-control form-control-lg" value="<?= h($rider['email']) ?>"></div>
-                    <div class="col-md-6 mb-3"><label class="form-label fw-semibold">Bike Plate</label><input type="text" name="bike_plate" class="form-control form-control-lg" value="<?= h($rider['bike_plate']) ?>"></div>
-                    <div class="col-md-6 mb-3"><label class="form-label fw-semibold">Bike Model</label><input type="text" name="bike_model" class="form-control form-control-lg" value="<?= h($rider['bike_model']) ?>"></div>
-                    <div class="col-md-6 mb-3"><label class="form-label fw-semibold">Status</label>
-                        <select name="status" class="form-select form-select-lg">
+                    <div class="col-md-6 mb-3"><label for="f-email" class="form-label fw-semibold">Email</label><input id="f-email" type="email" name="email" class="form-control form-control-lg" value="<?= h($rider['email']) ?>"></div>
+                    <div class="col-md-6 mb-3"><label for="f-bike-plate" class="form-label fw-semibold">Bike plate</label><input id="f-bike-plate" type="text" name="bike_plate" class="form-control form-control-lg" value="<?= h($rider['bike_plate']) ?>"></div>
+                    <div class="col-md-6 mb-3"><label for="f-bike-model" class="form-label fw-semibold">Bike model</label><input id="f-bike-model" type="text" name="bike_model" class="form-control form-control-lg" value="<?= h($rider['bike_model']) ?>"></div>
+                    <div class="col-md-6 mb-3"><label for="f-status" class="form-label fw-semibold">Status</label>
+                        <select id="f-status" name="status" class="form-select form-select-lg">
                             <option value="active" <?= $rider['status']==='active'?'selected':'' ?>>Active</option>
                             <option value="expired" <?= $rider['status']==='expired'?'selected':'' ?>>Expired</option>
                             <option value="pending" <?= $rider['status']==='pending'?'selected':'' ?>>Pending</option>
                         </select>
                     </div>
-                    <div class="col-12 mb-3"><label class="form-label fw-semibold">Physical Address</label><input type="text" name="address" class="form-control form-control-lg" value="<?= h($rider['physical_address']) ?>"></div>
+                    <div class="col-12 mb-3"><label for="f-address" class="form-label fw-semibold">Physical address</label><input id="f-address" type="text" name="address" class="form-control form-control-lg" value="<?= h($rider['physical_address']) ?>"></div>
                 </div>
-                <button type="submit" class="btn btn-primary btn-lg px-5"><i class="fas fa-save me-2"></i>Save Changes</button>
+                <button type="submit" class="btn btn-primary btn-lg px-5"><i class="fas fa-save me-2"></i>Save changes</button>
                 <a href="<?= BASE_URL ?>/pages/chairperson/rider-profile.php?id=<?= $riderId ?>" class="btn btn-outline-secondary btn-lg px-5">Cancel</a>
             </form>
         </div></div>

@@ -90,19 +90,20 @@ function send_template_email(string $code, string $to, array $vars = []): bool {
     }
 }
 
-function send_email(string $to, string $subject, string $html, string $text = '', ?string $templateCode = null, ?string $replyTo = null): bool {
+/** @param list<array{name:string,path:string,type?:string}> $attachments files attached as-is (backups, exports) */
+function send_email(string $to, string $subject, string $html, string $text = '', ?string $templateCode = null, ?string $replyTo = null, array $attachments = []): bool {
     $to = mail_clean_header($to);
     if (!filter_var($to, FILTER_VALIDATE_EMAIL)) return false;
     $cfg = mail_config();
     $subject = mail_clean_header($subject);
-    $mime = mail_build_message($cfg, $to, $subject, $html, $text !== '' ? $text : mail_html_to_text($html), $replyTo);
+    $mime = mail_build_message($cfg, $to, $subject, $html, $text !== '' ? $text : mail_html_to_text($html), $replyTo, $attachments);
 
     $status = 'logged'; $error = null;
     if ($cfg['host'] !== '') {
         try { smtp_send($cfg, $to, $mime); $status = 'sent'; }
         catch (Throwable $e) { $status = 'failed'; $error = substr($e->getMessage(), 0, 500); app_log('mail', 'SMTP failed: ' . $e->getMessage(), ['to' => $to]); }
     }
-    if ($status !== 'sent') {
+    if ($status !== 'sent' && !$attachments) {
         $dir = storage_path('mail');
         if (ensure_dir($dir)) @file_put_contents($dir . '/' . date('Ymd-His') . '-' . bin2hex(random_bytes(3)) . '.eml', $mime);
     }
@@ -117,8 +118,9 @@ function mail_encode_header(string $v): string {
     return preg_match('/[^\x20-\x7e]/', $v) ? '=?UTF-8?B?' . base64_encode($v) . '?=' : $v;
 }
 
-function mail_build_message(array $cfg, string $to, string $subject, string $html, string $text, ?string $replyTo): string {
+function mail_build_message(array $cfg, string $to, string $subject, string $html, string $text, ?string $replyTo, array $attachments = []): string {
     $boundary = 'b' . bin2hex(random_bytes(12));
+    $mixed = 'm' . bin2hex(random_bytes(12));
     $domain = substr(strrchr($cfg['from'], '@') ?: '@localhost', 1);
     $headers = [
         'Date: ' . date('r'),
@@ -127,12 +129,23 @@ function mail_build_message(array $cfg, string $to, string $subject, string $htm
         'Subject: ' . mail_encode_header($subject),
         'Message-ID: <' . bin2hex(random_bytes(16)) . '@' . $domain . '>',
         'MIME-Version: 1.0',
-        'Content-Type: multipart/alternative; boundary="' . $boundary . '"',
+        $attachments ? 'Content-Type: multipart/mixed; boundary="' . $mixed . '"' : 'Content-Type: multipart/alternative; boundary="' . $boundary . '"',
     ];
     if ($replyTo && filter_var($replyTo, FILTER_VALIDATE_EMAIL)) $headers[] = 'Reply-To: <' . mail_clean_header($replyTo) . '>';
     $body = "--$boundary\r\nContent-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: base64\r\n\r\n"
         . chunk_split(base64_encode($text)) . "--$boundary\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Transfer-Encoding: base64\r\n\r\n"
         . chunk_split(base64_encode($html)) . "--$boundary--\r\n";
+    if ($attachments) {
+        $parts = "--$mixed\r\nContent-Type: multipart/alternative; boundary=\"$boundary\"\r\n\r\n" . $body;
+        foreach ($attachments as $file) {
+            $fileBytes = @file_get_contents($file['path']);
+            if ($fileBytes === false) throw new RuntimeException('Cannot read attachment ' . basename($file['path']));
+            $name = preg_replace('/[^A-Za-z0-9._-]/', '_', $file['name']);
+            $parts .= "--$mixed\r\nContent-Type: " . ($file['type'] ?? 'application/octet-stream') . "; name=\"$name\"\r\n"
+                . "Content-Disposition: attachment; filename=\"$name\"\r\nContent-Transfer-Encoding: base64\r\n\r\n" . chunk_split(base64_encode($fileBytes));
+        }
+        $body = $parts . "--$mixed--\r\n";
+    }
     return implode("\r\n", $headers) . "\r\n\r\n" . $body;
 }
 

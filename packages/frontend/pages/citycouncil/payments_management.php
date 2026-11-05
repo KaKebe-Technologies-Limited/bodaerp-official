@@ -20,7 +20,7 @@ $recent = fetchAll("SELECT p.*, r.full_name, s.name AS stage_name FROM payments 
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <?php $pageTitle = get_setting('nav_payments') . ' | ' . get_setting('site_name') ?? 'Payments | BodaERP'; require __DIR__ . '/../../partials/head-assets.php'; ?>
+    <?php $pageTitle = get_setting('nav_payments', 'Payments') . ' | ' . get_setting('site_name', 'BodaERP'); require __DIR__ . '/../../partials/head-assets.php'; ?>
     <style>
         .method-card { background: white; border-radius: 12px; padding: 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.04); text-align: center; }
     </style>
@@ -41,7 +41,7 @@ $recent = fetchAll("SELECT p.*, r.full_name, s.name AS stage_name FROM payments 
     <div class="content-area">
         <p id="reconcileStatus" class="small mb-3 d-none"></p>
         <div class="row g-3 mb-4">
-            <div class="col-md-3 col-6"><div class="stat-hero-card tone-blue"><div class="stat-hero-icon"><i class="fas fa-money-bill-wave"></i></div><div><div class="stat-hero-value"><?= h(formatCurrency($totalCollected)) ?></div><div class="stat-hero-label">Total Collected</div></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card tone-blue"><div class="stat-hero-icon"><i class="fas fa-money-bill-wave"></i></div><div><div class="stat-hero-value"><?= h(formatCurrency($totalCollected)) ?></div><div class="stat-hero-label">Total collected</div></div></div></div>
             <div class="col-md-3 col-6"><div class="stat-hero-card tone-blue"><div class="stat-hero-icon"><i class="fas fa-exchange-alt"></i></div><div><div class="stat-hero-value"><?= number_format($txnCount) ?></div><div class="stat-hero-label">Transactions</div></div></div></div>
             <div class="col-md-3 col-6"><div class="stat-hero-card tone-gold"><div class="stat-hero-icon"><i class="fas fa-clock"></i></div><div><div class="stat-hero-value"><?= h(formatCurrency($pendingAmt)) ?></div><div class="stat-hero-label">Pending</div></div></div></div>
             <div class="col-md-3 col-6"><div class="stat-hero-card tone-red"><div class="stat-hero-icon"><i class="fas fa-times-circle"></i></div><div><div class="stat-hero-value"><?= h(formatCurrency($failedAmt)) ?></div><div class="stat-hero-label">Failed</div></div></div></div>
@@ -62,7 +62,7 @@ $recent = fetchAll("SELECT p.*, r.full_name, s.name AS stage_name FROM payments 
         </div>
 
         <div class="d-flex justify-content-between align-items-center mb-2 no-print">
-            <h6 class="fw-bold mb-0">Recent Transactions</h6>
+            <h6 class="fw-bold mb-0">Recent transactions</h6>
             <?php $exportTableId='recentPaymentsTable'; $exportFilename='recent_payments'; $exportTitle='Recent Payments'; require __DIR__ . '/../../partials/export-toolbar.php'; ?>
         </div>
         <div class="card">
@@ -91,7 +91,7 @@ $recent = fetchAll("SELECT p.*, r.full_name, s.name AS stage_name FROM payments 
 </div>
 
 <?php require __DIR__ . '/../../partials/scripts-footer.php'; ?>
-<script>
+<script nonce="<?= csp_nonce() ?>">
 
     async function reconcilePending() {
         const btn = document.getElementById('reconcileBtn');

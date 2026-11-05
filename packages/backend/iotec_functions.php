@@ -129,19 +129,20 @@ function normalizeUgPhone($phone) {
 
 /**
  * Initiate a rider's annual-tax payment via ioTec Pay mobile money
- * collection. Charges the rider's own `annual_tax`: never a hardcoded
+ * collection. Charges permit_amount_due() (the rider's own `annual_tax` plus any city late fee): never a hardcoded
  * or client-supplied amount: so the admin-configurable city fee is
  * always what's actually collected.
  * Returns ['success'=>true,'payment_id'=>N,'status'=>'pending'|'completed']
  * or      ['error' => 'message'].
  */
-function initiateRiderPayment(int $riderId, string $phone) {
+function initiateRiderPayment(int $riderId, string $phone, string $channel = 'portal') {
     $rider = fetchOne("SELECT * FROM riders WHERE id = ? AND deleted_at IS NULL", [$riderId]);
     if (!$rider) {
         return ['error' => 'Rider not found.'];
     }
 
-    $amount = (float) $rider['annual_tax'];
+    $due = permit_amount_due($rider);
+    $amount = $due['total'];
     if ($amount <= 0) {
         return ['error' => 'No amount owed for this rider.'];
     }
@@ -150,14 +151,16 @@ function initiateRiderPayment(int $riderId, string $phone) {
     $payerPhone = normalizeUgPhone($phone);
 
     runQuery(
-        "INSERT INTO payments (rider_id, city_id, amount, payment_method, receipt_number,
+        "INSERT INTO payments (rider_id, city_id, amount, late_fee, payment_method, channel, receipt_number,
                                 transaction_reference, payer_phone, status, fiscal_year, paid_at)
-         VALUES (:rider_id, :city_id, :amount, 'Mobile Money', :receipt,
+         VALUES (:rider_id, :city_id, :amount, :late_fee, 'Mobile Money', :channel, :receipt,
                  :ref, :phone, 'Pending', :fy, NOW())",
         [
             'rider_id' => $riderId,
             'city_id'  => $rider['city_id'],
             'amount'   => $amount,
+            'late_fee' => $due['late_fee'],
+            'channel'  => in_array($channel, ['portal', 'ussd'], true) ? $channel : 'portal',
             'receipt'  => 'TMP-' . uniqid(),
             'ref'      => $orderId,
             'phone'    => $payerPhone,

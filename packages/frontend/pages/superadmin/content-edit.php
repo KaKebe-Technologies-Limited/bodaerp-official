@@ -76,7 +76,7 @@ portal_start('superadmin', 'content', $page ? 'Edit page' : 'New page', [
             <div><label class="form-label small fw-semibold" for="og_image">Sharing image</label>
                 <select class="form-select" id="og_image" name="og_image"><option value="">Site default</option>
                     <?php foreach ($images as $img): ?><option value="<?= h($img['path']) ?>"<?= $v['og_image'] === $img['path'] ? ' selected' : '' ?>><?= h($img['original_name']) ?></option><?php endforeach; ?>
-                </select><div class="form-text">Upload images in the <a href="<?= BASE_URL ?>/pages/superadmin/media.php">Media Library</a>.</div></div>
+                </select><div class="form-text">Upload images in the <a href="<?= BASE_URL ?>/pages/superadmin/media.php">Media library</a>.</div></div>
         </div></div>
     </div>
 </form>

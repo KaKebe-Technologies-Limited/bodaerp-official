@@ -1,28 +1,28 @@
 # BodaERP: continuation file (read this first)
 
-OVERALL: 73% complete. 27% remaining until public launch
+OVERALL: 79% complete. 21% remaining until public launch
 (counted only from items below that were built AND verified; unchecked = not complete)
 
 | Area | Done | % |
 |---|---|---|
-| Features & Functionality | 7 of 11 | 64% |
+| Features & Functionality | 17 of 21 | 81% |
 | Public Pages & Content | 12 of 14 | 86% |
 | Shared Login & Auth Flows | 11 of 13 | 85% |
 | Admin Portal | 11 of 14 | 79% |
-| Customer (Rider) Portal | 6 of 9 | 67% |
-| UI / UX & Responsiveness | 8 of 11 | 73% |
+| Customer (Rider) Portal | 8 of 10 | 80% |
+| UI / UX & Responsiveness | 9 of 11 | 82% |
 | Backend (PHP) | 9 of 11 | 82% |
 | Database, Migrations & Seeds | 7 of 8 | 88% |
-| Emails & Notifications | 7 of 10 | 70% |
+| Emails & Notifications | 10 of 12 | 83% |
 | Popups, Errors & Edge States | 6 of 8 | 75% |
-| Security | 15 of 16 | 94% |
+| Security | 16 of 16 | 100% |
 | Dev Environments (Docker + XAMPP) | 6 of 7 | 86% |
 | Content & Settings in DB | 7 of 9 | 78% |
 | CKEditor Integration | 5 of 6 | 83% |
-| SEO & Performance | 6 of 8 | 75% |
-| Testing & QA | 7 of 9 | 78% |
+| SEO & Performance | 7 of 8 | 88% |
+| Testing & QA | 8 of 10 | 80% |
 | Documentation | 5 of 6 | 83% |
-| **Total** | **135 of 170** | **79% raw; 73% weighted by launch risk** |
+| **Total** | **154 of 185** | **83% raw; 79% weighted by launch risk (what is left is mostly owner actions, see BLOCKING)** |
 
 ### BLOCKING PUBLIC LAUNCH
 1. Owner review of round 2 (built and verified 2026-11-01, committed 2026-11-05 in 03a0cb8 at the owner's request): login, theme, portal shell, sidebars, government data fixes, home sections, AI-tell sweep. Still needs the owner's visual sign-off.
@@ -34,18 +34,29 @@ OVERALL: 73% complete. 27% remaining until public launch
 7. Reprint ID cards made before 2026-10-31: their QR holds the permit number (now shows a masked name, no photo). New cards use a random token.
 8. Security audit: DONE 2026-11-05 (`.claude/security-audit-2026-11-05.md`, 9 findings + 1 found while fixing, all fixed and verified; gap register #29-38). Owner action left: on the server set `APP_ENV=live` and `APP_URL`, and `IOTEC_IPN_HEADER` once ioTec's header name is known.
 9. Live server (MariaDB 11.8) never tested with the new migrations.
+10. EgoSMS account + sender ID, then `EGOSMS_USERNAME/PASSWORD/SENDER` in the server `.env` (sandbox first, `EGOSMS_MODE=live` after a test). Until then SMS goes to `storage/sms/`.
+11. USSD renewal needs a short code from a USSD provider (EgoSMS has none), `USSD_TOKEN` in `.env`, then `ussd_code` in Site Text & Branding. Built and walked end to end locally; the pay step needs ioTec (blocker 3).
+12. Native-speaker review before switching on Luganda / Lango / Acholi / Runyankole (Super Admin → Languages + SMS translations, then `languages_enabled`).
 
 ### NOT BLOCKING BUT NEEDED SOON
-1. Renewal reminder emails (template `permit_expiring` exists; the automation job only creates in-app notifications).
-2. Honour `users.notify_in_app` in the rider notifications list.
-3. Move the remaining inline `<style>`/`<script>` blocks into shared CSS/JS (event handlers already done), then drop `'unsafe-inline'` from the CSP.
-4. Self-host Bootstrap/Font Awesome/ApexCharts/jsPDF so pages work offline (today they need CDNs; SRI hashes are in place since 2026-11-05, so a version bump must update the `integrity` value too).
-5. Older admin pages (cities, audit logs, revenue splits, reports) still use their own header markup; move to `portal_start()`.
+1. [x] (2026-11-05, found already built + tested) Renewal reminder emails: `job_renewal_reminders()` in automation_notices.php, three per permit, honours notify_email.
+2. [x] (2026-11-05; flows 87) `rider_notify()` in functions.php is the only way to add a portal notification; it skips riders whose account has "Show notifications in my portal" off and trims to the 255-char column (data-request replies used to overflow it). Notifications page explains when they are off.
+3. [x] (2026-11-05, script half) CSP `script-src 'self' 'nonce-…'`: no `'unsafe-inline'`. Every inline `<script>` carries `nonce="<?= csp_nonce() ?>"` (enforced by check_portability). Verified in browser: injected script refused; 48 portal pages + public pages + CKEditor run with no violations. `style-src` keeps `'unsafe-inline'` on purpose (148 style attributes + ApexCharts' injected styles; low XSS value).
+4. [x] (2026-11-05) All libraries self-hosted in `packages/frontend/assets/vendor/` with `VERSIONS.json`; no page loads anything from another site (enforced by check_portability; CSP has no CDN hosts). jsPDF 2.5.1 (12 advisories) upgraded to 4.2.1 + AutoTable 5.0.9, PDF export verified. Inter font self-hosted (public site and login asked for it but never loaded it). `tests/check_dependencies.php` reads VERSIONS.json: 7 libraries, 0 advisories.
+5. [x] (2026-11-05, already done) Every portal page uses `topheader.php` or `portal_start()`; `db-backup.php` is a download endpoint, not a page.
 6. PHPUnit is not used (no Composer by decision); tests are plain PHP scripts in tests/.
-7. Accessibility audit of portal pages (contrast, focus order, table headers).
-8. SMS notifications (no gateway exists; nothing claims SMS any more).
+7. [x] (2026-11-05) Accessibility pass, automated in Playwright over every page of all 5 roles + public pages: icon-only buttons named (aria-label + title), ~150 fields tied to labels (`for`/`id`, filter selects `aria-label`), alt text on all images, contrast to WCAG AA (warning/info/success text shades, `--brand-ink` for links, orange/teal/purple leftovers replaced). Found and fixed `var(--primary-blue-gradient)` used 6 times with no definition (active tabs, step numbers, buttons had no background, white text invisible). Remaining: logo wordmark red on navy (logotype, exempt). Not covered by the script: keyboard focus order, screen-reader walkthrough.
+8. [x] (2026-11-06) SMS through EgoSMS: receipts, failed payments, renewal reminders (2 per permit), overdue notices, chairperson/city reminders (1 per rider per day), handover results, sign-in codes. `sms.php`, Super Admin → SMS.
 
 ---
+
+## ROUND 3 (2026-11-05 owner request, done 2026-11-06)
+
+Owner: "sms use egosms and dont put authenticator app anywhere, instead optional otp, and then also implement all other [suggestions]. then make the structure better and beautify all the raw text, not too packed together, rules of thirds in the content area"; then "run anti AI tells in the entire platform ... verify everything e2e and finally push".
+
+Built and verified (tests + Playwright, one window): 1 SMS (EgoSMS JSON API, sandbox default, log transport without credentials). 2 Optional sign-in codes by SMS or email per user (`users.two_factor_channel`, phone confirmed by code, `phone_verified_at`); platform `require_2fa` still forces staff; no authenticator app anywhere. 3 USSD renewal `ussd.php` (token + optional IP allowlist, masked names, rate limits, `ussd_sessions`). 4 Cash handover (chairperson `cash-handover.php`, city `cash-handovers.php`, SMS result). 5 Late fees per city (flat or %, after the grace period) via `permit_amount_due()` on every payment path; anomaly rule compares the fee part only. 6 Duplicate check at registration (live, `check-duplicate.php`; NIN/plate block, shared phone needs a tick). 7 Rider import CSV/.xlsx for city admins (`rider_import.php`, `import-riders.php`). 8 Roadside checks on `verify.php` for signed-in staff (outcome, note, optional location; `permit-checks.php`; national counts on the government enforcement page). 9 Off-server backup email (`backup_email`, encrypted only). 10 Languages mechanism (`t()`, `translations`, Super Admin → Languages; drafts stay off). 11 Design pass: spacing scale, `.layout-thirds` (2/3 + 1/3), `.section-title`, sentence case for ~400 headings/labels/buttons, table headers and sidebar groups no longer ALL CAPS, rider pages rebuilt on `portal_start()` with `t()`.
+
+Anti-AI-tell sweep (2026-11-06): baseline SQL comments (emoji, dividers, "import in phpMyAdmin"), `.env.example`/`.htaccess` dividers, section-label comments, silent DB probes now logged (`db_probe_failed()`), generic names (`qsMerge2`, `$items`, `$data`), dead `statusBadgeClass()`, 9 unused label settings removed by migration, 41 page titles now use the `site_name` setting, `.claude/` untracked and git-ignored, `.htaccess` blocks every dot-path except `.well-known`. CMS text in the DB scanned: clean.
 
 ## IN PROGRESS (exact place to resume)
 
@@ -174,6 +185,12 @@ Data flow: page → `require_role()` (auth.php) → `fetch*/runQuery` (db_helper
 | 36 | Chairperson rider status not allowlisted (SA-08) | Low | fixed |
 | 37 | LIMIT/OFFSET interpolated without explicit casts (SA-09) | Low | fixed (`(int)` casts) |
 | 38 | Without `APP_URL`, email links follow the client's Host header (SA-10) | Low | documented: APP_URL in deploy checklist |
+| 39 | City admin sidebar cast the city code ('LIR') to int 0, so the Defaulters and Data checks badges counted every city | Medium | fixed + verified |
+| 40 | Branded error page crashed (BRAND_DEFAULT_DARK undefined) when auth stopped a request while site.php was still loading (maintenance 503, expired form) | Medium | fixed (constants before the auth require) |
+| 41 | main.js double-submit lock read `form.method`; Collect payments has a field named "method", so the lock threw and a double tap could post twice | High | fixed + verified in browser |
+| 42 | Enforcement codes from COUNT(*)+1: repeated after a deletion (UNIQUE column, save failed) and raced | Medium | fixed + test in flows.php |
+| 43 | Collect payments showed the city base fee as the amount, not what the rider owes | Low | fixed (amount follows the selected rider, late fee included) |
+| 44 | `get_setting(...) ?? 'default'` fallbacks never applied (get_setting returns a string) | Low | fixed |
 
 ## COMPLETED TASKS (2026-10-31, uncommitted)
 
@@ -193,7 +210,8 @@ Data flow: page → `require_role()` (auth.php) → `fetch*/runQuery` (db_helper
 
 - `storage/` in the repo folder holds test mail files owned by root (git-ignored; delete with sudo if wanted).
 - The test scripts do not run JavaScript. Button behaviour is only proven by a Playwright pass; `check_portability.php` catches unwired attributes statically, not broken functions.
-- 25 PHP files still hold inline `<script>` blocks and 25 hold `<style>` blocks; these block dropping `'unsafe-inline'` from the CSP. Inline event handlers are gone (enforced by `check_portability.php`).
+- `style-src` still allows `'unsafe-inline'` (25 `<style>` blocks, 148 `style=` attributes, ApexCharts). Scripts are nonce-only.
+- Upgrading a vendor library: replace the files in `assets/vendor/<lib>/`, change `VERSIONS.json`, run `tests/check_dependencies.php`.
 
 ## HOW TO CONTINUE
 

@@ -24,7 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-$stageRiders = fetchAll("SELECT id, full_name, bike_plate FROM riders WHERE stage_id = ? AND deleted_at IS NULL ORDER BY full_name", [$stageId]);
+$stageRiders = fetchAll("SELECT id, full_name, bike_plate, annual_tax, expiry_date, city_id FROM riders WHERE stage_id = ? AND deleted_at IS NULL ORDER BY full_name", [$stageId]);
 $revenue = (float) fetchValue("SELECT COALESCE(SUM(p.amount),0) FROM payments p WHERE p.status='Confirmed' AND p.rider_id IN (SELECT id FROM riders WHERE stage_id=?)", [$stageId]);
 $activeRiders = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE stage_id = ? AND status='active' AND deleted_at IS NULL", [$stageId]);
 $defaulters = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE stage_id = ? AND status='expired' AND deleted_at IS NULL", [$stageId]);
@@ -38,24 +38,24 @@ $receiptMsg = $_GET['receipt'] ?? null;
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <?php $pageTitle = 'Collect Payments - ' . get_setting('site_name', 'BodaERP'); require __DIR__ . '/../../partials/head-assets.php'; ?>
+    <?php $pageTitle = 'Collect payments | ' . get_setting('site_name', 'BodaERP'); require __DIR__ . '/../../partials/head-assets.php'; ?>
 </head>
 <body>
 
 <?php require __DIR__ . '/../../partials/sidebar-chairperson.php'; ?>
 
 <div class="main-content" id="mainContent">
-    <?php $pageTitle = 'Collect Payments'; $pageSubtitle = 'Record and track rider tax payments for your stage'; require __DIR__ . '/../../partials/topheader.php'; ?>
+    <?php $pageTitle = 'Collect payments'; $pageSubtitle = 'Record and track rider tax payments for your stage'; require __DIR__ . '/../../partials/topheader.php'; ?>
 
     <div class="content-area">
         <?php if ($receiptMsg): ?><div class="alert alert-success">Payment recorded! Receipt: <strong><?= h($receiptMsg) ?></strong></div><?php endif; ?>
         <?php if ($errors): ?><div class="alert alert-danger"><?php foreach ($errors as $e) echo h($e) . '<br>'; ?></div><?php endif; ?>
 
         <div class="row g-3 row-cols-2 row-cols-xl-4 mb-4">
-            <div class="col"><div class="stat-hero-card tone-blue"><div class="stat-hero-icon"><i class="fas fa-money-bill-wave"></i></div><div><div class="stat-hero-value"><?= h(formatCurrency($revenue)) ?></div><div class="stat-hero-label">Total Collected</div></div></div></div>
-            <div class="col"><div class="stat-hero-card tone-green"><div class="stat-hero-icon"><i class="fas fa-user-check"></i></div><div><div class="stat-hero-value"><?= $activeRiders ?></div><div class="stat-hero-label">Active Riders</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-blue"><div class="stat-hero-icon"><i class="fas fa-money-bill-wave"></i></div><div><div class="stat-hero-value"><?= h(formatCurrency($revenue)) ?></div><div class="stat-hero-label">Total collected</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-green"><div class="stat-hero-icon"><i class="fas fa-user-check"></i></div><div><div class="stat-hero-value"><?= $activeRiders ?></div><div class="stat-hero-label">Active riders</div></div></div></div>
             <div class="col"><div class="stat-hero-card tone-red"><div class="stat-hero-icon"><i class="fas fa-exclamation-triangle"></i></div><div><div class="stat-hero-value"><?= $defaulters ?></div><div class="stat-hero-label">Defaulters</div></div></div></div>
-            <div class="col"><div class="stat-hero-card tone-gold"><div class="stat-hero-icon"><i class="fas fa-calendar-alt"></i></div><div><div class="stat-hero-value"><?= h(formatCurrency($thisMonth)) ?></div><div class="stat-hero-label">This Month</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-gold"><div class="stat-hero-icon"><i class="fas fa-calendar-alt"></i></div><div><div class="stat-hero-value"><?= h(formatCurrency($thisMonth)) ?></div><div class="stat-hero-label">This month</div></div></div></div>
         </div>
 
         <div class="row g-4">
@@ -63,30 +63,30 @@ $receiptMsg = $_GET['receipt'] ?? null;
                 <div class="card"><div class="card-body">
                     <div class="d-flex align-items-center gap-3 mb-3">
                         <div class="icon-badge blue"><i class="fas fa-money-bill-wave"></i></div>
-                        <h6 class="fw-bold mb-0">Record Payment</h6>
+                        <h6 class="fw-bold mb-0">Record payment</h6>
                     </div>
                     <form method="post">
                         <?= csrf_field() ?>
-                        <div class="mb-3"><label class="form-label fw-semibold">Select Rider <span class="text-danger">*</span></label>
-                            <select class="form-select" name="rider_id" required>
+                        <div class="mb-3"><label for="f-rider-id" class="form-label fw-semibold">Select rider <span class="text-danger">*</span></label>
+                            <select id="f-rider-id" class="form-select" name="rider_id" required data-amount-target="f-amount">
                                 <option value="">Choose rider...</option>
-                                <?php foreach ($stageRiders as $r): ?><option value="<?= (int)$r['id'] ?>"><?= h($r['full_name']) ?> (<?= h($r['bike_plate']) ?>)</option><?php endforeach; ?>
+                                <?php foreach ($stageRiders as $r): ?><?php $owe = permit_amount_due($r); ?><option value="<?= (int)$r['id'] ?>" data-amount="<?= h(number_format($owe['total'])) ?>"><?= h($r['full_name']) ?> (<?= h($r['bike_plate']) ?>): <?= h(formatCurrency($owe['total'])) ?><?= $owe['late_fee'] > 0 ? ' incl. late fee' : '' ?></option><?php endforeach; ?>
                             </select>
                         </div>
-                        <div class="mb-3"><label class="form-label fw-semibold">Amount <span class="text-danger">*</span></label>
-                            <div class="input-group"><span class="input-group-text">UGX</span><input type="text" class="form-control" value="<?= number_format((float) $city['annual_fee']) ?>" readonly aria-describedby="feeHint"></div>
-                            <small class="text-muted" id="feeHint">The annual permit fee set by <?= h($city['name']) ?>. The rider's permit is renewed for one year from its current expiry date.</small>
+                        <div class="mb-3"><label for="f-amount" class="form-label fw-semibold">Amount <span class="text-danger">*</span></label>
+                            <div class="input-group"><span class="input-group-text">UGX</span><input id="f-amount" type="text" class="form-control" value="<?= number_format((float) $city['annual_fee']) ?>" readonly aria-describedby="feeHint"></div>
+                            <small class="text-muted" id="feeHint">The permit fee set by <?= h($city['name']) ?>, plus the city's late fee when a permit has been expired longer than the grace period. The permit is renewed for one year from its current expiry date.</small>
                         </div>
-                        <div class="mb-3"><label class="form-label fw-semibold">Payment Method</label>
-                            <select class="form-select" name="method"><?php foreach (PAYMENT_METHODS as $m): ?><option value="<?= h($m) ?>"><?= h($m === 'Mobile Money' ? 'Mobile money (paid to the stage number)' : ($m === 'Bank' ? 'Bank deposit' : $m)) ?></option><?php endforeach; ?></select>
+                        <div class="mb-3"><label for="f-method" class="form-label fw-semibold">Payment method</label>
+                            <select id="f-method" class="form-select" name="method"><?php foreach (PAYMENT_METHODS as $m): ?><option value="<?= h($m) ?>"><?= h($m === 'Mobile Money' ? 'Mobile money (paid to the stage number)' : ($m === 'Bank' ? 'Bank deposit' : $m)) ?></option><?php endforeach; ?></select>
                         </div>
-                        <button type="submit" class="btn btn-primary w-100"><i class="fas fa-check me-1"></i>Record Payment</button>
+                        <button type="submit" class="btn btn-primary w-100"><i class="fas fa-check me-1"></i>Record payment</button>
                     </form>
                 </div></div>
             </div>
             <div class="col-lg-8">
                 <div class="d-flex justify-content-between align-items-center mb-2 no-print">
-                    <h6 class="fw-bold mb-0">Recent Payments</h6>
+                    <h6 class="fw-bold mb-0">Recent payments</h6>
                     <?php $exportTableId='recentPaymentsTable'; $exportFilename='stage_payments'; $exportTitle='Stage Payment History'; require __DIR__ . '/../../partials/export-toolbar.php'; ?>
                 </div>
                 <div class="card"><div class="card-body p-0">

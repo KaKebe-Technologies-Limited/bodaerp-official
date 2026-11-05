@@ -23,7 +23,7 @@ $roleColors   = ['super_admin'=>'primary','city_admin'=>'success','chairperson'=
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <?php $pageTitle = 'Audit Logs | BodaERP'; require __DIR__ . '/../../partials/head-assets.php'; ?>
+    <?php $pageTitle = 'Audit logs | ' . get_setting('site_name', 'BodaERP'); require __DIR__ . '/../../partials/head-assets.php'; ?>
 </head>
 <body>
 
@@ -38,16 +38,16 @@ $roleColors   = ['super_admin'=>'primary','city_admin'=>'success','chairperson'=
         <div class="card">
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-                    <h6 class="fw-bold mb-0">System Audit Trail</h6>
+                    <h6 class="fw-bold mb-0">System audit trail</h6>
                     <form class="d-flex gap-2 flex-wrap" method="get">
-                        <input type="text" class="form-control form-control-sm" name="q" value="<?= h($search) ?>" placeholder="Search user, details..." style="width:200px;">
-                        <select class="form-select form-select-sm" style="width:auto;" name="action" data-autosubmit>
+                        <input aria-label="Search" type="text" class="form-control form-control-sm" name="q" value="<?= h($search) ?>" placeholder="Search user, details..." style="width:200px;">
+                        <select aria-label="Filter by action" class="form-select form-select-sm" style="width:auto;" name="action" data-autosubmit>
                             <option value="">All Actions</option>
                             <?php foreach (array_column(fetchAll("SELECT DISTINCT action FROM audit_logs ORDER BY action"), 'action') as $a): ?>
                                 <option value="<?= $a ?>" <?= $filterAction === $a ? 'selected' : '' ?>><?= $a ?></option>
                             <?php endforeach; ?>
                         </select>
-                        <select class="form-select form-select-sm" style="width:auto;" name="city" data-autosubmit>
+                        <select aria-label="Filter by city" class="form-select form-select-sm" style="width:auto;" name="city" data-autosubmit>
                             <option value="">All Cities</option>
                             <?php foreach ($cities as $c): ?>
                                 <option value="<?= h($c['id']) ?>" <?= $filterCity === $c['id'] ? 'selected' : '' ?>><?= h($c['name']) ?></option>
@@ -65,7 +65,7 @@ $roleColors   = ['super_admin'=>'primary','city_admin'=>'success','chairperson'=
                             <tr>
                                 <td style="font-size:0.78rem;white-space:nowrap;"><?= formatDate($l['created_at'], 'Y-m-d H:i') ?></td>
                                 <td style="font-size:0.82rem;"><strong><?= h($l['user_name_snapshot'] ?? 'Unknown') ?></strong></td>
-                                <td><span class="badge bg-<?= $roleColors[$l['role_snapshot']] ?? 'secondary' ?>" style="font-size:0.6rem;"><?= strtoupper(str_replace('_',' ', $l['role_snapshot'] ?? '–')) ?></span></td>
+                                <td><span class="badge bg-<?= $roleColors[$l['role_snapshot']] ?? 'secondary' ?>" style="font-size:0.6rem;"><?= h($l['role_snapshot'] ? role_label($l['role_snapshot']) : '–') ?></span></td>
                                 <td style="font-size:0.8rem;"><?= h($l['city_name'] ?? '–') ?></td>
                                 <td><span class="badge bg-<?= $actionColors[$l['action']] ?? 'secondary' ?>" style="font-size:0.65rem;"><?= h($l['action']) ?></span></td>
                                 <td style="font-size:0.8rem;"><?= h($l['details']) ?></td>

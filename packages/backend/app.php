@@ -62,6 +62,15 @@ function app_is_debug(): bool {
     return function_exists('db_is_local') ? db_is_local() : PHP_SAPI === 'cli';
 }
 
+/**
+ * Per-request CSP nonce. Inline <script> blocks must carry nonce="<?= csp_nonce() ?>"; anything injected
+ * into a page without it (stored or reflected XSS) is refused by the browser.
+ */
+function csp_nonce(): string {
+    static $nonce = null;
+    return $nonce ??= rtrim(strtr(base64_encode(random_bytes(18)), '+/', '-_'), '=');
+}
+
 function app_is_https(): bool {
     return (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
         || strtolower($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https';
@@ -119,11 +128,10 @@ function app_error_page(int $status): never {
     header('X-Content-Type-Options: nosniff');
     header('X-Frame-Options: SAMEORIGIN');
     header('Referrer-Policy: strict-origin-when-cross-origin');
-    header('Permissions-Policy: camera=(self), microphone=(), geolocation=(), payment=()');
+    header('Permissions-Policy: camera=(self), microphone=(), geolocation=(self), payment=()');   // geolocation: optional location on a roadside permit check
     header('Cross-Origin-Opener-Policy: same-origin');
-    $cdn = 'https://cdn.jsdelivr.net https://cdnjs.cloudflare.com';
-    header("Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' $cdn; "
-        . "style-src 'self' 'unsafe-inline' $cdn https://fonts.googleapis.com; font-src 'self' data: $cdn https://fonts.gstatic.com; "
+    header("Content-Security-Policy: default-src 'self'; script-src 'self' 'nonce-" . csp_nonce() . "'; "
+        . "style-src 'self' 'unsafe-inline'; font-src 'self' data:; "
         . "img-src 'self' data: blob: https:; connect-src 'self'; media-src 'self' https:; "
         . "frame-src https://www.youtube.com https://www.youtube-nocookie.com https://player.vimeo.com https://www.google.com; "
         . "frame-ancestors 'self'; form-action 'self'; base-uri 'self'; object-src 'none'");

@@ -76,11 +76,11 @@ $fmtSize = function (float $b): string { return $b >= 1048576 ? round($b / 10485
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <?php $pageTitle = 'Database | BodaERP'; require __DIR__ . '/../../partials/head-assets.php'; ?>
+    <?php $pageTitle = 'Database | ' . get_setting('site_name', 'BodaERP'); require __DIR__ . '/../../partials/head-assets.php'; ?>
     <style>
         .db-step { display: flex; gap: 14px; align-items: flex-start; }
-        .db-step .num { flex: 0 0 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: .85rem; color: #fff; background: var(--primary-blue-gradient); box-shadow: 0 6px 14px rgba(5, 108, 254,.28); }
-        .db-step.off .num { background: #c9c6dc; box-shadow: none; }
+        .db-step .num { flex: 0 0 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: .85rem; color: #fff; background: var(--primary-blue); box-shadow: 0 6px 14px rgba(5, 108, 254,.28); }
+        .db-step.off .num { background: #6b7280; box-shadow: none; }
         .db-step h6 { margin: 0 0 2px; font-weight: 700; font-size: .92rem; }
         .db-step p { margin: 0; font-size: .8rem; color: var(--text-muted); line-height: 1.5; }
         .db-kv { display: grid; grid-template-columns: 150px 1fr; gap: 10px 14px; font-size: .84rem; margin: 0; }
@@ -92,7 +92,7 @@ $fmtSize = function (float $b): string { return $b >= 1048576 ? round($b / 10485
         .db-pill.attention { background: rgba(220,53,69,.12); color: #c0392b; }
         .db-pill.info { background: rgba(5, 108, 254,.1); color: var(--primary-blue); }
         .db-code { background: var(--off-white); border: 1px solid var(--light-gray); border-radius: 10px; padding: 6px 10px; font-family: Consolas, monospace; font-size: .74rem; word-break: break-all; }
-        .db-sync-hero { border-radius: 20px; padding: 24px 26px; color: #fff; background: var(--primary-blue-gradient); position: relative; overflow: hidden; }
+        .db-sync-hero { border-radius: 20px; padding: 24px 26px; color: #fff; background: var(--primary-blue); position: relative; overflow: hidden; }
         .db-sync-hero.ok { background: #15803d; }
         .db-sync-hero.pending { background: #b45309; }
         .db-sync-hero.attention { background: #c0263a; }

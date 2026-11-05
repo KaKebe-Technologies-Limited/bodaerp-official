@@ -27,14 +27,14 @@ for ($i = 11; $i >= 0; $i--) {
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <?php $pageTitle = get_setting('citycouncil_dashboard_title') . ' | ' . get_setting('site_name') ?? 'City Council | BodaERP'; require __DIR__ . '/../../partials/head-assets.php'; ?>
+    <?php $pageTitle = get_setting('citycouncil_dashboard_title', 'City council dashboard') . ' | ' . get_setting('site_name', 'BodaERP'); require __DIR__ . '/../../partials/head-assets.php'; ?>
 </head>
 <body>
 
 <?php require __DIR__ . '/../../partials/sidebar-citycouncil.php'; ?>
 
 <div class="main-content" id="mainContent">
-    <?php $pageTitle = 'City Council Dashboard'; $pageSubtitle = 'Overview for ' . $city['name']; require __DIR__ . '/../../partials/topheader.php'; ?>
+    <?php $pageTitle = 'City council dashboard'; $pageSubtitle = 'Overview for ' . $city['name']; require __DIR__ . '/../../partials/topheader.php'; ?>
 
     <div class="content-area">
         <div class="dash-banner theme-blue">
@@ -51,9 +51,9 @@ for ($i = 11; $i >= 0; $i--) {
         </div>
 
         <div class="row g-3 row-cols-2 row-cols-xl-4 mb-4">
-            <div class="col"><div class="stat-hero-card tone-green"><div class="stat-hero-icon"><i class="fas fa-users"></i></div><div><div class="stat-hero-value"><?= number_format($totalRiders) ?></div><div class="stat-hero-label">Total Riders</div></div></div></div>
-            <div class="col"><div class="stat-hero-card tone-blue"><div class="stat-hero-icon"><i class="fas fa-money-bill-wave"></i></div><div><div class="stat-hero-value"><?= h(formatCurrency($totalRevenue)) ?></div><div class="stat-hero-label">Total Revenue</div></div></div></div>
-            <div class="col"><div class="stat-hero-card tone-gold"><div class="stat-hero-icon"><i class="fas fa-check-circle"></i></div><div><div class="stat-hero-value"><?= $complianceRate ?>%</div><div class="stat-hero-label">Compliance Rate</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-green"><div class="stat-hero-icon"><i class="fas fa-users"></i></div><div><div class="stat-hero-value"><?= number_format($totalRiders) ?></div><div class="stat-hero-label">Total riders</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-blue"><div class="stat-hero-icon"><i class="fas fa-money-bill-wave"></i></div><div><div class="stat-hero-value"><?= h(formatCurrency($totalRevenue)) ?></div><div class="stat-hero-label">Total revenue</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-gold"><div class="stat-hero-icon"><i class="fas fa-check-circle"></i></div><div><div class="stat-hero-value"><?= $complianceRate ?>%</div><div class="stat-hero-label">Compliance rate</div></div></div></div>
             <div class="col"><div class="stat-hero-card tone-red"><div class="stat-hero-icon"><i class="fas fa-exclamation-triangle"></i></div><div><div class="stat-hero-value"><?= number_format($defaulters) ?></div><div class="stat-hero-label">Defaulters</div></div></div></div>
         </div>
 
@@ -69,12 +69,12 @@ for ($i = 11; $i >= 0; $i--) {
             <div class="col-xl-4">
                 <div class="card" style="border: none; border-radius: 14px; box-shadow: 0 2px 12px rgba(0,0,0,0.04); background: white;">
                     <div class="card-body">
-                        <h5 class="fw-bold mb-3">Revenue Split</h5>
+                        <h5 class="fw-bold mb-3">Revenue split</h5>
                         <div id="pieChart"></div>
                         <div class="mt-3">
-                            <div class="d-flex justify-content-between align-items-center py-1"><span><span class="legend-dot bg-primary me-2"></span> City Council</span><span class="fw-bold"><?= (int)$city['revenue_split_city'] ?>%</span></div>
-                            <div class="d-flex justify-content-between align-items-center py-1"><span><span class="legend-dot bg-success me-2"></span> Boda Association</span><span class="fw-bold"><?= (int)$city['revenue_split_association'] ?>%</span></div>
-                            <div class="d-flex justify-content-between align-items-center py-1"><span><span class="badge me-2" style="background:#d97706;">●</span> Government</span><span class="fw-bold"><?= (int)$city['revenue_split_government'] ?>%</span></div>
+                            <div class="d-flex justify-content-between align-items-center py-1"><span><span class="legend-dot bg-primary me-2"></span> City council</span><span class="fw-bold"><?= (int)$city['revenue_split_city'] ?>%</span></div>
+                            <div class="d-flex justify-content-between align-items-center py-1"><span><span class="legend-dot bg-success me-2"></span> Boda association</span><span class="fw-bold"><?= (int)$city['revenue_split_association'] ?>%</span></div>
+                            <div class="d-flex justify-content-between align-items-center py-1"><span><span class="badge me-2" style="background:#b45309;">●</span> Government</span><span class="fw-bold"><?= (int)$city['revenue_split_government'] ?>%</span></div>
                             <div class="d-flex justify-content-between align-items-center py-1"><span><span class="legend-dot bg-info me-2"></span> Kakebe Tech</span><span class="fw-bold"><?= (int)$city['revenue_split_platform'] ?>%</span></div>
                         </div>
                     </div>
@@ -82,9 +82,9 @@ for ($i = 11; $i >= 0; $i--) {
             </div>
         </div>
 
-        <h6 class="fw-bold mb-3">Quick Actions</h6>
+        <h6 class="fw-bold mb-3">Quick actions</h6>
         <div class="row g-3">
-            <div class="col-6 col-md-3"><a href="<?= BASE_URL ?>/pages/citycouncil/revenue-analytics.php" class="text-decoration-none"><div class="quick-action-card"><div class="icon-badge blue"><i class="fas fa-file-invoice"></i></div><h6>Revenue Report</h6><small>Analytics &amp; trends</small></div></a></div>
+            <div class="col-6 col-md-3"><a href="<?= BASE_URL ?>/pages/citycouncil/revenue-analytics.php" class="text-decoration-none"><div class="quick-action-card"><div class="icon-badge blue"><i class="fas fa-file-invoice"></i></div><h6>Revenue report</h6><small>Analytics &amp; trends</small></div></a></div>
             <div class="col-6 col-md-3"><a href="<?= BASE_URL ?>/pages/citycouncil/compliance-monitoring.php" class="text-decoration-none"><div class="quick-action-card"><div class="icon-badge green"><i class="fas fa-check-circle"></i></div><h6>Compliance</h6><small>Monitor stages</small></div></a></div>
             <div class="col-6 col-md-3"><a href="<?= BASE_URL ?>/pages/citycouncil/city-defaulters.php" class="text-decoration-none"><div class="quick-action-card"><div class="icon-badge red"><i class="fas fa-exclamation-triangle"></i></div><h6>Defaulters</h6><small>City-wide list</small></div></a></div>
             <div class="col-6 col-md-3"><a href="<?= BASE_URL ?>/pages/citycouncil/all-stages.php" class="text-decoration-none"><div class="quick-action-card"><div class="icon-badge gold"><i class="fas fa-map-marker-alt"></i></div><h6>All Stages</h6><small>City overview</small></div></a></div>
@@ -93,7 +93,7 @@ for ($i = 11; $i >= 0; $i--) {
 </div>
 
 <?php require __DIR__ . '/../../partials/scripts-footer.php'; ?>
-<script>
+<script nonce="<?= csp_nonce() ?>">
     new ApexCharts(document.querySelector('#revenueChart'), {
         series: [{ name: 'Revenue (UGX M)', data: <?= js_json($chartValues) ?> }],
         chart: { type: 'area', height: 280, toolbar: { show: false }, animations: { enabled: true } },

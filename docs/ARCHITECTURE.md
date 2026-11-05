@@ -32,6 +32,10 @@ browser ─► Apache + .htaccess ─► a PHP page ─► packages/backend/auth
 | `anomaly_engine.php` | The 15 duplicate / fraud / consistency checks that feed *Data Quality & Flags* |
 | `datapacks.php` | Ready-made reference data (a city with stages) applied from Super Admin |
 | `iotec_config.php`, `iotec_functions.php`, `payments.php` | ioTec Pay mobile-money collection; `ipn_handler.php` (project root) receives payment notifications |
+| `sms.php` | EgoSMS sender in the mailer's shape: `send_template_sms()`, `sms_log`, `storage/sms/` without credentials, `rider_sms_target()`, `rider_send_reminder()` |
+| `i18n.php` | `t('key', 'English')` for rider-facing text; reviewed translations from the `translations` table (Super Admin → Languages) |
+| `rider_import.php` | CSV / .xlsx rider import for city admins: read, check per row, then save in one transaction |
+| `permits.php` | `payment_confirm()` (the single path for every payment), cash payments, renewal window |
 
 ### Rules for backend code
 
@@ -82,8 +86,12 @@ To add it to the menu, add one line to the `$nav` array in `partials/sidebar-cha
 
 ### JavaScript rules ("clean JS")
 
-- **Plain JavaScript only.** No Node, npm, bundler or framework. Libraries come from CDNs and are pinned:
-  Bootstrap 5.3.3, Font Awesome 6.5.2, ApexCharts 3.54.0, jsPDF 2.5.1 + AutoTable 3.8.2.
+- **Plain JavaScript only.** No Node, npm, bundler or framework. Libraries are committed, unchanged, in
+  `packages/frontend/assets/vendor/` (Bootstrap 5.3.3, Font Awesome 6.5.2, ApexCharts 3.54.0, jsPDF 4.2.1 +
+  AutoTable 5.0.9, qrcodejs 1.0.0, Inter, CKEditor 5), so pages work with no internet. Versions are listed in
+  `vendor/VERSIONS.json`; `tests/check_dependencies.php` checks them for advisories.
+- **Content Security Policy:** scripts run only from this site or from inline blocks carrying
+  `nonce="<?= csp_nonce() ?>"`; `tests/check_portability.php` fails on an inline script without it.
 - **Shared behaviour lives in two files**, loaded by `scripts-footer.php` on every page:
   `assets/js/main.js` (mobile sidebar, alert auto-hide, tooltips) and `assets/js/table-tools.js` (table export).
   Do **not** paste the same handler into individual pages: a duplicated sidebar handler used to cancel itself
@@ -106,6 +114,12 @@ To add it to the menu, add one line to the `$nav` array in `partials/sidebar-cha
 Each city has a revenue split (city council / boda association / government / platform) that must total 100 %,
 edited at Super Admin → Revenue Splits. Payments are recorded as cash, mobile money or bank transfer; mobile-money collection
 goes through ioTec Pay (`iotec_functions.php`) and is confirmed by `ipn_handler.php` or by polling.
+
+What a rider owes always comes from `permit_amount_due()` (functions.php): the permit fee plus the city's late fee
+once the permit has been expired longer than the grace period. Cash, the rider portal and USSD all use it, and each
+payment stores its `late_fee` and `channel` (`stage`, `portal`, `ussd`). Cash taken at a stage waits in Cash handover
+until the chairperson bundles it and the city confirms what it counted (`cash_handovers`); a queried handover
+releases its payments to be handed over again.
 
 ## Scheduled and background work
 

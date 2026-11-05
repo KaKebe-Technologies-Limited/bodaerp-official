@@ -14,7 +14,7 @@ web server and it runs. Docker is an optional convenience for Linux developers o
 | PHP | 8.1 or newer; developed on **8.2** (XAMPP 8.2.12 ships PHP 8.2.12). Extensions: `mysqli`, `mbstring`, `curl`, `json`, `fileinfo`, `openssl` (all on in XAMPP); `dom` for page sanitising (built in) |
 | Database | MariaDB 10.4+ (XAMPP 8.2.12 ships MariaDB 10.4.32; the Docker stack uses 10.4; the live server runs 11.8) |
 | Web server | Apache with `mod_rewrite` and `.htaccess` allowed (default in XAMPP) |
-| Front end | Bootstrap 5, Font Awesome, ApexCharts and jsPDF from CDNs (the browser needs internet). CKEditor 5 is committed in `packages/frontend/assets/vendor/ckeditor5/` |
+| Front end | Bootstrap 5, Font Awesome, ApexCharts, jsPDF, qrcodejs, the Inter font and CKEditor 5, all committed in `packages/frontend/assets/vendor/` (no internet needed) |
 
 ---
 
@@ -94,17 +94,17 @@ Platform Settings → *Require 2FA* is on and SMTP works there. On XAMPP (no SMT
 | Role | Lands on | Purpose |
 |---|---|---|
 | **Super Admin** | Platform Overview | Cities, users, revenue splits, reports, data-quality flags, audit logs, database, system updates, platform settings, **plus** the website: pages, menus, FAQ, site text and branding, email templates and sent log, media library, contact inbox, rider data requests |
-| **City council** | City dashboard | One city: riders, stages, payments, compliance, defaulters, enforcement, revenue reports |
-| **Stage chairperson** | Stage dashboard | One stage: register riders (and invite them to the portal), collect fees, expiry alerts, defaulters, ID cards |
+| **City council** | City dashboard | One city: riders, rider import (CSV / Excel), stages, payments, cash handovers from stages, late fees, compliance, defaulters, enforcement, roadside checks, revenue reports |
+| **Stage chairperson** | Stage dashboard | One stage: register riders (with a live duplicate check), collect fees, hand cash over to the city, expiry alerts, defaulters, reminders by portal and SMS, ID cards |
 | **Rider** | My permit | Own profile, ID card, payment history and receipts, renewal and mobile-money payment, notifications, download my data, correction/deletion requests |
 | **Government** | National overview | Read-only national view: registry (name, permit, plate, status only; no NIN, phone or address), city comparison, enforcement, masked data checks, exports |
 
-Everyone has **My Account** (account menu, top right of every portal page): change password, email notifications, two-step sign-in, confirm email,
+Everyone has **My account** (account menu, top right of every portal page): change password, notifications (email, SMS, portal), optional two-step sign-in with a code by SMS or email (there is no authenticator app), confirm email and mobile number,
 sign out other devices. There is no public sign-up: riders get an account when their chairperson registers
 them with an email address; staff accounts are created in Super Admin → All Users (an invite link is emailed).
 
 Public pages: home, `/p/about`, `/p/privacy-policy`, `/p/terms-of-service`, `/p/cookie-policy`, `faq.php`,
-`contact.php`, `verify.php` (permit check; the ID-card QR code opens it), sign-in, forgot/reset password,
+`contact.php`, `verify.php` (permit check; the ID-card QR code opens it; signed-in staff can record a roadside check there), `ussd.php` (USSD renewal, for the USSD provider only), sign-in, forgot/reset password,
 `sitemap.xml`, `robots.txt`, and branded 404 / 403 / 500 / maintenance pages. All their text is in the database.
 
 ---
@@ -166,7 +166,7 @@ docs/                          DATABASE.md, DEPLOYMENT.md, ARCHITECTURE.md
 |---|---|
 | **"BodaERP can't reach its database"** | MySQL is not running (start it in XAMPP), or on a live server `.env` is missing or wrong. |
 | Pages without styling, or links give 404 | `mod_rewrite` / `.htaccess` is not active. In XAMPP it is on by default; elsewhere enable `mod_rewrite` and `AllowOverride All`. |
-| Everything is unstyled but links work | The browser has no internet (Bootstrap and icons load from CDNs). |
+| Everything is unstyled but links work | `packages/frontend/assets/vendor/` is missing or incomplete (check the clone or upload). |
 | Sign-in says the email or password is wrong | Run `php database/seed_run.php` first. After 5 wrong tries an account pauses for 15 minutes. |
 | No reset email arrives on XAMPP | Expected: it is in `storage\mail\` and the Sent log. Configure `SMTP_*` to send real email. |
 | `php` is not recognised | Use `C:\xampp\php\php.exe`, or add `C:\xampp\php` to PATH. |

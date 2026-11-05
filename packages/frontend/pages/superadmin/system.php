@@ -68,12 +68,12 @@ $appliedPacks = count(array_filter($packs, fn($p) => $p['applied']));
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <?php $pageTitle = 'System & Updates | BodaERP'; require __DIR__ . '/../../partials/head-assets.php'; ?>
+    <?php $pageTitle = 'System & updates | ' . get_setting('site_name', 'BodaERP'); require __DIR__ . '/../../partials/head-assets.php'; ?>
     <style>
         .sys-code { background: var(--off-white); border-radius: 12px; padding: 10px 14px; font-family: Consolas, monospace; font-size: 0.78rem; word-break: break-all; border: 1px solid var(--light-gray); }
         .pack-card { border-radius: 18px; background: var(--off-white); padding: 20px; height: 100%; }
         .nav-pills .nav-link { border-radius: 99px; font-weight: 600; font-size: 0.85rem; color: var(--text-muted); padding: 8px 18px; }
-        .nav-pills .nav-link.active { background: var(--primary-blue-gradient); color: #fff; box-shadow: 0 6px 16px rgba(5, 108, 254,0.3); }
+        .nav-pills .nav-link.active { background: var(--primary-blue); color: #fff; box-shadow: 0 6px 16px rgba(5, 108, 254,0.3); }
         .job-msg { font-size: 0.76rem; color: var(--text-muted); max-width: 360px; }
     </style>
 </head>
@@ -82,13 +82,13 @@ $appliedPacks = count(array_filter($packs, fn($p) => $p['applied']));
 <?php require __DIR__ . '/../../partials/sidebar-superadmin.php'; ?>
 
 <div class="main-content" id="mainContent">
-    <?php $pageTitle = 'System & Updates'; $pageSubtitle = 'Update the database, add cities and run automatic jobs: all online, no uploads'; require __DIR__ . '/../../partials/topheader.php'; ?>
+    <?php $pageTitle = 'System & updates'; $pageSubtitle = 'Update the database, add cities and run automatic jobs: all online, no uploads'; require __DIR__ . '/../../partials/topheader.php'; ?>
     <div class="content-area">
 
         <?php if ($flash): ?><div class="alert alert-<?= h($flash[0]) ?>"><?= h($flash[1]) ?></div><?php endif; ?>
 
         <div class="row g-3 row-cols-2 row-cols-xl-4 mb-4">
-            <div class="col"><div class="stat-hero-card tone-dark"><div class="stat-hero-icon"><i class="fas fa-server"></i></div><div><div class="stat-hero-value" style="font-size:1.15rem;"><?= h(strtoupper(getDbEnvironment())) ?></div><div class="stat-hero-label">Environment · <?= h(DB_NAME) ?></div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-dark"><div class="stat-hero-icon"><i class="fas fa-server"></i></div><div><div class="stat-hero-value" style="font-size:1.15rem;"><?= h(ucfirst(getDbEnvironment())) ?></div><div class="stat-hero-label">Environment · <?= h(DB_NAME) ?></div></div></div></div>
             <div class="col"><a href="<?= BASE_URL ?>/pages/superadmin/database.php" class="text-decoration-none d-block"><div class="stat-hero-card <?= $mig['pending'] || $migFailure ? 'tone-gold' : 'tone-green' ?>"><div class="stat-hero-icon"><i class="fas fa-database"></i></div><div><div class="stat-hero-value" style="font-size:1.15rem;"><?= $mig['pending'] ? (int) $mig['pending'] . ' pending' : 'Up to date' ?></div><div class="stat-hero-label">Database · open the Database page</div></div></div></a></div>
             <div class="col"><div class="stat-hero-card <?= $failedJobs ? 'tone-red' : 'tone-blue' ?>"><div class="stat-hero-icon"><i class="fas fa-robot"></i></div><div><div class="stat-hero-value" style="font-size:1.15rem;"><?= $enabledJobs ?>/<?= count($jobs) ?> on</div><div class="stat-hero-label">Automation<?= $failedJobs ? " · {$failedJobs} failing" : '' ?></div></div></div></div>
             <div class="col"><div class="stat-hero-card tone-gold"><div class="stat-hero-icon"><i class="fas fa-city"></i></div><div><div class="stat-hero-value" style="font-size:1.15rem;"><?= $appliedPacks ?>/<?= count($packs) ?> applied</div><div class="stat-hero-label">Data packs</div></div></div></div>
@@ -109,7 +109,7 @@ $appliedPacks = count(array_filter($packs, fn($p) => $p['applied']));
                     <thead><tr><th>Role</th><th>Name</th><th>Email</th><th>Password</th></tr></thead>
                     <tbody>
                     <?php foreach ($creds as $c): ?>
-                        <tr><td><span class="badge bg-primary"><?= h(strtoupper(str_replace('_', ' ', $c['role']))) ?></span></td><td><?= h($c['name']) ?></td><td><?= h($c['email']) ?></td>
+                        <tr><td><span class="badge bg-primary"><?= h(role_label($c['role'])) ?></span></td><td><?= h($c['name']) ?></td><td><?= h($c['email']) ?></td>
                             <td><?= $c['password'] ? '<code>' . h($c['password']) . '</code>' : '<span class="text-muted small">already existed: unchanged</span>' ?></td></tr>
                     <?php endforeach; ?>
                     </tbody>

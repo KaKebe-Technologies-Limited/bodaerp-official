@@ -57,5 +57,5 @@ $socials = array_filter(['facebook' => get_setting('social_facebook'), 'x-twitte
     <button type="button" class="btn-brand" data-cookie-accept>OK, got it</button>
 </div>
 <?php endif; ?>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+<script src="<?= BASE_URL ?>/assets/vendor/bootstrap/bootstrap.bundle.min.js"></script>
 <script src="<?= BASE_URL ?>/assets/js/public.js?v=<?= @filemtime(__DIR__ . '/../assets/js/public.js') ?: 1 ?>"></script>

@@ -2,6 +2,11 @@
 // BodaERP - public website content (pages, menus, FAQ, branding, SEO) Every public page starts with:
 // require_once __DIR__ . '/packages/backend/site.php'; All text comes from the database and is edited in
 // Super Admin → Content.
+// Defined before auth.php loads: auth can stop a request (maintenance, expired form) while this file is still
+// loading, and the branded error page then needs these colours.
+const BRAND_DEFAULT_PRIMARY = '#056CFE';
+const BRAND_DEFAULT_ACCENT = '#E2262F';
+const BRAND_DEFAULT_DARK = '#001740';
 require_once __DIR__ . '/auth.php';
 require_once __DIR__ . '/uploads.php';
 
@@ -52,9 +57,6 @@ function brand_color(string $key, string $fallback): string {
     return preg_match('/^#[0-9a-f]{3,8}$/i', $v) ? $v : $fallback;
 }
 
-const BRAND_DEFAULT_PRIMARY = '#056CFE';
-const BRAND_DEFAULT_ACCENT = '#E2262F';
-const BRAND_DEFAULT_DARK = '#001740';
 
 /** Square logo icon (Super Admin → Site Text & Branding → Logo); the wordmark beside it is the site name as text. */
 function brand_logo_url(): string {

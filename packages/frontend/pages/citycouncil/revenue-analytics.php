@@ -30,7 +30,7 @@ $transactions = fetchAll("SELECT p.*, r.full_name, s.name AS stage_name FROM pay
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <?php $pageTitle = 'Revenue Analytics | BodaERP'; require __DIR__ . '/../../partials/head-assets.php'; ?>
+    <?php $pageTitle = 'Revenue analytics | ' . get_setting('site_name', 'BodaERP'); require __DIR__ . '/../../partials/head-assets.php'; ?>
     <style>
     </style>
 </head>
@@ -48,9 +48,9 @@ $transactions = fetchAll("SELECT p.*, r.full_name, s.name AS stage_name FROM pay
 
     <div class="content-area">
         <div class="row g-3 mb-4">
-            <div class="col-md-3 col-6"><div class="stat-hero-card tone-blue"><div class="stat-hero-icon"><i class="fas fa-money-bill-wave"></i></div><div><div class="stat-hero-value"><?= h(formatCurrency($totalRevenue)) ?></div><div class="stat-hero-label">Total Revenue</div></div></div></div>
-            <div class="col-md-3 col-6"><div class="stat-hero-card tone-green"><div class="stat-hero-icon"><i class="fas fa-calendar"></i></div><div><div class="stat-hero-value"><?= h(formatCurrency($thisMonth)) ?></div><div class="stat-hero-label">This Month</div></div></div></div>
-            <div class="col-md-3 col-6"><div class="stat-hero-card tone-gold"><div class="stat-hero-icon"><i class="fas fa-receipt"></i></div><div><div class="stat-hero-value"><?= h(formatCurrency(round($avgPayment))) ?></div><div class="stat-hero-label">Avg. Payment</div></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card tone-blue"><div class="stat-hero-icon"><i class="fas fa-money-bill-wave"></i></div><div><div class="stat-hero-value"><?= h(formatCurrency($totalRevenue)) ?></div><div class="stat-hero-label">Total revenue</div></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card tone-green"><div class="stat-hero-icon"><i class="fas fa-calendar"></i></div><div><div class="stat-hero-value"><?= h(formatCurrency($thisMonth)) ?></div><div class="stat-hero-label">This month</div></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card tone-gold"><div class="stat-hero-icon"><i class="fas fa-receipt"></i></div><div><div class="stat-hero-value"><?= h(formatCurrency(round($avgPayment))) ?></div><div class="stat-hero-label">Avg. payment</div></div></div></div>
             <div class="col-md-3 col-6"><div class="stat-hero-card tone-red"><div class="stat-hero-icon"><i class="fas fa-exchange-alt"></i></div><div><div class="stat-hero-value"><?= number_format($txnCount) ?></div><div class="stat-hero-label">Transactions</div></div></div></div>
         </div>
 
@@ -63,7 +63,7 @@ $transactions = fetchAll("SELECT p.*, r.full_name, s.name AS stage_name FROM pay
             </div>
             <div class="col-xl-4">
                 <div class="card"><div class="card-body">
-                    <h5 class="fw-bold mb-3">Revenue Split</h5>
+                    <h5 class="fw-bold mb-3">Revenue split</h5>
                     <div id="pieChart"></div>
                 </div></div>
             </div>
@@ -71,13 +71,13 @@ $transactions = fetchAll("SELECT p.*, r.full_name, s.name AS stage_name FROM pay
 
         <div class="card mb-4">
             <div class="card-body">
-                <h5 class="fw-bold mb-3">Revenue by Stage</h5>
+                <h5 class="fw-bold mb-3">Revenue by stage</h5>
                 <div id="stageRevenueChart"></div>
             </div>
         </div>
 
         <div class="d-flex justify-content-between align-items-center mb-2 no-print">
-            <h6 class="fw-bold mb-0">Recent Transactions</h6>
+            <h6 class="fw-bold mb-0">Recent transactions</h6>
             <?php $exportTableId='analyticsTransTable'; $exportFilename='revenue_transactions'; $exportTitle='Revenue Transactions'; require __DIR__ . '/../../partials/export-toolbar.php'; ?>
         </div>
         <div class="card">
@@ -108,7 +108,7 @@ $transactions = fetchAll("SELECT p.*, r.full_name, s.name AS stage_name FROM pay
 </div>
 
 <?php require __DIR__ . '/../../partials/scripts-footer.php'; ?>
-<script>
+<script nonce="<?= csp_nonce() ?>">
     new ApexCharts(document.querySelector('#revenueTrendChart'), {
         series: [{ name: 'Revenue', data: <?= js_json($chartValues) ?> }],
         chart: { type: 'area', height: 280, toolbar: { show: false } },

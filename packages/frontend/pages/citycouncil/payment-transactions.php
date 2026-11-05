@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/../../../backend/auth.php';
+require_once __DIR__ . '/../../../backend/admin_ui.php';
 require_role(['city_admin']);
 $active = 'payments_management';
 $cityId = $_SESSION['city_id'];
@@ -53,12 +53,11 @@ $transactions = fetchAll("SELECT p.*, r.full_name, s.name AS stage_name FROM pay
     $where ORDER BY p.paid_at DESC LIMIT " . (int) $perPage . " OFFSET " . (int) $offset, $params);
 $stages = fetchAll("SELECT id, name FROM stages WHERE city_id = ? ORDER BY name", [$cityId]);
 
-function qsMerge2(array $overrides): string { return '?' . http_build_query(array_merge($_GET, $overrides)); }
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <?php $pageTitle = 'Payment Transactions | BodaERP'; require __DIR__ . '/../../partials/head-assets.php'; ?>
+    <?php $pageTitle = 'Payment transactions | ' . get_setting('site_name', 'BodaERP'); require __DIR__ . '/../../partials/head-assets.php'; ?>
 </head>
 <body>
 
@@ -74,23 +73,23 @@ function qsMerge2(array $overrides): string { return '?' . http_build_query(arra
         <div class="card mb-4">
             <div class="card-body">
                 <form class="row g-3" method="get">
-                    <div class="col-md-3"><label class="form-label fw-semibold">Date From</label><input type="date" class="form-control" name="from" value="<?= h($dateFrom) ?>"></div>
-                    <div class="col-md-3"><label class="form-label fw-semibold">Date To</label><input type="date" class="form-control" name="to" value="<?= h($dateTo) ?>"></div>
-                    <div class="col-md-3"><label class="form-label fw-semibold">Stage</label>
-                        <select class="form-select" name="stage">
+                    <div class="col-md-3"><label for="f-from" class="form-label fw-semibold">Date From</label><input id="f-from" type="date" class="form-control" name="from" value="<?= h($dateFrom) ?>"></div>
+                    <div class="col-md-3"><label for="f-to" class="form-label fw-semibold">Date To</label><input id="f-to" type="date" class="form-control" name="to" value="<?= h($dateTo) ?>"></div>
+                    <div class="col-md-3"><label for="f-stage" class="form-label fw-semibold">Stage</label>
+                        <select id="f-stage" class="form-select" name="stage">
                             <option value="">All Stages</option>
                             <?php foreach ($stages as $s): ?><option value="<?= (int)$s['id'] ?>" <?= $stageFilter===(int)$s['id']?'selected':'' ?>><?= h($s['name']) ?></option><?php endforeach; ?>
                         </select>
                     </div>
-                    <div class="col-md-3"><label class="form-label fw-semibold">Status</label>
-                        <select class="form-select" name="status">
+                    <div class="col-md-3"><label for="f-status" class="form-label fw-semibold">Status</label>
+                        <select id="f-status" class="form-select" name="status">
                             <option value="">All Status</option>
                             <option value="Confirmed" <?= $statusFilter==='Confirmed'?'selected':'' ?>>Confirmed</option>
                             <option value="Pending" <?= $statusFilter==='Pending'?'selected':'' ?>>Pending</option>
                             <option value="Failed" <?= $statusFilter==='Failed'?'selected':'' ?>>Failed</option>
                         </select>
                     </div>
-                    <div class="col-12"><button type="submit" class="btn btn-primary"><i class="fas fa-filter me-1"></i>Apply Filters</button></div>
+                    <div class="col-12"><button type="submit" class="btn btn-primary"><i class="fas fa-filter me-1"></i>Apply filters</button></div>
                 </form>
             </div>
         </div>
@@ -98,11 +97,11 @@ function qsMerge2(array $overrides): string { return '?' . http_build_query(arra
         <div class="d-flex justify-content-end gap-2 mb-2 no-print">
             <div class="dropdown">
                 <button class="btn btn-outline-success dropdown-toggle btn-sm" type="button" data-bs-toggle="dropdown">
-                    <i class="fas fa-file-export me-1"></i>Export All Matching (<?= number_format($total) ?>)
+                    <i class="fas fa-file-export me-1"></i>Export all matching (<?= number_format($total) ?>)
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end">
-                    <li><a class="dropdown-item" href="<?= qsMerge2(['export'=>'csv']) ?>"><i class="fas fa-file-csv me-2 text-primary"></i>CSV</a></li>
-                    <li><a class="dropdown-item" href="<?= qsMerge2(['export'=>'excel']) ?>"><i class="fas fa-file-excel me-2 text-success"></i>Excel</a></li>
+                    <li><a class="dropdown-item" href="<?= h(query_with(['export'=>'csv'])) ?>"><i class="fas fa-file-csv me-2 text-primary"></i>CSV</a></li>
+                    <li><a class="dropdown-item" href="<?= h(query_with(['export'=>'excel'])) ?>"><i class="fas fa-file-excel me-2 text-success"></i>Excel</a></li>
                 </ul>
             </div>
             <?php $exportTableId='transactionsTable'; $exportFilename='payment_transactions_page'.$page; $exportTitle='Payment Transactions (this page)'; require __DIR__ . '/../../partials/export-toolbar.php'; ?>
@@ -136,8 +135,8 @@ function qsMerge2(array $overrides): string { return '?' . http_build_query(arra
             <small class="text-muted">Showing <?= $total ? $offset+1 : 0 ?>-<?= min($offset+$perPage,$total) ?> of <?= number_format($total) ?> transactions</small>
             <nav>
                 <ul class="pagination mb-0">
-                    <li class="page-item <?= $page<=1?'disabled':'' ?>"><a class="page-link" href="<?= qsMerge2(['page'=>$page-1]) ?>">Prev</a></li>
-                    <li class="page-item <?= $page>=$totalPages?'disabled':'' ?>"><a class="page-link" href="<?= qsMerge2(['page'=>$page+1]) ?>">Next</a></li>
+                    <li class="page-item <?= $page<=1?'disabled':'' ?>"><a class="page-link" href="<?= h(query_with(['page'=>$page-1])) ?>">Prev</a></li>
+                    <li class="page-item <?= $page>=$totalPages?'disabled':'' ?>"><a class="page-link" href="<?= h(query_with(['page'=>$page+1])) ?>">Next</a></li>
                 </ul>
             </nav>
         </div>

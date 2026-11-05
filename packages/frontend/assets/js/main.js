@@ -131,6 +131,8 @@ function createToastContainer() {
 //   <input data-preview-target="imgId" data-preview-base="/app">       shows the typed path in an image
 //   <img data-fallback-src="..."> or <img data-hide-broken>            handles an image that fails to load
 //   <button data-call="fn" data-call-args='[1]'>                       calls a function listed in PAGE_ACTIONS
+//   <input data-duplicate-check="nin" data-duplicate-url="...">        warns on leaving the field if the value is already registered
+//   <select data-amount-target="inputId"> with <option data-amount>     shows the chosen option's amount in that input
 // Every POST form locks its submit button while the request runs, so a double tap cannot pay twice.
 (function () {
     'use strict';
@@ -240,7 +242,8 @@ function createToastContainer() {
             });
             return;
         }
-        if ((form.method || '').toLowerCase() !== 'post' || form.hasAttribute('data-no-lock') || e.defaultPrevented) return;
+        // getAttribute, not form.method: a field named "method" (Collect payments has one) shadows the property.
+        if ((form.getAttribute('method') || '').toLowerCase() !== 'post' || form.hasAttribute('data-no-lock') || e.defaultPrevented) return;
         if (form.dataset.busy === '1') { e.preventDefault(); return; }
         form.dataset.busy = '1';
         const btn = e.submitter || form.querySelector('[type="submit"]');
@@ -268,6 +271,11 @@ function createToastContainer() {
         if (el.matches && el.matches('[data-check-all]')) {
             const form = el.closest('form') || document;
             form.querySelectorAll('input[type="checkbox"][name="' + el.getAttribute('data-check-all') + '"]').forEach(cb => { cb.checked = el.checked; });
+        }
+        if (el.matches && el.matches('select[data-amount-target]')) {
+            const target = document.getElementById(el.getAttribute('data-amount-target'));
+            const chosen = el.selectedOptions[0];
+            if (target && chosen && chosen.dataset.amount) target.value = chosen.dataset.amount;
         }
         if (el.matches && el.matches('[data-autosubmit]') && el.form) el.form.requestSubmit ? el.form.requestSubmit() : el.form.submit();
         if (el.matches && el.matches('input[type="file"][data-file-name-target]')) {
@@ -299,6 +307,28 @@ function createToastContainer() {
         const opener = e.target.closest('[data-click-target]');
         if (opener) { const input = document.getElementById(opener.getAttribute('data-click-target')); if (input) input.click(); }
     });
+    // Registration: say straight away when a NIN, phone or plate is already registered (the server checks again on submit).
+    document.addEventListener('focusout', function (e) {
+        const input = e.target;
+        if (!input.matches || !input.matches('[data-duplicate-check]')) return;
+        const note = document.getElementById(input.getAttribute('aria-describedby') || '');
+        const value = input.value.trim();
+        if (!note) return;
+        if (value.length < 4 || value === input.dataset.checkedValue) return;
+        input.dataset.checkedValue = value;
+        const url = input.getAttribute('data-duplicate-url') + '?field=' + encodeURIComponent(input.getAttribute('data-duplicate-check')) + '&value=' + encodeURIComponent(value);
+        fetch(url, { credentials: 'same-origin', headers: { 'Accept': 'application/json' } })
+            .then(r => r.ok ? r.json() : { matches: [] })
+            .then(result => {
+                const matches = result.matches || [];
+                note.textContent = matches.length ? 'Already registered at ' + matches.map(m => m.where + (m.status === 'removed' ? ' (removed record)' : '')).join('; ') + '.' : '';
+                note.classList.toggle('is-warning', matches.length > 0);
+                const reveal = document.getElementById(input.getAttribute('data-duplicate-reveal') || '');
+                if (reveal) reveal.classList.toggle('d-none', matches.length === 0);
+            })
+            .catch(err => { console.warn('Duplicate check failed', err); note.textContent = ''; });
+    });
+
     document.addEventListener('keydown', function (e) {
         const opener = e.target.closest && e.target.closest('[data-click-target]');
         if (opener && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); const input = document.getElementById(opener.getAttribute('data-click-target')); if (input) input.click(); }

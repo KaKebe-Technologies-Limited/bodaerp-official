@@ -1,5 +1,5 @@
 # ============================================================
-# BodaERP — Git Ignore Rules
+# BodaERP: files git must not track
 # ============================================================
 
 # ----- Sensitive config (tracked once, then ignored) -----
@@ -50,3 +50,6 @@ storage/
 
 # Browser test screenshots
 .playwright-mcp/
+
+# Local assistant and editor tooling: never deployed
+.claude/

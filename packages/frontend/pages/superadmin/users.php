@@ -116,7 +116,7 @@ $adminUsersAll    = (int) fetchValue("SELECT COUNT(*) FROM users WHERE deleted_a
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <?php $pageTitle = 'All Users | BodaERP'; require __DIR__ . '/../../partials/head-assets.php'; ?>
+    <?php $pageTitle = 'All Users | ' . get_setting('site_name', 'BodaERP'); require __DIR__ . '/../../partials/head-assets.php'; ?>
 </head>
 <body>
 
@@ -141,8 +141,8 @@ $adminUsersAll    = (int) fetchValue("SELECT COUNT(*) FROM users WHERE deleted_a
                 </select>
                 <select class="form-select form-select-sm" name="role" aria-label="Role" data-autosubmit>
                     <option value="">All Roles</option>
-                    <option value="super_admin" <?= $filterRole === 'super_admin' ? 'selected' : '' ?>>Super Admin</option>
-                    <option value="city_admin" <?= $filterRole === 'city_admin' ? 'selected' : '' ?>>City Admin</option>
+                    <option value="super_admin" <?= $filterRole === 'super_admin' ? 'selected' : '' ?>>Super admin</option>
+                    <option value="city_admin" <?= $filterRole === 'city_admin' ? 'selected' : '' ?>>City admin</option>
                     <option value="chairperson" <?= $filterRole === 'chairperson' ? 'selected' : '' ?>>Chairperson</option>
                     <option value="rider" <?= $filterRole === 'rider' ? 'selected' : '' ?>>Rider</option>
                     <option value="government" <?= $filterRole === 'government' ? 'selected' : '' ?>>Government</option>
@@ -160,7 +160,7 @@ $adminUsersAll    = (int) fetchValue("SELECT COUNT(*) FROM users WHERE deleted_a
         <?php endif; ?>
 
         <div class="row g-3 row-cols-2 row-cols-xl-4 mb-4">
-            <div class="col"><div class="stat-hero-card tone-blue"><div class="stat-hero-icon"><i class="fas fa-users"></i></div><div><div class="stat-hero-value"><?= number_format($totalUsersAll) ?></div><div class="stat-hero-label">Total Users</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-blue"><div class="stat-hero-icon"><i class="fas fa-users"></i></div><div><div class="stat-hero-value"><?= number_format($totalUsersAll) ?></div><div class="stat-hero-label">Total users</div></div></div></div>
             <div class="col"><div class="stat-hero-card tone-green"><div class="stat-hero-icon"><i class="fas fa-user-check"></i></div><div><div class="stat-hero-value"><?= number_format($activeUsersAll) ?></div><div class="stat-hero-label">Active</div></div></div></div>
             <div class="col"><div class="stat-hero-card tone-red"><div class="stat-hero-icon"><i class="fas fa-user-slash"></i></div><div><div class="stat-hero-value"><?= number_format($suspendedUsersAll) ?></div><div class="stat-hero-label">Suspended</div></div></div></div>
             <div class="col"><div class="stat-hero-card tone-dark"><div class="stat-hero-icon"><i class="fas fa-user-shield"></i></div><div><div class="stat-hero-value"><?= number_format($adminUsersAll) ?></div><div class="stat-hero-label">Admins</div></div></div></div>
@@ -186,10 +186,10 @@ $adminUsersAll    = (int) fetchValue("SELECT COUNT(*) FROM users WHERE deleted_a
                                             <?= $u['email_verified_at'] ? '' : ' <span class="badge bg-light text-dark border" title="Email not confirmed">unconfirmed</span>' ?><?= (int) $u['two_factor_enabled'] ? ' <span class="badge bg-light text-success border">2-step</span>' : '' ?><?= $u['password_changed_at'] || $u['last_login_at'] ? '' : ' <span class="badge bg-light text-warning border" title="The person has not set a password yet">invite not accepted</span>' ?></div>
                                     </div>
                                 </td>
-                                <td><?php if ($u['role'] === 'government'): ?><span class="badge" style="font-size:0.65rem;background:#d97706;">Government</span><?php else: ?><span class="badge bg-<?= $roleColors[$u['role']] ?? 'secondary' ?>" style="font-size:0.65rem;"><?= strtoupper(str_replace('_',' ',$u['role'])) ?></span><?php endif; ?></td>
+                                <td><?php if ($u['role'] === 'government'): ?><span class="badge" style="font-size:0.65rem;background:#b45309;">Government</span><?php else: ?><span class="badge bg-<?= $roleColors[$u['role']] ?? 'secondary' ?>" style="font-size:0.65rem;"><?= role_label($u['role']) ?></span><?php endif; ?></td>
                                 <td><?= $u['role'] === 'government' ? h($u['agency_name'] ?: 'National') : ($u['city_name'] ? h($u['city_name']) : '<span class="text-muted">Platform</span>') ?><?= $u['stage_name'] ? '<div class="small text-muted">' . h($u['stage_name']) . '</div>' : '' ?></td>
                                 <td><?= h($u['phone'] ?: '–') ?></td>
-                                <td><span class="badge bg-<?= $sc[$u['status']] ?? 'secondary' ?>"><?= strtoupper($u['status']) ?></span></td>
+                                <td><span class="badge bg-<?= $sc[$u['status']] ?? 'secondary' ?>"><?= h(ucfirst(str_replace('_', ' ', $u['status']))) ?></span></td>
                                 <td style="font-size:0.8rem;"><?= $u['last_login_at'] ? h(timeAgo($u['last_login_at'])) : '<span class="text-muted">Never</span>' ?></td>
                                 <td class="no-export">
                                     <button class="btn btn-sm btn-outline-primary" data-edit-user="<?= (int) $u['id'] ?>" aria-label="Edit <?= h($u['name']) ?>"><i class="fas fa-edit"></i></button>
@@ -205,7 +205,7 @@ $adminUsersAll    = (int) fetchValue("SELECT COUNT(*) FROM users WHERE deleted_a
                                         <?= csrf_field() ?>
                                         <input type="hidden" name="action" value="delete">
                                         <input type="hidden" name="id" value="<?= (int) $u['id'] ?>">
-                                        <button type="submit" class="btn btn-sm btn-outline-danger"><i class="fas fa-trash"></i></button>
+                                        <button type="submit" class="btn btn-sm btn-outline-danger" aria-label="Delete <?= h($u['name']) ?>" title="Delete"><i class="fas fa-trash" aria-hidden="true"></i></button>
                                     </form>
                                 </td>
                             </tr>
@@ -232,24 +232,24 @@ $adminUsersAll    = (int) fetchValue("SELECT COUNT(*) FROM users WHERE deleted_a
             <form method="post" id="userForm">
                 <?= csrf_field() ?>
                 <input type="hidden" name="edit_user_id" id="editUserId">
-                <div class="modal-header" style="background:var(--primary-blue-gradient);color:white;border-bottom:none;">
-                    <h5 class="modal-title fw-bold" id="userModalTitle">Add User</h5>
+                <div class="modal-header" style="background:var(--primary-blue);color:white;border-bottom:none;">
+                    <h5 class="modal-title fw-bold" id="userModalTitle">Add user</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body p-4">
                     <?php if ($errors): ?><div class="alert alert-danger" role="alert"><?= implode('<br>', array_map('h', $errors)) ?></div><?php endif; ?>
                     <div class="row g-3">
-                        <div class="col-12"><label class="form-label fw-semibold">Full Name <span class="text-danger">*</span></label><input type="text" class="form-control" name="name" id="userName" placeholder="Full name" required></div>
-                        <div class="col-md-6"><label class="form-label fw-semibold">Email <span class="text-danger">*</span></label><input type="email" class="form-control" name="email" id="userEmail" placeholder="email@example.com" required></div>
-                        <div class="col-md-6"><label class="form-label fw-semibold">Phone</label><input type="text" class="form-control" name="phone" id="userPhone" placeholder="+256 7xx xxx xxx"></div>
+                        <div class="col-12"><label for="userName" class="form-label fw-semibold">Full name <span class="text-danger">*</span></label><input type="text" class="form-control" name="name" id="userName" placeholder="Full name" required></div>
+                        <div class="col-md-6"><label for="userEmail" class="form-label fw-semibold">Email <span class="text-danger">*</span></label><input type="email" class="form-control" name="email" id="userEmail" placeholder="email@example.com" required></div>
+                        <div class="col-md-6"><label for="userPhone" class="form-label fw-semibold">Phone</label><input type="text" class="form-control" name="phone" id="userPhone" placeholder="+256 7xx xxx xxx"></div>
                         <div class="col-md-6">
-                            <label class="form-label fw-semibold">Role <span class="text-danger">*</span></label>
+                            <label for="userRole" class="form-label fw-semibold">Role <span class="text-danger">*</span></label>
                             <select class="form-select" name="role" id="userRole">
-                                <option value="super_admin">Super Admin</option><option value="city_admin">City Admin</option><option value="chairperson">Chairperson</option><option value="rider">Rider</option><option value="government">Government (National Portal)</option>
+                                <option value="super_admin">Super admin</option><option value="city_admin">City admin</option><option value="chairperson">Chairperson</option><option value="rider">Rider</option><option value="government">Government (national portal)</option>
                             </select>
                         </div>
                         <div class="col-md-6" id="cityFieldWrap">
-                            <label class="form-label fw-semibold">City <span class="text-danger">*</span></label>
+                            <label for="userCity" class="form-label fw-semibold">City <span class="text-danger">*</span></label>
                             <select class="form-select" name="city_id" id="userCity">
                                 <?php foreach ($cities as $c): ?><option value="<?= h($c['id']) ?>"><?= h($c['name']) ?></option><?php endforeach; ?>
                             </select>
@@ -261,7 +261,7 @@ $adminUsersAll    = (int) fetchValue("SELECT COUNT(*) FROM users WHERE deleted_a
                             </select>
                         </div>
                         <div class="col-md-6 d-none" id="agencyFieldWrap">
-                            <label class="form-label fw-semibold">Agency / Ministry <span class="text-danger">*</span></label>
+                            <label for="userAgency" class="form-label fw-semibold">Agency / ministry <span class="text-danger">*</span></label>
                             <input type="text" class="form-control" name="agency_name" id="userAgency" placeholder="e.g. Uganda Revenue Authority (URA)" list="agencyOptions">
                             <datalist id="agencyOptions">
                                 <option value="Ministry of Works & Transport">
@@ -275,12 +275,12 @@ $adminUsersAll    = (int) fetchValue("SELECT COUNT(*) FROM users WHERE deleted_a
                             </datalist>
                         </div>
                         <div class="col-md-6"><label class="form-label fw-semibold" for="userPassword">Password <span class="text-muted fw-normal">(optional)</span></label><input type="password" class="form-control" name="password" id="userPassword" autocomplete="new-password" aria-describedby="pwHelp"><div class="form-text" id="pwHelp">Leave empty to email the person a link to set their own password (recommended).</div></div>
-                        <div class="col-md-6"><label class="form-label fw-semibold">Status</label><select class="form-select" name="status" id="userStatus"><option value="active">Active</option><option value="suspended">Suspended</option></select></div>
+                        <div class="col-md-6"><label for="userStatus" class="form-label fw-semibold">Status</label><select class="form-select" name="status" id="userStatus"><option value="active">Active</option><option value="suspended">Suspended</option></select></div>
                     </div>
                 </div>
                 <div class="modal-footer border-0 pb-3">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary"><i class="fas fa-save me-2"></i>Save User</button>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-save me-2"></i>Save user</button>
                 </div>
             </form>
         </div>
@@ -288,7 +288,7 @@ $adminUsersAll    = (int) fetchValue("SELECT COUNT(*) FROM users WHERE deleted_a
 </div>
 
 <?php require __DIR__ . '/../../partials/scripts-footer.php'; ?>
-<script>
+<script nonce="<?= csp_nonce() ?>">
     const usersData = <?= js_json(array_column($users, null, 'id'), JSON_HEX_TAG | JSON_HEX_AMP) ?>;
     const posted = <?= js_json($errors ? array_intersect_key($_POST, array_flip(['edit_user_id', 'name', 'email', 'phone', 'role', 'city_id', 'stage_id', 'agency_name', 'status'])) : null, JSON_HEX_TAG | JSON_HEX_AMP) ?>;
     const $ = id => document.getElementById(id);

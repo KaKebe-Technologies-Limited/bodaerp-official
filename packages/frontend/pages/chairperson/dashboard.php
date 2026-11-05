@@ -12,12 +12,12 @@ $defaulters = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE stage_id = ? A
 $revenue = (float) fetchValue("SELECT COALESCE(SUM(p.amount),0) FROM payments p WHERE p.status='Confirmed' AND p.rider_id IN (SELECT id FROM riders WHERE stage_id=?)", [$stageId]);
 
 $recentRiders = fetchAll("SELECT * FROM riders WHERE stage_id = ? AND deleted_at IS NULL ORDER BY id DESC LIMIT 8", [$stageId]);
-$pageTitle = get_setting('chairperson_dashboard_title') ?? 'Stage Dashboard';
+$pageTitle = get_setting('chairperson_dashboard_title', 'Stage dashboard');
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <?php $pageTitle = get_setting('chairperson_dashboard_title') . ' | ' . get_setting('site_name') ?? 'Stage | BodaERP'; require __DIR__ . '/../../partials/head-assets.php'; ?>
+    <?php $pageTitle = get_setting('chairperson_dashboard_title', 'Stage dashboard') . ' | ' . get_setting('site_name', 'BodaERP'); require __DIR__ . '/../../partials/head-assets.php'; ?>
     <style>
         .status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; }
         .status-dot.active { background: #198754; } .status-dot.expired { background: #dc3545; } .status-dot.pending { background: #ffc107; }
@@ -35,32 +35,32 @@ $pageTitle = get_setting('chairperson_dashboard_title') ?? 'Stage Dashboard';
             <div class="d-flex justify-content-between align-items-center flex-wrap dash-banner-row">
                 <div>
                     <h4><?= h($stage['name']) ?></h4>
-                    <p><?= h(get_setting('chairperson_welcome_text') ?? 'Manage your stage\'s riders, payments and compliance from one place.') ?></p>
+                    <p><?= h(get_setting('chairperson_welcome_text', 'Riders, cash collected and renewals due at your stage.')) ?></p>
                 </div>
                 <span class="dash-meta"><?= h(CURRENT_FISCAL_YEAR) ?></span>
             </div>
         </div>
 
         <div class="row g-3 mb-4">
-            <div class="col-md-3 col-6"><div class="stat-hero-card tone-blue"><div class="stat-hero-icon"><i class="fas fa-users"></i></div><div><div class="stat-hero-value"><?= $totalRiders ?></div><div class="stat-hero-label">Total Riders</div></div></div></div>
-            <div class="col-md-3 col-6"><div class="stat-hero-card tone-green"><div class="stat-hero-icon"><i class="fas fa-check-circle"></i></div><div><div class="stat-hero-value"><?= $activeRiders ?></div><div class="stat-hero-label">Active (Paid)</div></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card tone-blue"><div class="stat-hero-icon"><i class="fas fa-users"></i></div><div><div class="stat-hero-value"><?= $totalRiders ?></div><div class="stat-hero-label">Total riders</div></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card tone-green"><div class="stat-hero-icon"><i class="fas fa-check-circle"></i></div><div><div class="stat-hero-value"><?= $activeRiders ?></div><div class="stat-hero-label">Active (paid)</div></div></div></div>
             <div class="col-md-3 col-6"><div class="stat-hero-card tone-red"><div class="stat-hero-icon"><i class="fas fa-exclamation-triangle"></i></div><div><div class="stat-hero-value"><?= $defaulters ?></div><div class="stat-hero-label">Defaulters</div></div></div></div>
-            <div class="col-md-3 col-6"><div class="stat-hero-card tone-gold"><div class="stat-hero-icon"><i class="fas fa-money-bill-wave"></i></div><div><div class="stat-hero-value"><?= h(formatCurrency($revenue)) ?></div><div class="stat-hero-label">Revenue Collected</div></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card tone-gold"><div class="stat-hero-icon"><i class="fas fa-money-bill-wave"></i></div><div><div class="stat-hero-value"><?= h(formatCurrency($revenue)) ?></div><div class="stat-hero-label">Revenue collected</div></div></div></div>
         </div>
 
-        <h6 class="fw-bold mb-3">Quick Actions</h6>
+        <h6 class="fw-bold mb-3">Quick actions</h6>
         <div class="row g-3 mb-4">
-            <div class="col-md-3 col-6"><a href="<?= BASE_URL ?>/pages/chairperson/register-rider.php" class="text-decoration-none"><div class="quick-action-card"><div class="icon-badge blue"><i class="fas fa-user-plus"></i></div><h6>Add Rider</h6><small>Register new rider</small></div></a></div>
-            <div class="col-md-3 col-6"><a href="<?= BASE_URL ?>/pages/chairperson/my-riders.php" class="text-decoration-none"><div class="quick-action-card"><div class="icon-badge green"><i class="fas fa-users"></i></div><h6>View Riders</h6><small>All stage members</small></div></a></div>
-            <div class="col-md-3 col-6"><a href="<?= BASE_URL ?>/pages/chairperson/collect-payments.php" class="text-decoration-none"><div class="quick-action-card"><div class="icon-badge gold"><i class="fas fa-money-bill-wave"></i></div><h6>Record Payment</h6><small>Collect taxes</small></div></a></div>
-            <div class="col-md-3 col-6"><a href="<?= BASE_URL ?>/pages/chairperson/stage-report.php" class="text-decoration-none"><div class="quick-action-card"><div class="icon-badge red"><i class="fas fa-file-alt"></i></div><h6>Stage Report</h6><small>View performance</small></div></a></div>
+            <div class="col-md-3 col-6"><a href="<?= BASE_URL ?>/pages/chairperson/register-rider.php" class="text-decoration-none"><div class="quick-action-card"><div class="icon-badge blue"><i class="fas fa-user-plus"></i></div><h6>Add rider</h6><small>Register new rider</small></div></a></div>
+            <div class="col-md-3 col-6"><a href="<?= BASE_URL ?>/pages/chairperson/my-riders.php" class="text-decoration-none"><div class="quick-action-card"><div class="icon-badge green"><i class="fas fa-users"></i></div><h6>View riders</h6><small>All stage members</small></div></a></div>
+            <div class="col-md-3 col-6"><a href="<?= BASE_URL ?>/pages/chairperson/collect-payments.php" class="text-decoration-none"><div class="quick-action-card"><div class="icon-badge gold"><i class="fas fa-money-bill-wave"></i></div><h6>Record payment</h6><small>Collect taxes</small></div></a></div>
+            <div class="col-md-3 col-6"><a href="<?= BASE_URL ?>/pages/chairperson/stage-report.php" class="text-decoration-none"><div class="quick-action-card"><div class="icon-badge red"><i class="fas fa-file-alt"></i></div><h6>Stage report</h6><small>View performance</small></div></a></div>
         </div>
 
         <div class="card">
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h5 class="fw-bold mb-0">Recent Riders</h5>
-                    <a href="<?= BASE_URL ?>/pages/chairperson/my-riders.php" class="btn btn-sm btn-outline-primary">View All</a>
+                    <h5 class="fw-bold mb-0">Recent riders</h5>
+                    <a href="<?= BASE_URL ?>/pages/chairperson/my-riders.php" class="btn btn-sm btn-outline-primary">All riders at this stage</a>
                 </div>
                 <div class="table-responsive">
                     <table class="table table-hover">
@@ -72,7 +72,7 @@ $pageTitle = get_setting('chairperson_dashboard_title') ?? 'Stage Dashboard';
                                 <td><?= h($r['bike_plate']) ?></td>
                                 <td><span class="badge <?= $sc[$r['status']] ?>"><span class="status-dot <?= h($r['status']) ?>"></span><?= ucfirst($r['status']) ?></span></td>
                                 <td><?= formatDate($r['expiry_date']) ?></td>
-                                <td><a href="<?= BASE_URL ?>/pages/chairperson/rider-profile.php?id=<?= (int)$r['id'] ?>" class="btn btn-sm btn-primary"><i class="fas fa-eye"></i></a></td>
+                                <td><a href="<?= BASE_URL ?>/pages/chairperson/rider-profile.php?id=<?= (int)$r['id'] ?>" class="btn btn-sm btn-primary" aria-label="View <?= h($r['full_name']) ?>" title="View"><i class="fas fa-eye" aria-hidden="true"></i></a></td>
                             </tr>
                         <?php endforeach; ?>
                         </tbody>

@@ -33,7 +33,7 @@ $settings = fetchOne("SELECT * FROM platform_settings WHERE id = 1");
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <?php $pageTitle = 'Platform Settings | BodaERP'; require __DIR__ . '/../../partials/head-assets.php'; ?>
+    <?php $pageTitle = 'Platform settings | ' . get_setting('site_name', 'BodaERP'); require __DIR__ . '/../../partials/head-assets.php'; ?>
 </head>
 <body>
 
@@ -58,10 +58,10 @@ $settings = fetchOne("SELECT * FROM platform_settings WHERE id = 1");
                         <div><h6 class="fw-bold mb-0">General</h6><small class="text-muted">Platform identity and contact details</small></div>
                     </div>
                     <div class="row g-3">
-                        <div class="col-md-6"><label class="form-label fw-semibold">Platform Name</label><input type="text" class="form-control" name="platform_name" value="<?= h($settings['platform_name']) ?>"></div>
-                        <div class="col-md-6"><label class="form-label fw-semibold">Operator</label><input type="text" class="form-control" name="operator_name" value="<?= h($settings['operator_name']) ?>"></div>
-                        <div class="col-md-6"><label class="form-label fw-semibold">Support Email</label><input type="email" class="form-control" name="support_email" value="<?= h($settings['support_email']) ?>"></div>
-                        <div class="col-md-6"><label class="form-label fw-semibold">Support Phone</label><input type="text" class="form-control" name="support_phone" value="<?= h($settings['support_phone']) ?>"></div>
+                        <div class="col-md-6"><label for="f-platform-name" class="form-label fw-semibold">Platform name</label><input id="f-platform-name" type="text" class="form-control" name="platform_name" value="<?= h($settings['platform_name']) ?>"></div>
+                        <div class="col-md-6"><label for="f-operator-name" class="form-label fw-semibold">Operator</label><input id="f-operator-name" type="text" class="form-control" name="operator_name" value="<?= h($settings['operator_name']) ?>"></div>
+                        <div class="col-md-6"><label for="f-support-email" class="form-label fw-semibold">Support email</label><input id="f-support-email" type="email" class="form-control" name="support_email" value="<?= h($settings['support_email']) ?>"></div>
+                        <div class="col-md-6"><label for="f-support-phone" class="form-label fw-semibold">Support phone</label><input id="f-support-phone" type="text" class="form-control" name="support_phone" value="<?= h($settings['support_phone']) ?>"></div>
                     </div>
                 </div>
             </div>
@@ -70,13 +70,13 @@ $settings = fetchOne("SELECT * FROM platform_settings WHERE id = 1");
                 <div class="card-body">
                     <div class="d-flex align-items-center gap-3 mb-3">
                         <div class="icon-badge gold"><i class="fas fa-percentage"></i></div>
-                        <div><h6 class="fw-bold mb-0">Default New-City Revenue Split</h6><small class="text-muted">Pre-fills the split when a new city is added</small></div>
+                        <div><h6 class="fw-bold mb-0">Default new-city revenue split</h6><small class="text-muted">Pre-fills the split when a new city is added</small></div>
                     </div>
                     <div class="row g-3 align-items-end">
-                        <div class="col-md-3"><label class="small text-muted">City Council %</label><input type="number" class="form-control" name="default_split_city" id="defSplitCity" value="<?= (int)$settings['default_split_city'] ?>" min="0" max="100" data-call-input="updateDefaultSplitTotal"></div>
-                        <div class="col-md-3"><label class="small text-muted">Boda Association %</label><input type="number" class="form-control" name="default_split_assoc" id="defSplitAssoc" value="<?= (int)$settings['default_split_association'] ?>" min="0" max="100" data-call-input="updateDefaultSplitTotal"></div>
-                        <div class="col-md-3"><label class="small text-muted">Government %</label><input type="number" class="form-control" name="default_split_government" id="defSplitGov" value="<?= (int)$settings['default_split_government'] ?>" min="0" max="100" data-call-input="updateDefaultSplitTotal"></div>
-                        <div class="col-md-3"><label class="small text-muted">Kakebe Tech (Platform) %</label><input type="number" class="form-control" name="default_split_platform" id="defSplitPlatform" value="<?= (int)$settings['default_split_platform'] ?>" min="0" max="100" data-call-input="updateDefaultSplitTotal"></div>
+                        <div class="col-md-3"><label for="defSplitCity" class="small text-muted">City council %</label><input type="number" class="form-control" name="default_split_city" id="defSplitCity" value="<?= (int)$settings['default_split_city'] ?>" min="0" max="100" data-call-input="updateDefaultSplitTotal"></div>
+                        <div class="col-md-3"><label for="defSplitAssoc" class="small text-muted">Boda association %</label><input type="number" class="form-control" name="default_split_assoc" id="defSplitAssoc" value="<?= (int)$settings['default_split_association'] ?>" min="0" max="100" data-call-input="updateDefaultSplitTotal"></div>
+                        <div class="col-md-3"><label for="defSplitGov" class="small text-muted">Government %</label><input type="number" class="form-control" name="default_split_government" id="defSplitGov" value="<?= (int)$settings['default_split_government'] ?>" min="0" max="100" data-call-input="updateDefaultSplitTotal"></div>
+                        <div class="col-md-3"><label for="defSplitPlatform" class="small text-muted">Kakebe Tech (platform) %</label><input type="number" class="form-control" name="default_split_platform" id="defSplitPlatform" value="<?= (int)$settings['default_split_platform'] ?>" min="0" max="100" data-call-input="updateDefaultSplitTotal"></div>
                     </div>
                     <div class="mt-2">Total: <span id="defSplitTotal" class="fw-bold" style="color:#198754;">100%</span></div>
                 </div>
@@ -99,7 +99,7 @@ $settings = fetchOne("SELECT * FROM platform_settings WHERE id = 1");
                 </div>
             </div>
 
-            <button type="submit" class="btn btn-primary"><i class="fas fa-save me-2"></i>Save Settings</button>
+            <button type="submit" class="btn btn-primary"><i class="fas fa-save me-2"></i>Save settings</button>
         </form>
 
         <div class="card mt-4"><div class="card-body d-flex align-items-center justify-content-between flex-wrap gap-3">
@@ -107,7 +107,7 @@ $settings = fetchOne("SELECT * FROM platform_settings WHERE id = 1");
                 <div class="icon-badge blue"><i class="fas fa-database"></i></div>
                 <div><h6 class="fw-bold mb-0">Database</h6><small class="text-muted">Connection, automatic updates of tables and fields, and one-click update.</small></div>
             </div>
-            <a href="<?= BASE_URL ?>/pages/superadmin/database.php" class="btn btn-outline-primary btn-sm">Open Database</a>
+            <a href="<?= BASE_URL ?>/pages/superadmin/database.php" class="btn btn-outline-primary btn-sm">Open database</a>
         </div></div>
         <div class="card mt-3"><div class="card-body d-flex align-items-center justify-content-between flex-wrap gap-3">
             <div class="d-flex align-items-center gap-3">
@@ -120,7 +120,7 @@ $settings = fetchOne("SELECT * FROM platform_settings WHERE id = 1");
 </div>
 
 <?php require __DIR__ . '/../../partials/scripts-footer.php'; ?>
-<script>
+<script nonce="<?= csp_nonce() ?>">
     function updateDefaultSplitTotal() {
         const total = (parseFloat(document.getElementById('defSplitCity').value)||0)
             + (parseFloat(document.getElementById('defSplitAssoc').value)||0)

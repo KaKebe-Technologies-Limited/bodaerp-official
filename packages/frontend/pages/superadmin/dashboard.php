@@ -51,7 +51,7 @@ $roleColors = ['super_admin' => 'primary', 'city_admin' => 'success', 'chairpers
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <?php $pageTitle = 'Platform Overview | BodaERP'; require __DIR__ . '/../../partials/head-assets.php'; ?>
+    <?php $pageTitle = 'Platform overview | ' . get_setting('site_name', 'BodaERP'); require __DIR__ . '/../../partials/head-assets.php'; ?>
     <style>
         .chart-card { border: none; border-radius: 14px; box-shadow: 0 2px 12px rgba(0,0,0,0.04); background: white; height: 100%; }
         .section-heading { font-weight: 700; font-size: 0.95rem; margin-bottom: 0; }
@@ -92,28 +92,28 @@ $roleColors = ['super_admin' => 'primary', 'city_admin' => 'success', 'chairpers
         </div>
 
         <div class="row g-3 row-cols-2 row-cols-md-3 row-cols-xl-5 mb-4">
-            <div class="col"><div class="stat-hero-card tone-blue"><div class="stat-hero-icon"><i class="fas fa-city"></i></div><div><div class="stat-hero-value"><?= $totalCities ?></div><div class="stat-hero-label">Active Cities</div></div></div></div>
-            <div class="col"><div class="stat-hero-card tone-green"><div class="stat-hero-icon"><i class="fas fa-users"></i></div><div><div class="stat-hero-value"><?= number_format($totalRiders) ?></div><div class="stat-hero-label">Total Riders</div></div></div></div>
-            <div class="col"><div class="stat-hero-card tone-gold"><div class="stat-hero-icon"><i class="fas fa-map-marker-alt"></i></div><div><div class="stat-hero-value"><?= $totalStages ?></div><div class="stat-hero-label">Total Stages</div></div></div></div>
-            <div class="col"><div class="stat-hero-card tone-dark"><div class="stat-hero-icon"><i class="fas fa-user-shield"></i></div><div><div class="stat-hero-value"><?= $totalUsers ?></div><div class="stat-hero-label">Platform Users</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-blue"><div class="stat-hero-icon"><i class="fas fa-city"></i></div><div><div class="stat-hero-value"><?= $totalCities ?></div><div class="stat-hero-label">Active cities</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-green"><div class="stat-hero-icon"><i class="fas fa-users"></i></div><div><div class="stat-hero-value"><?= number_format($totalRiders) ?></div><div class="stat-hero-label">Total riders</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-gold"><div class="stat-hero-icon"><i class="fas fa-map-marker-alt"></i></div><div><div class="stat-hero-value"><?= $totalStages ?></div><div class="stat-hero-label">Total stages</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-dark"><div class="stat-hero-icon"><i class="fas fa-user-shield"></i></div><div><div class="stat-hero-value"><?= $totalUsers ?></div><div class="stat-hero-label">Platform users</div></div></div></div>
             <div class="col"><div class="stat-hero-card tone-red"><div class="stat-hero-icon"><i class="fas fa-money-bill-wave"></i></div><div><div class="stat-hero-value"><?= $totalRevenue >= 1000000 ? number_format($totalRevenue / 1000000, 1) . 'M' : number_format($totalRevenue) ?></div><div class="stat-hero-label">Revenue (UGX)</div></div></div></div>
         </div>
 
         <div class="row g-3 g-md-4 mb-4">
             <div class="col-xl-8">
                 <div class="chart-card"><div class="card-body">
-                    <h6 class="section-heading mb-3">Platform Revenue Overview (Last 12 Months)</h6>
+                    <h6 class="section-heading mb-3">Platform revenue overview (last 12 months)</h6>
                     <div id="revenueChart"></div>
                 </div></div>
             </div>
             <div class="col-xl-4">
                 <div class="chart-card"><div class="card-body">
-                    <h6 class="section-heading mb-3">Revenue Split (All Cities)</h6>
+                    <h6 class="section-heading mb-3">Revenue split (all cities)</h6>
                     <div id="splitChart"></div>
                     <div class="mt-2">
-                        <div class="d-flex justify-content-between align-items-center py-1"><span><span class="legend-dot bg-primary me-2"></span>City Councils</span><span class="fw-bold small">UGX <?= number_format(round($splitCityTotal)) ?></span></div>
+                        <div class="d-flex justify-content-between align-items-center py-1"><span><span class="legend-dot bg-primary me-2"></span>City councils</span><span class="fw-bold small">UGX <?= number_format(round($splitCityTotal)) ?></span></div>
                         <div class="d-flex justify-content-between align-items-center py-1"><span><span class="legend-dot bg-success me-2"></span>Associations</span><span class="fw-bold small">UGX <?= number_format(round($splitAssocTotal)) ?></span></div>
-                        <div class="d-flex justify-content-between align-items-center py-1"><span><span class="badge me-2" style="background:#d97706;">●</span>Government</span><span class="fw-bold small">UGX <?= number_format(round($splitGovTotal)) ?></span></div>
+                        <div class="d-flex justify-content-between align-items-center py-1"><span><span class="badge me-2" style="background:#b45309;">●</span>Government</span><span class="fw-bold small">UGX <?= number_format(round($splitGovTotal)) ?></span></div>
                         <div class="d-flex justify-content-between align-items-center py-1"><span><span class="badge bg-info text-dark me-2">●</span>Kakebe Tech</span><span class="fw-bold small">UGX <?= number_format(round($splitPlatformTotal)) ?></span></div>
                     </div>
                 </div></div>
@@ -123,13 +123,13 @@ $roleColors = ['super_admin' => 'primary', 'city_admin' => 'success', 'chairpers
         <div class="row g-3 g-md-4 mb-4">
             <div class="col-xl-7">
                 <div class="chart-card"><div class="card-body">
-                    <h6 class="section-heading mb-3">Riders by City</h6>
+                    <h6 class="section-heading mb-3">Riders by city</h6>
                     <div id="ridersByCityChart"></div>
                 </div></div>
             </div>
             <div class="col-xl-5">
                 <div class="chart-card"><div class="card-body">
-                    <h6 class="section-heading mb-3">Compliance Status</h6>
+                    <h6 class="section-heading mb-3">Compliance status</h6>
                     <div id="complianceChart"></div>
                 </div></div>
             </div>
@@ -138,28 +138,28 @@ $roleColors = ['super_admin' => 'primary', 'city_admin' => 'success', 'chairpers
         <div class="card mb-4">
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-                    <h6 class="fw-bold mb-0">Registered Cities</h6>
+                    <h6 class="fw-bold mb-0">Registered cities</h6>
                     <div class="d-flex gap-2 flex-wrap">
                         <div class="table-search-wrap">
                             <i class="fas fa-search"></i>
-                            <input type="text" class="form-control form-control-sm" id="citySearchInput" placeholder="Search cities...">
+                            <input type="text" class="form-control form-control-sm" id="citySearchInput" placeholder="Search cities..." aria-label="Search cities">
                         </div>
                         <a href="<?= BASE_URL ?>/pages/superadmin/cities.php" class="btn btn-outline-primary btn-sm"><i class="fas fa-cog me-1"></i>Manage All</a>
                     </div>
                 </div>
                 <div class="table-responsive">
                     <table class="table table-hover table-sm align-middle" id="citiesOverviewTable">
-                        <thead><tr><th>City</th><th>Status</th><th>Stages</th><th>Riders</th><th>Compliance</th><th>Revenue Collected</th><th>Split C/A/G/P</th><th>Actions</th></tr></thead>
+                        <thead><tr><th>City</th><th>Status</th><th>Stages</th><th>Riders</th><th>Compliance</th><th>Revenue collected</th><th>Split C/A/G/P</th><th>Actions</th></tr></thead>
                         <tbody>
                         <?php foreach ($cities as $t): $statusColor = $t['status'] === 'active' ? 'success' : ($t['status'] === 'pending' ? 'warning' : 'secondary'); ?>
                             <tr>
                                 <td>
                                     <div class="d-flex align-items-center gap-2">
-                                        <img src="<?= h(BASE_URL . $t['logo_path']) ?>" class="city-cell-logo border" data-fallback-src="<?= BASE_URL ?>/assets/images/logo-mark.png">
+                                        <img alt="" src="<?= h(BASE_URL . $t['logo_path']) ?>" class="city-cell-logo border" data-fallback-src="<?= BASE_URL ?>/assets/images/logo-mark.png">
                                         <div><strong style="font-size:0.85rem;"><?= h($t['name']) ?></strong><br><small class="text-muted"><?= h($t['id']) ?></small></div>
                                     </div>
                                 </td>
-                                <td><span class="badge bg-<?= $statusColor ?>" style="font-size:0.62rem;"><?= strtoupper($t['status']) ?></span></td>
+                                <td><span class="badge bg-<?= $statusColor ?>" style="font-size:0.62rem;"><?= h(ucfirst(str_replace('_', ' ', $t['status']))) ?></span></td>
                                 <td><?= (int) $t['stage_count'] ?></td>
                                 <td><?= number_format($t['rider_count']) ?></td>
                                 <td>
@@ -170,7 +170,7 @@ $roleColors = ['super_admin' => 'primary', 'city_admin' => 'success', 'chairpers
                                 <td style="font-size:0.72rem;white-space:nowrap;">
                                     <span class="badge bg-primary"><?= (int) $t['revenue_split_city'] ?></span>
                                     <span class="badge bg-success"><?= (int) $t['revenue_split_association'] ?></span>
-                                    <span class="badge" style="background:#d97706;"><?= (int) $t['revenue_split_government'] ?></span>
+                                    <span class="badge" style="background:#b45309;"><?= (int) $t['revenue_split_government'] ?></span>
                                     <span class="badge bg-info text-dark"><?= (int) $t['revenue_split_platform'] ?></span>
                                 </td>
                                 <td>
@@ -190,7 +190,7 @@ $roleColors = ['super_admin' => 'primary', 'city_admin' => 'success', 'chairpers
         <div class="row g-3">
             <div class="col-md-7">
                 <div class="card h-100"><div class="card-body">
-                    <h6 class="fw-bold mb-3">Recent Users Added</h6>
+                    <h6 class="fw-bold mb-3">Recent users added</h6>
                     <div>
                     <?php foreach ($recentUsers as $u): ?>
                         <div class="activity-row">
@@ -199,7 +199,7 @@ $roleColors = ['super_admin' => 'primary', 'city_admin' => 'success', 'chairpers
                                 <div class="activity-title"><?= h($u['name']) ?></div>
                                 <div class="activity-sub"><?= h($u['email']) ?></div>
                             </div>
-                            <span class="badge bg-<?= $roleColors[$u['role']] ?? 'secondary' ?>" style="font-size:0.6rem;flex-shrink:0;"><?= strtoupper(str_replace('_', ' ', $u['role'])) ?></span>
+                            <span class="badge bg-<?= $roleColors[$u['role']] ?? 'secondary' ?>" style="font-size:0.6rem;flex-shrink:0;"><?= h(role_label($u['role'])) ?></span>
                         </div>
                     <?php endforeach; ?>
                     </div>
@@ -208,11 +208,11 @@ $roleColors = ['super_admin' => 'primary', 'city_admin' => 'success', 'chairpers
             </div>
             <div class="col-md-5">
                 <div class="card h-100"><div class="card-body">
-                    <h6 class="fw-bold mb-3">Quick Actions</h6>
+                    <h6 class="fw-bold mb-3">Quick actions</h6>
                     <div class="row g-2">
                         <div class="col-6"><a href="<?= BASE_URL ?>/pages/superadmin/platform-reports.php" class="text-decoration-none"><div class="quick-action-card"><div class="icon-badge blue"><i class="fas fa-chart-line"></i></div><h6>Reports</h6></div></a></div>
-                        <div class="col-6"><a href="<?= BASE_URL ?>/pages/superadmin/audit-logs.php" class="text-decoration-none"><div class="quick-action-card"><div class="icon-badge dark"><i class="fas fa-history"></i></div><h6>Audit Logs</h6></div></a></div>
-                        <div class="col-6"><a href="<?= BASE_URL ?>/pages/superadmin/revenue-splits.php" class="text-decoration-none"><div class="quick-action-card"><div class="icon-badge gold"><i class="fas fa-percentage"></i></div><h6>Rev. Splits</h6></div></a></div>
+                        <div class="col-6"><a href="<?= BASE_URL ?>/pages/superadmin/audit-logs.php" class="text-decoration-none"><div class="quick-action-card"><div class="icon-badge dark"><i class="fas fa-history"></i></div><h6>Audit logs</h6></div></a></div>
+                        <div class="col-6"><a href="<?= BASE_URL ?>/pages/superadmin/revenue-splits.php" class="text-decoration-none"><div class="quick-action-card"><div class="icon-badge gold"><i class="fas fa-percentage"></i></div><h6>Rev. splits</h6></div></a></div>
                         <div class="col-6"><a href="<?= BASE_URL ?>/pages/superadmin/platform-settings.php" class="text-decoration-none"><div class="quick-action-card"><div class="icon-badge green"><i class="fas fa-cog"></i></div><h6>Settings</h6></div></a></div>
                     </div>
                 </div></div>
@@ -223,7 +223,7 @@ $roleColors = ['super_admin' => 'primary', 'city_admin' => 'success', 'chairpers
 </div>
 
 <?php require __DIR__ . '/../../partials/scripts-footer.php'; ?>
-<script>
+<script nonce="<?= csp_nonce() ?>">
     new ApexCharts(document.querySelector('#revenueChart'), {
         series: [{ name: 'Revenue (UGX M)', data: <?= js_json($chartValues) ?> }],
         chart: { type: 'area', height: 280, toolbar: { show: false } },

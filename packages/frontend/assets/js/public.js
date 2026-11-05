@@ -64,14 +64,14 @@
 
     var faqSearch = document.querySelector('[data-faq-search]');
     if (faqSearch) {
-        var items = document.querySelectorAll('.faq-item');
+        var faqItems = document.querySelectorAll('.faq-item');
         var empty = document.querySelector('[data-faq-empty]');
         faqSearch.addEventListener('input', function () {
             var q = faqSearch.value.trim().toLowerCase();
             var shown = 0;
-            items.forEach(function (item) {
-                var match = q === '' || item.textContent.toLowerCase().indexOf(q) !== -1;
-                item.hidden = !match;
+            faqItems.forEach(function (question) {
+                var match = q === '' || question.textContent.toLowerCase().indexOf(q) !== -1;
+                question.hidden = !match;
                 if (match) shown++;
             });
             if (empty) empty.hidden = shown !== 0;
@@ -109,6 +109,28 @@
             if (btn) pickDemo(btn, true);
         });
     }
+    // Roadside check on the verify page: the location is only read when the officer ticks the box.
+    document.querySelectorAll('[data-officer-location]').forEach(function (box) {
+        var form = box.closest('form');
+        var status = form.querySelector('[data-officer-location-status]');
+        box.addEventListener('change', function () {
+            ['lat', 'lng', 'acc'].forEach(function (n) { form.elements[n].value = ''; });
+            if (!box.checked) { status.textContent = ''; return; }
+            if (!navigator.geolocation) { status.textContent = 'This phone cannot share its location. The check is saved without it.'; box.checked = false; return; }
+            status.textContent = 'Finding your location...';
+            navigator.geolocation.getCurrentPosition(function (pos) {
+                form.elements.lat.value = pos.coords.latitude.toFixed(6);
+                form.elements.lng.value = pos.coords.longitude.toFixed(6);
+                form.elements.acc.value = Math.round(pos.coords.accuracy);
+                status.textContent = 'Location added (within about ' + Math.round(pos.coords.accuracy) + ' m).';
+            }, function (err) {
+                console.warn('Location not available', err);
+                status.textContent = 'Location not available (' + (err.code === 1 ? 'permission refused' : 'no signal') + '). The check is saved without it.';
+                box.checked = false;
+            }, { enableHighAccuracy: true, timeout: 15000, maximumAge: 60000 });
+        });
+    });
+
     document.querySelectorAll('[data-strength-for]').forEach(function (meter) {
         var input = document.getElementById(meter.getAttribute('data-strength-for'));
         var bar = meter.querySelector('span');

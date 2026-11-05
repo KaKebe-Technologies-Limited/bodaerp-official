@@ -46,7 +46,7 @@ function exportTableExcel(tableId, filename) {
 function exportTablePDF(tableId, filename, title) {
     const rows = getExportRows(tableId);
     if (!rows.length) { showToast('This table has no rows to export.', 'error'); return; }
-    if (!window.jspdf) { showToast('The PDF library did not load. Check your connection and try again.', 'error'); return; }
+    if (!window.jspdf) { showToast('The PDF library did not load. Reload the page and try again.', 'error'); return; }
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF({ orientation: rows[0].length > 6 ? 'landscape' : 'portrait' });
     doc.setFontSize(14);
@@ -54,7 +54,8 @@ function exportTablePDF(tableId, filename, title) {
     doc.setFontSize(8);
     doc.setTextColor(120);
     doc.text('Generated ' + new Date().toLocaleString(), 14, 21);
-    doc.autoTable({
+    const autoTable = typeof doc.autoTable === 'function' ? (opts) => doc.autoTable(opts) : (opts) => window.jspdf_autotable.autoTable(doc, opts);
+    autoTable({
         head: [rows[0]],
         body: rows.slice(1),
         startY: 26,

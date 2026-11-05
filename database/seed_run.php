@@ -35,7 +35,7 @@ if ($fresh) {
     $db->query('SET FOREIGN_KEY_CHECKS = 1');
 }
 
-function randChoice(array $arr) { return $arr[array_rand($arr)]; }
+function randChoice(array $options) { return $options[array_rand($options)]; }
 function randBetween(int $min, int $max): int { return random_int($min, $max); }
 function randDate(int $min, int $max): string {
     // returns today + N days, N chosen from [min,max]. Positive = future, negative = past.

@@ -39,7 +39,7 @@
 .sidebar-brand .brand-scope { font-size: .72rem; color: rgba(255, 255, 255, .6); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 .sidebar-scroll { flex: 1; overflow-y: auto; padding: 8px 12px 32px; scrollbar-width: thin; scrollbar-color: rgba(255, 255, 255, .18) transparent; }
-.sidebar-group { margin: 18px 12px 6px; font-size: .68rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: rgba(255, 255, 255, .45); }
+.sidebar-group { margin: 20px 12px 6px; font-size: .78rem; font-weight: 600; color: rgba(255, 255, 255, .55); }
 .sidebar-group:first-child { margin-top: 10px; }
 .sidebar-menu { list-style: none; margin: 0; padding: 0; }
 .sidebar-menu li { margin: 1px 0; }
@@ -108,7 +108,32 @@
 .account-menu form { margin: 0; }
 
 .flash-row { padding: 16px var(--content-pad-x) 0; }
-.content-area { flex: 1; padding: 24px var(--content-pad-x) 56px; width: 100%; max-width: 1600px; }
+.content-area { flex: 1; padding: 28px var(--content-pad-x) 64px; width: 100%; max-width: 1600px; line-height: 1.6; }
+
+/* Content rhythm. One spacing scale, so sections breathe evenly instead of each page choosing its own gaps. */
+:root { --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px; --space-5: 24px; --space-6: 32px; --space-7: 48px; }
+.content-area > .row, .content-area > section, .content-area > .card, .content-area > form.card, .content-area > .layout-thirds { margin-bottom: var(--space-6); }
+.content-area > :last-child { margin-bottom: 0; }
+.content-area .row.g-3 { --bs-gutter-x: var(--space-5); --bs-gutter-y: var(--space-5); }
+.content-area .card-body { padding: var(--space-5) clamp(var(--space-4), 2vw, var(--space-6)); }
+.content-area .card-body > h2, .content-area .card-body > h5, .content-area .card-body > h6 { margin-bottom: var(--space-4); }
+.content-area .form-label { font-weight: 600; margin-bottom: var(--space-2); }
+.content-area .form-text { margin-top: var(--space-1); }
+.content-area .table > :not(caption) > * > * { padding: var(--space-3) var(--space-4); }
+
+/* Rule of thirds: the task takes two thirds, help and summaries the last third. Stacks below 992px. */
+.layout-thirds { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: var(--space-6); align-items: start; }
+.layout-thirds > * { margin-bottom: 0; min-width: 0; }
+@media (max-width: 991.98px) { .layout-thirds { grid-template-columns: minmax(0, 1fr); gap: var(--space-5); } }
+
+.section-title { font-size: 1.02rem; font-weight: 700; color: var(--text-dark); margin: 0 0 var(--space-4); line-height: 1.35; }
+.measure { max-width: 68ch; }
+.scroll-panel { max-height: 24rem; overflow-y: auto; }
+.duplicate-note { font-size: .85rem; min-height: 0; margin-top: var(--space-1); }
+.duplicate-note.is-warning { color: #9a3412; font-weight: 600; }
+.handover-review { min-width: 13rem; }
+.translations-table .w-40 { width: 40%; }
+.sms-template-row + .sms-template-row { border-top: 1px solid var(--light-gray); margin-top: var(--space-4); padding-top: var(--space-4); }
 
 .sidebar-overlay { display: none; position: fixed; inset: 0; z-index: 1035; background: rgba(0, 23, 64, .55); }
 
@@ -133,3 +158,14 @@
     .sidebar, .sidebar-overlay, .top-header, .skip-link { display: none !important; }
     .main-content { margin-left: 0 !important; }
 }
+
+/* Rider portal: facts read as label / value pairs, not as disabled form fields. */
+.rider-facts dt { font-weight: 500; color: var(--text-muted); margin-bottom: var(--space-3); }
+.rider-facts dd { margin-bottom: var(--space-3); color: var(--text-dark); }
+.rider-activity li + li, .notification-list li + li { border-top: 1px solid var(--light-gray); }
+.rider-activity li { padding: var(--space-3) 0; }
+.rider-steps li { margin-bottom: var(--space-2); }
+.measure-wide { max-width: 880px; }
+.notification-list li { display: flex; gap: var(--space-4); align-items: flex-start; padding: var(--space-4) var(--space-5); }
+.notification-list li.is-unread { background: var(--primary-blue-light); }
+.notification-list p { max-width: 68ch; }

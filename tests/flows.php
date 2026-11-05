@@ -116,7 +116,7 @@ $t->ok(http("$base/ipn_handler.php", test_jar())['code'] === 405, 'IPN only acce
 $chair = test_login($base, 'ocen@railway.lira.ug', 'chair123', $why);
 $otherStageRider = fetchValue("SELECT r.id FROM riders r JOIN users u ON u.stage_id <> r.stage_id WHERE u.email = 'ocen@railway.lira.ug' AND r.deleted_at IS NULL LIMIT 1");
 $r = http("$base/pages/chairperson/rider-profile.php?id=$otherStageRider", $chair);
-$t->ok($r['code'] === 302 && !str_contains($r['body'], 'Rider Profile'), 'chairperson cannot open a rider from another stage');
+$t->ok($r['code'] === 302 && !str_contains($r['body'], 'Rider profile'), 'chairperson cannot open a rider from another stage');
 $r = http("$base/pages/citycouncil/dashboard.php", $chair);
 $t->ok($r['code'] === 403, 'chairperson is refused the city council portal (403)', 'HTTP ' . $r['code']);
 $rider = test_login($base, 'akello@bodaerp.com', 'rider123', $why);
@@ -147,9 +147,9 @@ $t->ok(str_contains($r['body'], 'FLOW TEST RIDER'), 'QR token lookup shows the f
 
 // 8. Uploads: a PHP file disguised as an image is refused
 $admin = test_login($base, 'admin@bodaerp.com', 'admin123', $why);
-$tmp = tempnam(sys_get_temp_dir(), 'up') . '.png';
-file_put_contents($tmp, "<?php echo 'owned'; ?>");
-$r = http("$base/api/media-upload.php", $admin, ['upload' => new CURLFile($tmp, 'image/png', 'evil.php.png')], ['X-CSRF-Token: ' . csrf(http("$base/pages/superadmin/media.php", $admin)['body']), 'Accept: application/json']);
+$fakeImage = tempnam(sys_get_temp_dir(), 'up') . '.png';
+file_put_contents($fakeImage, "<?php echo 'owned'; ?>");
+$r = http("$base/api/media-upload.php", $admin, ['upload' => new CURLFile($fakeImage, 'image/png', 'evil.php.png')], ['X-CSRF-Token: ' . csrf(http("$base/pages/superadmin/media.php", $admin)['body']), 'Accept: application/json']);
 $t->ok($r['code'] === 422 && str_contains($r['body'], 'not allowed'), 'PHP code disguised as a PNG is refused', 'HTTP ' . $r['code'] . ' ' . substr($r['body'], 0, 120));
 $png = tempnam(sys_get_temp_dir(), 'up') . '.png';
 file_put_contents($png, base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+ip1sAAAAASUVORK5CYII='));
@@ -163,7 +163,7 @@ if (!empty($up['url'])) {
     delete_upload($up['path']);
     runQuery("DELETE FROM media WHERE id = ?", [(int) $up['id']]);
 }
-@unlink($tmp); @unlink($png);
+@unlink($fakeImage); @unlink($png);
 
 // 10. Chairperson registers a rider with photo and email → rider + portal account + invite → rider sets password and signs in
 $jpg = tempnam(sys_get_temp_dir(), 'ph') . '.png';
@@ -269,6 +269,15 @@ $make_rider = function (string $suffix, string $expiry) use ($tag, $stageRow, &$
 $sentTo = fn(string $email, string $template): int => (int) fetchValue("SELECT COUNT(*) FROM email_log WHERE to_email = ? AND template_code = ?", [$email, $template]);
 
 $soon = $make_rider('soon', date('Y-m-d', strtotime('+3 days')));
+$quiet = $make_rider('quiet', date('Y-m-d', strtotime('+90 days')));
+$quietUser = make_user('rider', 'Quiet-rider-31');
+runQuery("UPDATE users SET notify_in_app = 0 WHERE id = ?", [$quietUser['id']]);
+runQuery("UPDATE riders SET user_id = ? WHERE id = ?", [$quietUser['id'], $quiet['id']]);
+$t->ok(!rider_notify($quiet['id'], 'Important Update', 'hello') && !fetchValue("SELECT COUNT(*) FROM notifications WHERE rider_id = ?", [$quiet['id']]),
+    'no portal notification is added for a rider who switched them off');
+runQuery("UPDATE users SET notify_in_app = 1 WHERE id = ?", [$quietUser['id']]);
+$t->ok(rider_notify($quiet['id'], 'Data Request', str_repeat('Long reply. ', 60)) && mb_strlen((string) fetchValue("SELECT message FROM notifications WHERE rider_id = ?", [$quiet['id']])) <= 255,
+    'a long notification is shortened to fit instead of failing');
 $lapsed = $make_rider('late', date('Y-m-d', strtotime('-8 days')));
 if (automation_email_ready()) {
     $result = automation_run_job('renewal_reminders', 'test');
@@ -343,8 +352,116 @@ foreach (PAYMENT_METHODS as $method) {
     $t->ok($methodOk, "a payment by $method can be recorded");
 }
 
-// Clean up
-foreach ($created['riders'] as $id) { runQuery("DELETE FROM notifications WHERE rider_id = ?", [$id]); runQuery("DELETE FROM payments WHERE rider_id = ?", [$id]); runQuery("DELETE FROM riders WHERE id = ?", [$id]); }
+// 15. Round 3: late fees, SMS, cash handover, duplicates, USSD, roadside checks, rider import
+$chair = test_login($base, 'ocen@railway.lira.ug', 'chair123', $why);   // section 13 reused the name for a test user
+require_once __DIR__ . '/../packages/backend/sms.php';
+require_once __DIR__ . '/../packages/backend/rider_import.php';
+$city = fetchOne("SELECT id, grace_period_days, late_fee, late_fee_type FROM cities WHERE id = ?", [$stage['city_id']]);
+runQuery("UPDATE cities SET grace_period_days = 30, late_fee = 10, late_fee_type = 'percent' WHERE id = ?", [$city['id']]);
+$lateRider = ['annual_tax' => 50000, 'city_id' => $city['id'], 'expiry_date' => date('Y-m-d', strtotime('-45 days'))];
+$graceRider = ['expiry_date' => date('Y-m-d', strtotime('-10 days'))] + $lateRider;
+$due = permit_amount_due($lateRider, true);
+$t->ok($due['late_fee'] == 5000 && $due['total'] == 55000, 'a permit 45 days expired owes the fee plus a 10% late fee', json_encode($due));
+$t->ok(permit_amount_due($graceRider)['late_fee'] == 0, 'no late fee inside the grace period');
+runQuery("UPDATE cities SET grace_period_days = ?, late_fee = ?, late_fee_type = ? WHERE id = ?", [$city['grace_period_days'], $city['late_fee'], $city['late_fee_type'], $city['id']]);
+
+$smsBefore = (int) fetchValue("SELECT COUNT(*) FROM sms_log");
+$t->ok(send_template_sms('payment_receipt', '0772 000111', ['amount' => 'UGX 1', 'receipt_number' => 'RCP-TEST', 'id_number' => 'X', 'expiry_date' => 'today']), 'a template SMS is accepted');
+$smsRow = fetchOne("SELECT * FROM sms_log ORDER BY id DESC LIMIT 1");
+$t->ok((int) fetchValue("SELECT COUNT(*) FROM sms_log") === $smsBefore + 1 && $smsRow['to_phone'] === '256772000111' && $smsRow['status'] === (sms_transport_name() === 'egosms' ? 'sent' : 'logged'),
+    'every SMS is written to the SMS log with the number in 2567... form', json_encode($smsRow));
+$t->ok(!send_sms('12345', 'hello'), 'an SMS to a number that is not a Ugandan mobile is refused');
+$t->ok(sms_segments(str_repeat('a', 160)) === 1 && sms_segments(str_repeat('a', 161)) === 2 && sms_segments('ŋ') === 1 && sms_segments(str_repeat('ŋ', 71)) === 2, 'SMS parts are counted for plain and Unicode text');
+runQuery("DELETE FROM sms_log WHERE id = ?", [$smsRow['id']]);
+
+// Cash handover: stage cash is listed, handed over, and the city confirms it
+$handRider = $make_rider('hand', date('Y-m-d', strtotime('-20 days')));
+runQuery("UPDATE riders SET stage_id = ?, city_id = ? WHERE id = ?", [$stage['id'], $stage['city_id'], $handRider['id']]);
+post_form("$base/pages/chairperson/collect-payments.php", $chair, ['rider_id' => $handRider['id'], 'method' => 'Cash']);
+$handPay = fetchOne("SELECT id, amount, channel, handover_id FROM payments WHERE rider_id = ? ORDER BY id DESC LIMIT 1", [$handRider['id']]);
+$t->ok($handPay && $handPay['channel'] === 'stage' && $handPay['handover_id'] === null, 'cash taken at the stage waits for a handover', json_encode($handPay));
+$page = http("$base/pages/chairperson/cash-handover.php", $chair);
+preg_match('/name="payments_count" value="(\d+)"/', $page['body'], $pc);
+$r = http("$base/pages/chairperson/cash-handover.php", $chair, ['csrf_token' => csrf($page['body']), 'payments_count' => $pc[1] ?? '0', 'handed_amount' => '1', 'note' => '']);
+$t->ok(!fetchValue("SELECT handover_id FROM payments WHERE id = ?", [$handPay['id']]), 'a handover short of the receipts is refused without a note');
+$page = http("$base/pages/chairperson/cash-handover.php", $chair);
+$expectedCash = (float) fetchValue("SELECT SUM(p.amount) FROM payments p JOIN riders r ON r.id = p.rider_id WHERE r.stage_id = ? AND p.payment_method = 'Cash' AND p.status = 'Confirmed' AND p.channel = 'stage' AND p.handover_id IS NULL", [$stage['id']]);
+http("$base/pages/chairperson/cash-handover.php", $chair, ['csrf_token' => csrf($page['body']), 'payments_count' => $pc[1] ?? '0', 'handed_amount' => (string) $expectedCash, 'note' => '']);
+$ho = fetchOne("SELECT h.* FROM cash_handovers h JOIN payments p ON p.handover_id = h.id WHERE p.id = ?", [$handPay['id']]);
+$t->ok($ho && $ho['status'] === 'submitted' && (float) $ho['expected_amount'] === $expectedCash, 'the handover bundles the stage cash and waits for the city', json_encode($ho));
+$cityJar = test_login($base, 'council@liracityuganda.go.ug', 'lira2025', $why);
+if ($ho && $cityJar) {
+    $page = http("$base/pages/citycouncil/cash-handovers.php", $cityJar);
+    http("$base/pages/citycouncil/cash-handovers.php", $cityJar, ['csrf_token' => csrf($page['body']), 'handover_id' => $ho['id'], 'decision' => 'confirm', 'received_amount' => (string) $expectedCash, 'review_note' => '']);
+    $t->ok(fetchValue("SELECT status FROM cash_handovers WHERE id = ?", [$ho['id']]) === 'confirmed', 'the city confirms the handover');
+} else {
+    $t->ok(false, 'the city admin can sign in to confirm the handover', (string) $why);
+}
+
+// Enforcement codes come from the row id, so they never repeat after a deletion
+if ($cityJar) {
+    $codes = [];
+    foreach ([1, 2] as $n) {
+        $page = http("$base/pages/citycouncil/enforcement-actions.php", $cityJar);
+        http("$base/pages/citycouncil/enforcement-actions.php", $cityJar, ['csrf_token' => csrf($page['body']), 'rider_id' => $handRider['id'], 'type' => 'warning', 'amount' => '', 'description' => "flowtest $tag $n", 'status' => 'pending']);
+        $row = fetchOne("SELECT id, action_code FROM enforcement_actions WHERE description = ?", ["flowtest $tag $n"]);
+        $codes[] = $row;
+        if ($n === 1 && $row) runQuery("DELETE FROM enforcement_actions WHERE id = ?", [$row['id']]);
+    }
+    $t->ok($codes[0] && $codes[1] && $codes[0]['action_code'] !== $codes[1]['action_code'] && preg_match('/^ENF-\d{4}-\d{3,}$/', $codes[1]['action_code']),
+        'a new enforcement action gets a fresh ENF code even right after one was deleted', json_encode($codes));
+    runQuery("DELETE FROM enforcement_actions WHERE description LIKE ?", ["flowtest $tag%"]);
+}
+
+// Duplicate check, live and on submit
+$dupJson = json_decode(http("$base/pages/chairperson/check-duplicate.php?field=bike_plate&value=" . urlencode(fetchValue("SELECT bike_plate FROM riders WHERE id = ?", [$handRider['id']])), $chair)['body'], true);
+$t->ok(!empty($dupJson['matches']) && !isset($dupJson['matches'][0]['full_name']), 'the live duplicate check finds a registered plate and returns only where it is');
+$t->ok(rider_duplicates(['bike_plate' => 'NOPE ' . $tag]) === [], 'an unknown plate is not a duplicate');
+
+// USSD: refused without the token; with it, the menu answers
+$r = http("$base/ussd.php", test_jar(), ['sessionId' => 's1', 'phoneNumber' => '+256772000000', 'text' => '']);
+$t->ok($r['code'] === 403, 'USSD requests without the provider token are refused', 'HTTP ' . $r['code']);
+if (env('USSD_TOKEN', '') !== '') {
+    $ussd = fn(string $phone, string $text) => http("$base/ussd.php?token=" . urlencode(env('USSD_TOKEN')), test_jar(), ['sessionId' => "flow-$tag-" . md5($phone . $text), 'phoneNumber' => $phone, 'text' => $text])['body'];
+    $t->ok(str_starts_with($ussd('+256701999001', ''), 'CON ') && str_contains($ussd('+256701999001', ''), '1. Renew'), 'USSD opens with the renew / check menu');
+    $t->ok(str_starts_with($ussd('+256701999001', '1*BODA-NOPE-0'), 'END No permit'), 'USSD answers a wrong permit number with END');
+    $own = fetchOne("SELECT id_number, phone FROM riders WHERE id = ?", [$testRider]);
+    $checkReply = $ussd($own['phone'], '2');
+    $t->ok(str_contains($checkReply, $own['id_number']) && !str_contains($checkReply, 'FLOW TEST RIDER') && str_contains($checkReply, 'F*** T***'), 'USSD "check my permit" shows the caller\'s permit with a masked name', $checkReply);
+    $t->ok(str_starts_with($ussd($own['phone'], '1'), 'CON Permit ' . $own['id_number']), 'a caller with one permit goes straight to its confirmation');
+    $t->ok(str_contains($ussd($own['phone'], '1*1'), 'valid until'), 'USSD refuses to charge a permit that is not due yet');
+    $t->ok($ussd('+256701999001', '1*' . $own['id_number'] . '*2') === 'END Cancelled. Nothing was charged.', 'cancelling on USSD charges nothing');
+    runQuery("DELETE FROM ussd_sessions WHERE session_id LIKE ?", ["flow-$tag-%"]);
+    runQuery("DELETE FROM rate_limits WHERE bucket LIKE 'ussd%'");
+}
+
+// Roadside check by a signed-in chairperson
+$vt = fetchValue("SELECT verify_token FROM riders WHERE id = ?", [$testRider]);
+$page = http("$base/verify.php?t=$vt", $chair);
+$t->ok(str_contains($page['body'], 'Record this check'), 'signed-in staff see "Record this check" on a scanned card');
+http("$base/verify.php", $chair, ['csrf_token' => csrf($page['body']), 't' => $vt, 'outcome' => 'warned', 'note' => 'flowtest', 'lat' => '2.2499', 'lng' => '32.8999', 'acc' => '12']);
+$check = fetchOne("SELECT * FROM permit_checks WHERE rider_id = ? ORDER BY id DESC LIMIT 1", [$testRider]);
+$t->ok($check && $check['outcome'] === 'warned' && (float) $check['latitude'] === 2.2499, 'the check is saved with its outcome and location', json_encode($check));
+$t->ok(!str_contains(http("$base/verify.php?t=$vt", test_jar())['body'], 'Record this check'), 'visitors do not see the check form');
+
+// Rider import: problems per row, nothing saved until confirmed
+$csv = tempnam(sys_get_temp_dir(), 'imp');
+$stageName = (string) fetchValue("SELECT name FROM stages WHERE id = ?", [$stage['id']]);
+file_put_contents($csv, "Full name,NIN,Phone,Bike plate,Stage,Permit valid until\n"
+    . "IMPORT ONE,CM90012345$tag[0]AAA,0772111222,IMP " . strtoupper(substr($tag, 0, 4)) . ",$stageName,30/06/2027\n"
+    . "IMPORT TWO,short,0772111333,IMP2,No such stage,\n");
+$checked = import_check(import_read_cells($csv, 'register.csv'), $stage['city_id']);
+$t->ok($checked['total'] === 2 && count($checked['ready']) === 1 && isset($checked['problems'][3]) && $checked['ready'][0]['expiry_date'] === '2027-06-30',
+    'the import check passes a good row, lists the bad row by its Excel row number and reads dd/mm/yyyy dates', json_encode($checked['problems']));
+unlink($csv);
+
+// Remove everything this run created, so the suite can run again on the same database.
+foreach ($created['riders'] as $id) {
+    runQuery("DELETE h FROM cash_handovers h JOIN payments p ON p.handover_id = h.id WHERE p.rider_id = ?", [$id]);
+    foreach (['notifications', 'payments', 'permit_checks'] as $tbl) runQuery("DELETE FROM $tbl WHERE rider_id = ?", [$id]);
+    runQuery("DELETE FROM riders WHERE id = ?", [$id]);
+}
+runQuery("DELETE FROM rate_limits WHERE bucket LIKE 'dup-check:%' OR bucket LIKE 'permit-check:%' OR bucket LIKE 'reminder-sms:%'");
 runQuery("DELETE FROM automation_sends WHERE target IN ('" . implode("','", array_map('intval', array_merge($created['riders'], $created['users']))) . "')");
 runQuery("DELETE FROM email_log WHERE to_email LIKE ?", ["$tag%"]);
 foreach ($created['contact'] as $id) runQuery("DELETE FROM contact_messages WHERE id = ?", [$id]);

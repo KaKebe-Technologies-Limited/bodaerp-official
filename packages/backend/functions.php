@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/config/config.php';
 require_once __DIR__ . '/db_helpers.php';
+require_once __DIR__ . '/i18n.php';
 
 /** Uganda's fiscal year runs 1 July to 30 June, e.g. "2026/2027". */
 function current_fiscal_year(?int $ts = null): string {
@@ -40,15 +41,6 @@ function prevFiscalYear(string $fy): string {
     return ($a - 1) . '/' . ($b - 1);
 }
 
-function statusBadgeClass(string $status): string {
-    return match (strtolower($status)) {
-        'active', 'confirmed', 'resolved', 'paid' => 'bg-success',
-        'expired', 'failed', 'suspension', 'impound' => 'bg-danger',
-        'pending', 'warning' => 'bg-warning text-dark',
-        'closed', 'fine' => 'bg-secondary',
-        default => 'bg-secondary',
-    };
-}
 
 function nextIdNumber(int $riderId, string $cityId): string {
     return 'BODA-' . $cityId . '-' . str_pad((string) $riderId, 6, '0', STR_PAD_LEFT);
@@ -85,4 +77,80 @@ function verifyUrl(int $riderId): string {
         $token = fetchValue("SELECT verify_token FROM riders WHERE id = ?", [$riderId]);
     }
     return app_url('verify.php?t=' . urlencode((string) $token));
+}
+
+/**
+ * Adds a notification to a rider's portal, unless the rider's account has "Show notifications in my portal"
+ * switched off. Riders without an account still get it, so it is waiting when their invite is accepted.
+ */
+function rider_notify(int $riderId, string $type, string $message): bool {
+    $wants = fetchValue("SELECT COALESCE(u.notify_in_app, 1) FROM riders r LEFT JOIN users u ON u.id = r.user_id WHERE r.id = ?", [$riderId]);
+    if ($wants === null || (int) $wants !== 1) return false;
+    runQuery("INSERT INTO notifications (rider_id, type, message) VALUES (?, ?, ?)", [$riderId, $type, mb_strimwidth($message, 0, 255, '…', 'UTF-8')])->close();
+    return true;
+}
+
+/**
+ * What a rider owes for the next renewal: the permit fee fixed at registration, plus the city's late fee
+ * once the permit has been expired for longer than the city's grace period. Every payment path uses this,
+ * so cash, mobile money and USSD always charge the same amount.
+ * @return array{fee: float, late_fee: float, total: float, days_late: int, grace_days: int}
+ */
+function permit_amount_due(array $rider, bool $freshTerms = false): array {
+    $fee = round((float) ($rider['annual_tax'] ?? 0), 2);
+    static $cities = [];      // pages list many riders of the same city; one lookup per city per request
+    $cityKey = (string) ($rider['city_id'] ?? '');
+    if ($freshTerms) unset($cities[$cityKey]);
+    $city = $cities[$cityKey] ??= fetchOne("SELECT grace_period_days, late_fee, late_fee_type FROM cities WHERE id = ?", [$cityKey]) ?? [];
+    $grace = (int) ($city['grace_period_days'] ?? 0);
+    $daysLate = !empty($rider['expiry_date']) && strtotime($rider['expiry_date']) < strtotime('today')
+        ? (int) floor((strtotime('today') - strtotime($rider['expiry_date'])) / 86400) : 0;
+    $late = 0.0;
+    if ($daysLate > $grace && (float) ($city['late_fee'] ?? 0) > 0) {
+        $late = ($city['late_fee_type'] ?? 'flat') === 'percent'
+            ? round($fee * min(100, (float) $city['late_fee']) / 100, 0)
+            : round((float) $city['late_fee'], 2);
+    }
+    return ['fee' => $fee, 'late_fee' => $late, 'total' => round($fee + $late, 2), 'days_late' => $daysLate, 'grace_days' => $grace];
+}
+
+/**
+ * Riders already registered with the same NIN, mobile number or plate, in any city. Used at registration and
+ * import. Returns where each match is (stage and city) and nothing personal, because the chairperson asking
+ * may be in another city. @return list<array{field:string, label:string, where:string, status:string}>
+ */
+function rider_duplicates(array $values, ?int $exceptRiderId = null): array {
+    $checks = [
+        'nin'        => ['National ID number', strtoupper(trim((string) ($values['nin'] ?? '')))],
+        'bike_plate' => ['Bike plate', strtoupper(preg_replace('/\s+/', ' ', trim((string) ($values['bike_plate'] ?? ''))))],
+        'phone'      => ['Mobile number', (string) ($values['phone'] ?? '')],
+    ];
+    $found = [];
+    foreach ($checks as $field => [$label, $value]) {
+        if ($value === '' || $value === '+256') continue;
+        $params = [$value];
+        $where = "r.$field = ?";
+        if ($field === 'phone') {
+            $digits = substr(preg_replace('/\D/', '', $value), -9);
+            if (strlen($digits) !== 9) continue;
+            $where = "r.phone IN (?, ?, ?)";
+            $params = ['+256' . $digits, '0' . $digits, '256' . $digits];
+        }
+        if ($field === 'bike_plate') { $where = "REPLACE(r.bike_plate, ' ', '') = ?"; $params = [str_replace(' ', '', $value)]; }
+        $sql = "SELECT r.status, r.deleted_at, s.name AS stage, c.name AS city FROM riders r
+                LEFT JOIN stages s ON s.id = r.stage_id LEFT JOIN cities c ON c.id = r.city_id WHERE $where";
+        if ($exceptRiderId) { $sql .= " AND r.id <> ?"; $params[] = $exceptRiderId; }
+        foreach (fetchAll($sql . " LIMIT 3", $params) as $row) {
+            $found[] = ['field' => $field, 'label' => $label, 'where' => trim(($row['stage'] ?: 'no stage') . ', ' . ($row['city'] ?: 'unknown city')),
+                'status' => $row['deleted_at'] ? 'removed' : $row['status']];
+        }
+    }
+    return $found;
+}
+
+/** Notification types are stored as "Payment Confirmed"; people read "Payment confirmed". Short acronyms stay. */
+function notification_label(string $type): string {
+    $words = explode(' ', $type);
+    foreach ($words as $i => $word) if ($i > 0 && !preg_match('/^[A-Z]{2,4}$/', $word)) $words[$i] = mb_strtolower($word);
+    return implode(' ', $words);
 }

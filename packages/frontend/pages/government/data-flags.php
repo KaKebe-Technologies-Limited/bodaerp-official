@@ -15,7 +15,7 @@ anomaly_scan_if_stale('auto');
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <?php $pageTitle = 'Data Integrity Flags | BodaERP'; require __DIR__ . '/../../partials/head-assets.php'; ?>
+    <?php $pageTitle = 'Data integrity flags | ' . get_setting('site_name', 'BodaERP'); require __DIR__ . '/../../partials/head-assets.php'; ?>
 </head>
 <body>
 

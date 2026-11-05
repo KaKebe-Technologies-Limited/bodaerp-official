@@ -15,7 +15,7 @@ $totalRiders = array_sum(array_column($rows, 'rider_count'));
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <?php $pageTitle = 'Revenue Report | BodaERP'; require __DIR__ . '/../../partials/head-assets.php'; ?>
+    <?php $pageTitle = 'Revenue report | ' . get_setting('site_name', 'BodaERP'); require __DIR__ . '/../../partials/head-assets.php'; ?>
 </head>
 <body>
 
@@ -32,16 +32,16 @@ $totalRiders = array_sum(array_column($rows, 'rider_count'));
     <div class="content-area">
         <div class="card mb-4"><div class="card-body d-flex justify-content-between align-items-center flex-wrap gap-2">
             <div>
-                <h5 class="fw-bold mb-0"><?= h($city['name']) ?>: Annual Revenue Report</h5>
-                <p class="text-muted mb-0">Fiscal Year <?= h($city['fiscal_year']) ?> · Generated <?= date('M d, Y') ?></p>
+                <h5 class="fw-bold mb-0"><?= h($city['name']) ?>: Annual revenue report</h5>
+                <p class="text-muted mb-0">Fiscal year <?= h($city['fiscal_year']) ?> · Generated <?= date('M d, Y') ?></p>
             </div>
             <div class="no-print"><?php $exportTableId='revenueReportTable'; $exportFilename='revenue_report'; $exportTitle=$city['name'].' Revenue Report'; require __DIR__ . '/../../partials/export-toolbar.php'; ?></div>
         </div></div>
 
         <div class="row g-3 mb-4">
-            <div class="col-md-4"><div class="card"><div class="card-body text-center"><h3 class="fw-bold text-primary"><?= h(formatCurrency($totalRevenue)) ?></h3><small class="text-muted">Total Revenue Collected</small></div></div></div>
-            <div class="col-md-4"><div class="card"><div class="card-body text-center"><h3 class="fw-bold text-success"><?= number_format($totalRiders) ?></h3><small class="text-muted">Total Riders</small></div></div></div>
-            <div class="col-md-4"><div class="card"><div class="card-body text-center"><h3 class="fw-bold text-warning"><?= h(formatCurrency($totalRiders ? $totalRevenue / $totalRiders : 0)) ?></h3><small class="text-muted">Revenue per Rider</small></div></div></div>
+            <div class="col-md-4"><div class="card"><div class="card-body text-center"><h3 class="fw-bold text-primary"><?= h(formatCurrency($totalRevenue)) ?></h3><small class="text-muted">Total revenue collected</small></div></div></div>
+            <div class="col-md-4"><div class="card"><div class="card-body text-center"><h3 class="fw-bold text-success"><?= number_format($totalRiders) ?></h3><small class="text-muted">Total riders</small></div></div></div>
+            <div class="col-md-4"><div class="card"><div class="card-body text-center"><h3 class="fw-bold text-warning"><?= h(formatCurrency($totalRiders ? $totalRevenue / $totalRiders : 0)) ?></h3><small class="text-muted">Revenue per rider</small></div></div></div>
         </div>
 
         <div class="card">

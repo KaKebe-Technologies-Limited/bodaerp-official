@@ -1,53 +1,65 @@
 <?php
-require_once __DIR__ . '/../../../backend/auth.php';
+// The rider's registered details, read only. Changes go through the stage chairperson (or a correction request
+// in My Account), so the register stays the single record a council can rely on.
+require_once __DIR__ . '/../../../backend/admin_ui.php';
 require_role(['rider']);
-$active = 'my-profile';
-$riderId = $_SESSION['rider_id'];
+$riderId = (int) ($_SESSION['rider_id'] ?? 0);
 if (!$riderId) redirect('/login.php');
 
 $rider = fetchOne("SELECT r.*, s.name AS stage_name, s.route AS stage_route, s.chairperson_name, s.chairperson_phone
     FROM riders r LEFT JOIN stages s ON s.id = r.stage_id WHERE r.id = ?", [$riderId]);
+$dash = '–';
+$personal = [
+    t('rider.profile.name', 'Full name') => $rider['full_name'],
+    t('rider.profile.nin', 'National ID number (NIN)') => $rider['nin'],
+    t('rider.profile.dob', 'Date of birth') => $rider['date_of_birth'] ? formatDate($rider['date_of_birth']) : $dash,
+    t('rider.profile.gender', 'Gender') => $rider['gender'] ?: $dash,
+    t('rider.profile.marital', 'Marital status') => $rider['marital_status'] ?: $dash,
+    t('rider.profile.phone', 'Mobile number') => $rider['phone'],
+    t('rider.profile.email', 'Email') => $rider['email'] ?: $dash,
+    t('rider.profile.address', 'Where you live') => $rider['physical_address'] ?: $dash,
+    t('rider.profile.kin', 'Next of kin') => trim(($rider['next_of_kin_name'] ?: $dash) . ($rider['next_of_kin_contact'] ? ', ' . $rider['next_of_kin_contact'] : '')),
+];
+$work = [
+    t('rider.profile.plate', 'Motorcycle plate') => $rider['bike_plate'],
+    t('rider.profile.model', 'Motorcycle model') => $rider['bike_model'] ?: $dash,
+    t('rider.profile.stage', 'Stage') => $rider['stage_name'] ?: $dash,
+    t('rider.profile.route', 'Route') => $rider['stage_route'] ?: $dash,
+    t('rider.profile.member', 'Registered since') => formatDate($rider['member_since']),
+];
+
+portal_start('rider', 'my-profile', t('rider.profile.title', 'My details'), [
+    'subtitle' => t('rider.profile.subtitle', 'What the council register holds about you'),
+]);
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <?php $pageTitle = 'My Profile | BodaERP'; require __DIR__ . '/../../partials/head-assets.php'; ?>
-</head>
-<body>
-
-<?php require __DIR__ . '/../../partials/sidebar-rider.php'; ?>
-
-<div class="main-content" id="mainContent">
-    <?php $pageTitle = 'My Profile'; require __DIR__ . '/../../partials/topheader.php'; ?>
-
-    <div class="content-area">
-        <div class="alert alert-info"><i class="fas fa-info-circle me-2"></i>To update your details, please contact your stage chairperson.</div>
-        <div class="card"><div class="card-body">
-            <h6 class="fw-bold text-primary mb-3">Personal Information</h6>
-            <div class="row g-3 mb-4">
-                <div class="col-md-6"><label class="form-label fw-semibold">Full Name</label><input type="text" class="form-control" value="<?= h($rider['full_name']) ?>" readonly></div>
-                <div class="col-md-6"><label class="form-label fw-semibold">NIN</label><input type="text" class="form-control" value="<?= h($rider['nin']) ?>" readonly></div>
-                <div class="col-md-4"><label class="form-label fw-semibold">Date of Birth</label><input type="text" class="form-control" value="<?= formatDate($rider['date_of_birth']) ?>" readonly></div>
-                <div class="col-md-4"><label class="form-label fw-semibold">Gender</label><input type="text" class="form-control" value="<?= h($rider['gender'] ?: '–') ?>" readonly></div>
-                <div class="col-md-4"><label class="form-label fw-semibold">Marital Status</label><input type="text" class="form-control" value="<?= h($rider['marital_status'] ?: '–') ?>" readonly></div>
-                <div class="col-md-6"><label class="form-label fw-semibold">Phone Number</label><input type="text" class="form-control" value="<?= h($rider['phone']) ?>" readonly></div>
-                <div class="col-md-6"><label class="form-label fw-semibold">Email Address</label><input type="text" class="form-control" value="<?= h($rider['email'] ?: '–') ?>" readonly></div>
-                <div class="col-md-6"><label class="form-label fw-semibold">Physical Address</label><input type="text" class="form-control" value="<?= h($rider['physical_address'] ?: '–') ?>" readonly></div>
-                <div class="col-md-3"><label class="form-label fw-semibold">Next of Kin</label><input type="text" class="form-control" value="<?= h($rider['next_of_kin_name'] ?: '–') ?>" readonly></div>
-                <div class="col-md-3"><label class="form-label fw-semibold">Next of Kin Contact</label><input type="text" class="form-control" value="<?= h($rider['next_of_kin_contact'] ?: '–') ?>" readonly></div>
+<div class="layout-thirds">
+    <div>
+        <section class="card mb-4">
+            <div class="card-body">
+                <h2 class="section-title"><?= h(t('rider.profile.personal', 'About you')) ?></h2>
+                <dl class="row rider-facts mb-0">
+                    <?php foreach ($personal as $label => $value): ?><dt class="col-sm-4"><?= h($label) ?></dt><dd class="col-sm-8"><?= h((string) $value) ?></dd><?php endforeach; ?>
+                </dl>
             </div>
-            <h6 class="fw-bold text-primary mb-3">Bike & Stage</h6>
-            <div class="row g-3">
-                <div class="col-md-6"><label class="form-label fw-semibold">Bike Plate</label><input type="text" class="form-control" value="<?= h($rider['bike_plate']) ?>" readonly></div>
-                <div class="col-md-6"><label class="form-label fw-semibold">Bike Model</label><input type="text" class="form-control" value="<?= h($rider['bike_model'] ?: '–') ?>" readonly></div>
-                <div class="col-md-6"><label class="form-label fw-semibold">Stage</label><input type="text" class="form-control" value="<?= h($rider['stage_name']) ?>" readonly></div>
-                <div class="col-md-6"><label class="form-label fw-semibold">Route</label><input type="text" class="form-control" value="<?= h($rider['stage_route'] ?: '–') ?>" readonly></div>
-                <div class="col-md-6"><label class="form-label fw-semibold">Stage Chairperson</label><input type="text" class="form-control" value="<?= h(($rider['chairperson_name'] ?: '–') . ($rider['chairperson_phone'] ? ' · ' . $rider['chairperson_phone'] : '')) ?>" readonly></div>
+        </section>
+        <section class="card">
+            <div class="card-body">
+                <h2 class="section-title"><?= h(t('rider.profile.work', 'Your motorcycle and stage')) ?></h2>
+                <dl class="row rider-facts mb-0">
+                    <?php foreach ($work as $label => $value): ?><dt class="col-sm-4"><?= h($label) ?></dt><dd class="col-sm-8"><?= h((string) $value) ?></dd><?php endforeach; ?>
+                </dl>
             </div>
-        </div></div>
+        </section>
     </div>
+    <aside class="card">
+        <div class="card-body">
+            <h2 class="section-title"><?= h(t('rider.profile.change', 'Something wrong?')) ?></h2>
+            <p class="small"><?= h(t('rider.profile.change_text', 'Your stage chairperson can correct your details. You can also send a correction request, and the BodaERP team will answer in your messages.')) ?></p>
+            <?php if ($rider['chairperson_name']): ?>
+                <p class="small mb-3"><strong><?= h($rider['chairperson_name']) ?></strong><?php if ($rider['chairperson_phone']): ?><br><a href="tel:<?= h(preg_replace('/[^\d+]/', '', $rider['chairperson_phone'])) ?>"><?= h($rider['chairperson_phone']) ?></a><?php endif; ?></p>
+            <?php endif; ?>
+            <a class="btn btn-outline-primary btn-sm" href="<?= BASE_URL ?>/pages/account/settings.php"><?= h(t('rider.profile.request', 'Send a correction request')) ?></a>
+        </div>
+    </aside>
 </div>
-
-<?php require __DIR__ . '/../../partials/scripts-footer.php'; ?>
-</body>
-</html>
+<?php portal_end(); ?>

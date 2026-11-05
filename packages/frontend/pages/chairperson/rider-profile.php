@@ -22,17 +22,17 @@ $sc = ['active'=>'bg-success','expired'=>'bg-danger','pending'=>'bg-warning text
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <?php $pageTitle = 'Rider Profile | BodaERP'; require __DIR__ . '/../../partials/head-assets.php'; ?>
+    <?php $pageTitle = 'Rider profile | ' . get_setting('site_name', 'BodaERP'); require __DIR__ . '/../../partials/head-assets.php'; ?>
 </head>
 <body>
 
 <?php require __DIR__ . '/../../partials/sidebar-chairperson.php'; ?>
 
 <div class="main-content" id="mainContent">
-    <?php $pageTitle = 'Rider Profile'; require __DIR__ . '/../../partials/topheader.php'; ?>
+    <?php $pageTitle = 'Rider profile'; require __DIR__ . '/../../partials/topheader.php'; ?>
 
     <div class="content-area">
-        <?php if ($isNew): ?><div class="alert alert-success">Rider registered successfully! <a href="<?= BASE_URL ?>/pages/chairperson/id-preview.php?id=<?= $riderId ?>">View ID Card</a></div><?php endif; ?>
+        <?php if ($isNew): ?><div class="alert alert-success">Rider registered successfully! <a href="<?= BASE_URL ?>/pages/chairperson/id-preview.php?id=<?= $riderId ?>">View ID card</a></div><?php endif; ?>
 
         <div class="card mb-4"><div class="card-body">
             <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
@@ -41,7 +41,7 @@ $sc = ['active'=>'bg-success','expired'=>'bg-danger','pending'=>'bg-warning text
                     <p class="text-muted mb-0"><?= h($rider['id_number']) ?> · <?= h($rider['stage_name']) ?></p>
                 </div>
                 <div class="d-flex gap-2">
-                    <a href="<?= BASE_URL ?>/pages/chairperson/id-preview.php?id=<?= $riderId ?>" class="btn btn-outline-primary"><i class="fas fa-id-card me-1"></i>ID Card</a>
+                    <a href="<?= BASE_URL ?>/pages/chairperson/id-preview.php?id=<?= $riderId ?>" class="btn btn-outline-primary"><i class="fas fa-id-card me-1"></i>ID card</a>
                     <a href="<?= BASE_URL ?>/pages/chairperson/edit-rider.php?id=<?= $riderId ?>" class="btn btn-primary"><i class="fas fa-edit me-1"></i>Edit</a>
                     <?php if ($rider['email'] && (!$account || !$account['password_changed_at'])): ?>
                     <form method="post" class="d-inline" data-confirm="Email <?= h($rider['email']) ?> a link to set up their portal password?" data-confirm-ok="Send invite">
@@ -62,25 +62,25 @@ $sc = ['active'=>'bg-success','expired'=>'bg-danger','pending'=>'bg-warning text
                 <div class="card"><div class="card-body">
                     <div class="row">
                         <div class="col-md-6">
-                            <h6 class="fw-bold text-primary">Personal Information</h6>
+                            <h6 class="fw-bold text-primary">Personal information</h6>
                             <p><strong>NIN:</strong> <?= h($rider['nin']) ?></p>
                             <p><strong>DOB:</strong> <?= formatDate($rider['date_of_birth']) ?></p>
                             <p><strong>Gender:</strong> <?= h($rider['gender'] ?: '–') ?></p>
-                            <p><strong>Marital Status:</strong> <?= h($rider['marital_status'] ?: '–') ?></p>
+                            <p><strong>Marital status:</strong> <?= h($rider['marital_status'] ?: '–') ?></p>
                             <p><strong>Phone:</strong> <?= h($rider['phone']) ?></p>
                             <p><strong>Email:</strong> <?= h($rider['email'] ?: '–') ?></p>
                             <p><strong>Address:</strong> <?= h($rider['physical_address'] ?: '–') ?></p>
-                            <p><strong>Next of Kin:</strong> <?= h($rider['next_of_kin_name'] ?: '–') ?> (<?= h($rider['next_of_kin_contact'] ?: '–') ?>)</p>
+                            <p><strong>Next of kin:</strong> <?= h($rider['next_of_kin_name'] ?: '–') ?> (<?= h($rider['next_of_kin_contact'] ?: '–') ?>)</p>
                         </div>
                         <div class="col-md-6">
-                            <h6 class="fw-bold text-primary">Bike & Stage</h6>
+                            <h6 class="fw-bold text-primary">Bike & stage</h6>
                             <p><strong>Plate:</strong> <?= h($rider['bike_plate']) ?></p>
                             <p><strong>Model:</strong> <?= h($rider['bike_model'] ?: '–') ?></p>
                             <p><strong>Stage:</strong> <?= h($rider['stage_name']) ?></p>
                             <p><strong>Route:</strong> <?= h($rider['route'] ?: '–') ?></p>
-                            <p><strong>Member Since:</strong> <?= formatDate($rider['member_since']) ?></p>
-                            <p><strong>Expiry Date:</strong> <?= formatDate($rider['expiry_date']) ?></p>
-                            <p><strong>Annual Tax:</strong> <?= h(formatCurrency($rider['annual_tax'])) ?></p>
+                            <p><strong>Member since:</strong> <?= formatDate($rider['member_since']) ?></p>
+                            <p><strong>Expiry date:</strong> <?= formatDate($rider['expiry_date']) ?></p>
+                            <p><strong>Annual tax:</strong> <?= h(formatCurrency($rider['annual_tax'])) ?></p>
                         </div>
                     </div>
                 </div></div>
@@ -88,7 +88,7 @@ $sc = ['active'=>'bg-success','expired'=>'bg-danger','pending'=>'bg-warning text
             <div class="tab-pane fade" id="pmts">
                 <div class="card"><div class="card-body p-0">
                     <table class="table table-hover mb-0">
-                        <thead><tr><th>Fiscal Year</th><th>Amount</th><th>Date Paid</th><th>Receipt#</th><th>Status</th></tr></thead>
+                        <thead><tr><th>Fiscal year</th><th>Amount</th><th>Date paid</th><th>Receipt#</th><th>Status</th></tr></thead>
                         <tbody>
                         <?php if (!$payments): ?><tr><td colspan="5"><div class="empty-state" style="padding:36px 20px;"><i class="fas fa-inbox"></i><h5>No payment history</h5></div></td></tr><?php endif; ?>
                         <?php foreach ($payments as $p): $psc = ['Confirmed'=>'bg-success','Pending'=>'bg-warning text-dark','Failed'=>'bg-danger']; ?>

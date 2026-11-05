@@ -43,7 +43,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (str_starts_with($k, 'social_') || $k === 'contact_map_url') {
                 if ($new !== '' && !preg_match('#^https://#i', $new)) { $errors[] = "$k must start with https://"; continue; }
             }
-            if (in_array($k, ['contact_email', 'contact_inbox_email', 'support_email'], true) && $new !== '' && !filter_var($new, FILTER_VALIDATE_EMAIL)) { $errors[] = "$k must be an email address."; continue; }
+            if (($type === 'email' || in_array($k, ['contact_email', 'contact_inbox_email', 'support_email'], true)) && $new !== '' && !filter_var($new, FILTER_VALIDATE_EMAIL)) { $errors[] = "$k must be an email address."; continue; }
+            if ($k === 'languages_enabled') {
+                $codes = array_values(array_unique(array_filter(array_map('trim', explode(',', strtolower($new))))));
+                if ($bad = array_diff($codes, array_keys(LANGUAGES))) { $errors[] = 'Unknown language code: ' . implode(', ', $bad) . '. Use ' . implode(', ', array_keys(LANGUAGES)) . '.'; continue; }
+                $new = implode(',', array_unique(array_merge(['en'], $codes)));
+            }
+            if ($k === 'ussd_code' && $new !== '' && !preg_match('/^\*[0-9*]+#$/', $new)) { $errors[] = 'The USSD code must look like *217*55#.'; continue; }
             if (mb_strlen($new) > 5000) { $errors[] = "$k is too long."; continue; }
         }
         if ($new !== (string) $r['value']) {
@@ -58,7 +64,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $settings = fetchAll("SELECT * FROM settings WHERE category = ? ORDER BY sort_order, `key`", [$cat]);
-portal_start('superadmin', 'site-settings', 'Site Text & Branding', [
+portal_start('superadmin', 'site-settings', 'Site text & branding', [
     'subtitle' => 'Every word, colour and switch on the public site and in the portals',
     'breadcrumbs' => ['Super Admin' => '/pages/superadmin/dashboard.php', 'Site Text & Branding' => null],
 ]);
@@ -111,7 +117,7 @@ portal_start('superadmin', 'site-settings', 'Site Text & Branding', [
         </form>
     </div>
 </div>
-<script>
+<script nonce="<?= csp_nonce() ?>">
 document.querySelectorAll('[data-color-for]').forEach(function (picker) {
     var text = document.getElementById(picker.getAttribute('data-color-for'));
     picker.addEventListener('input', function () { text.value = picker.value; });

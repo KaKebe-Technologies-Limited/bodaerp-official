@@ -16,10 +16,10 @@ $active = $active ?? '';
         </span>
     </a>
     <div class="sidebar-scroll">
-        <?php foreach ($portalNav['groups'] as $groupLabel => $items): ?>
+        <?php foreach ($portalNav['groups'] as $groupLabel => $groupLinks): ?>
             <p class="sidebar-group" id="nav-<?= h(preg_replace('/[^a-z]+/', '-', strtolower($groupLabel))) ?>"><?= h($groupLabel) ?></p>
             <ul class="sidebar-menu" aria-labelledby="nav-<?= h(preg_replace('/[^a-z]+/', '-', strtolower($groupLabel))) ?>">
-                <?php foreach ($items as $key => [$file, $icon, $label, $badge]): $isActive = $active === $key; ?>
+                <?php foreach ($groupLinks as $key => [$file, $icon, $label, $badge]): $isActive = $active === $key; ?>
                     <li<?= $isActive ? ' class="active"' : '' ?>>
                         <a href="<?= BASE_URL ?>/pages/<?= h($portalNav['folder']) ?>/<?= h($file) ?>"<?= $isActive ? ' aria-current="page"' : '' ?>>
                             <i class="fas <?= h($icon) ?>" aria-hidden="true"></i>

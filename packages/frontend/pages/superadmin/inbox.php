@@ -67,7 +67,7 @@ $pg = paginate((int) fetchValue("SELECT COUNT(*) FROM contact_messages $where", 
 $rows = fetchAll("SELECT id, name, email, organisation, subject, status, created_at FROM contact_messages $where ORDER BY "
     . sort_sql(['date' => 'created_at', 'name' => 'name', 'subject' => 'subject'], 'date') . " LIMIT {$pg['per_page']} OFFSET {$pg['offset']}", $params);
 
-portal_start('superadmin', 'inbox', 'Contact Inbox', [
+portal_start('superadmin', 'inbox', 'Contact inbox', [
     'subtitle' => 'Messages sent through the public contact form',
     'breadcrumbs' => ['Super Admin' => '/pages/superadmin/dashboard.php', 'Contact Inbox' => $id ? '/pages/superadmin/inbox.php' : null] + ($id ? [$msg['subject'] => null] : []),
     'actions' => $id ? '' : '<a class="btn btn-outline-secondary btn-sm" href="' . h(query_with(['export' => 1])) . '"><i class="fas fa-file-csv me-1"></i>Export CSV</a>',

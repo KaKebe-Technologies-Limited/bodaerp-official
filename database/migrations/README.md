@@ -35,7 +35,7 @@ that has already been released; add a new one.
 Plain structure changes (new table, new column, new index, a longer `varchar`, a new `enum`
 value) do **not** need a migration file any more:
 
-1. Change the database on your own machine any way you like (phpMyAdmin, SQL, Claude).
+1. Change the database on your own machine any way you like (phpMyAdmin, SQL or a script).
    While you work on `localhost`, the app keeps **`database/schema.snapshot.json`** in step
    with your local database (structure only, never data).
 2. Commit that file with your code and deploy.

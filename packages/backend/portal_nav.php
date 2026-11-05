@@ -26,12 +26,14 @@ function portal_nav(string $role): array {
                     'Messages' => [
                         'inbox'         => ['inbox.php', 'fa-inbox', 'Contact inbox', [(int) fetchValue("SELECT COUNT(*) FROM contact_messages WHERE status = 'new'"), 'info']],
                         'data-requests' => ['data-requests.php', 'fa-user-shield', 'Data requests', [(int) fetchValue("SELECT COUNT(*) FROM data_requests WHERE status = 'open'"), 'warning']],
+                        'sms'           => ['sms.php', 'fa-comment-sms', 'SMS', null],
                     ],
                     'Website' => [
                         'content'         => ['content.php', 'fa-file-lines', 'Pages & content', null],
                         'site-settings'   => ['site-settings.php', 'fa-sliders', 'Text & branding', null],
                         'email-templates' => ['email-templates.php', 'fa-envelope-open-text', 'Email templates', null],
                         'media'           => ['media.php', 'fa-photo-film', 'Media library', null],
+                        'languages'       => ['languages.php', 'fa-language', 'Languages', null],
                     ],
                     'System' => [
                         'platform-settings' => ['platform-settings.php', 'fa-gear', 'Platform settings', null],
@@ -43,7 +45,8 @@ function portal_nav(string $role): array {
             ];
 
         case 'city_admin':
-            $cityId = (int) ($_SESSION['city_id'] ?? 0);
+            // City ids are codes such as 'LIR'; cast to int they became 0, which MySQL matches against every city.
+            $cityId = (string) ($_SESSION['city_id'] ?? '');
             return [
                 'folder' => 'citycouncil',
                 'scope' => $_SESSION['city_name'] ?? 'City council',
@@ -53,12 +56,15 @@ function portal_nav(string $role): array {
                     ],
                     'Riders & stages' => [
                         'city-riders'       => ['city-riders.php', 'fa-users', 'Riders', null],
+                        'import-riders'     => ['import-riders.php', 'fa-file-import', 'Import riders', null],
                         'all-stages'        => ['all-stages.php', 'fa-location-dot', 'Stages', null],
                         'stage-management'  => ['stage-management.php', 'fa-sitemap', 'Manage stages', null],
                         'stage-performance' => ['stage-performance.php', 'fa-ranking-star', 'Stage performance', null],
                     ],
                     'Money' => [
                         'payments_management' => ['payments_management.php', 'fa-credit-card', 'Payments', null],
+                        'cash-handovers'      => ['cash-handovers.php', 'fa-hand-holding-dollar', 'Cash handovers',
+                            [(int) fetchValue("SELECT COUNT(*) FROM cash_handovers WHERE city_id = ? AND status = 'submitted'", [$cityId]), 'warning']],
                         'revenue-analytics'   => ['revenue-analytics.php', 'fa-money-bill-trend-up', 'Revenue', null],
                     ],
                     'Compliance' => [
@@ -66,6 +72,7 @@ function portal_nav(string $role): array {
                         'city-defaulters'       => ['city-defaulters.php', 'fa-triangle-exclamation', 'Defaulters',
                             [(int) fetchValue("SELECT COUNT(*) FROM riders WHERE city_id = ? AND status = 'expired'", [$cityId]), 'danger']],
                         'enforcement-actions'   => ['enforcement-actions.php', 'fa-gavel', 'Enforcement', null],
+                        'permit-checks'         => ['permit-checks.php', 'fa-qrcode', 'Roadside checks', null],
                         'data-flags'            => ['data-flags.php', 'fa-shield-halved', 'Data checks', [anomaly_open_count('high', $cityId), 'danger']],
                     ],
                     'Settings' => [
@@ -90,6 +97,8 @@ function portal_nav(string $role): array {
                     ],
                     'Money' => [
                         'collect-payments' => ['collect-payments.php', 'fa-money-bill-wave', 'Collect payments', null],
+                        'cash-handover'    => ['cash-handover.php', 'fa-hand-holding-dollar', 'Cash handover',
+                            [(int) fetchValue("SELECT COUNT(*) FROM payments p JOIN riders r ON r.id = p.rider_id WHERE r.stage_id = ? AND p.payment_method = 'Cash' AND p.status = 'Confirmed' AND p.handover_id IS NULL AND p.channel = 'stage'", [$stageId]), 'info']],
                     ],
                     'Compliance' => [
                         'expiry-alerts' => ['expiry-alerts.php', 'fa-bell', 'Expiring soon',
@@ -109,18 +118,18 @@ function portal_nav(string $role): array {
                 'folder' => 'rider',
                 'scope' => $_SESSION['city_name'] ?? 'Rider',
                 'groups' => [
-                    'Overview' => [
-                        'dashboard'     => ['dashboard.php', 'fa-gauge-high', 'Dashboard', null],
-                        'notifications' => ['notifications.php', 'fa-bell', 'Notifications',
+                    t('nav.rider.group_overview', 'Overview') => [
+                        'dashboard'     => ['dashboard.php', 'fa-gauge-high', t('nav.rider.dashboard', 'Dashboard'), null],
+                        'notifications' => ['notifications.php', 'fa-bell', t('nav.rider.notifications', 'Notifications'),
                             [(int) fetchValue("SELECT COUNT(*) FROM notifications WHERE rider_id = ? AND is_read = 0", [(int) ($_SESSION['rider_id'] ?? 0)]), 'danger']],
                     ],
-                    'My permit' => [
-                        'my-id-card'      => ['my-id-card.php', 'fa-id-card', 'ID card', null],
-                        'renewal-status'  => ['renewal-status.php', 'fa-rotate', 'Renewal', null],
-                        'payment-history' => ['payment-history.php', 'fa-receipt', 'Payments & receipts', null],
+                    t('nav.rider.group_permit', 'My permit') => [
+                        'my-id-card'      => ['my-id-card.php', 'fa-id-card', t('nav.rider.id_card', 'ID card'), null],
+                        'renewal-status'  => ['renewal-status.php', 'fa-rotate', t('nav.rider.renewal', 'Renewal'), null],
+                        'payment-history' => ['payment-history.php', 'fa-receipt', t('nav.rider.payments', 'Payments & receipts'), null],
                     ],
-                    'Me' => [
-                        'my-profile' => ['my-profile.php', 'fa-user', 'My details', null],
+                    t('nav.rider.group_me', 'Me') => [
+                        'my-profile' => ['my-profile.php', 'fa-user', t('nav.rider.details', 'My details'), null],
                     ],
                 ],
             ];

@@ -1,10 +1,10 @@
 {
     "_note": "Structure of the database (no data). Written automatically on the developer machine; applied automatically on every other copy. Commit it with the code. Safe to delete: it is rebuilt from the local database.",
     "meta": {
-        "saved_at": "2026-11-01 14:37:14",
+        "saved_at": "2026-11-06 02:52:17",
         "saved_by": "cli",
         "database_server": "10.4.34-MariaDB-1:10.4.34+maria~ubu2004",
-        "tables": 28
+        "tables": 35
     },
     "format": 1,
     "tables": {
@@ -376,6 +376,111 @@
             "foreign_keys": [],
             "checks": []
         },
+        "cash_handovers": {
+            "engine": "InnoDB",
+            "charset": "utf8mb4",
+            "collation": "utf8mb4_unicode_ci",
+            "columns": [
+                {
+                    "name": "id",
+                    "type": "int(10) unsigned",
+                    "null": false,
+                    "def": "int(10) unsigned NOT NULL AUTO_INCREMENT"
+                },
+                {
+                    "name": "reference",
+                    "type": "varchar(30)",
+                    "null": false,
+                    "def": "varchar(30) NOT NULL"
+                },
+                {
+                    "name": "city_id",
+                    "type": "char(3)",
+                    "null": false,
+                    "def": "char(3) NOT NULL"
+                },
+                {
+                    "name": "stage_id",
+                    "type": "int(11)",
+                    "null": false,
+                    "def": "int(11) NOT NULL"
+                },
+                {
+                    "name": "submitted_by",
+                    "type": "int(11)",
+                    "null": false,
+                    "def": "int(11) NOT NULL"
+                },
+                {
+                    "name": "payments_count",
+                    "type": "int(10) unsigned",
+                    "null": false,
+                    "def": "int(10) unsigned NOT NULL DEFAULT 0"
+                },
+                {
+                    "name": "expected_amount",
+                    "type": "decimal(14,2)",
+                    "null": false,
+                    "def": "decimal(14,2) NOT NULL DEFAULT 0.00"
+                },
+                {
+                    "name": "handed_amount",
+                    "type": "decimal(14,2)",
+                    "null": false,
+                    "def": "decimal(14,2) NOT NULL DEFAULT 0.00"
+                },
+                {
+                    "name": "note",
+                    "type": "varchar(500)",
+                    "null": true,
+                    "def": "varchar(500) DEFAULT NULL"
+                },
+                {
+                    "name": "status",
+                    "type": "enum('submitted','confirmed','queried')",
+                    "null": false,
+                    "def": "enum('submitted','confirmed','queried') NOT NULL DEFAULT 'submitted'"
+                },
+                {
+                    "name": "received_amount",
+                    "type": "decimal(14,2)",
+                    "null": true,
+                    "def": "decimal(14,2) DEFAULT NULL"
+                },
+                {
+                    "name": "reviewed_by",
+                    "type": "int(11)",
+                    "null": true,
+                    "def": "int(11) DEFAULT NULL"
+                },
+                {
+                    "name": "reviewed_at",
+                    "type": "datetime",
+                    "null": true,
+                    "def": "datetime DEFAULT NULL"
+                },
+                {
+                    "name": "review_note",
+                    "type": "varchar(500)",
+                    "null": true,
+                    "def": "varchar(500) DEFAULT NULL"
+                },
+                {
+                    "name": "created_at",
+                    "type": "datetime",
+                    "null": false,
+                    "def": "datetime NOT NULL DEFAULT current_timestamp()"
+                }
+            ],
+            "indexes": {
+                "PRIMARY": "PRIMARY KEY (`id`)",
+                "uq_cash_handovers_reference": "UNIQUE KEY `uq_cash_handovers_reference` (`reference`)",
+                "idx_cash_handovers_city": "KEY `idx_cash_handovers_city` (`city_id`,`status`)",
+                "idx_cash_handovers_stage": "KEY `idx_cash_handovers_stage` (`stage_id`,`created_at`)"
+            },
+            "foreign_keys": [],
+            "checks": []
+        },
         "cities": {
             "engine": "InnoDB",
             "charset": "utf8mb4",
@@ -500,6 +605,18 @@
                     "type": "smallint(5) unsigned",
                     "null": false,
                     "def": "smallint(5) unsigned NOT NULL DEFAULT 30"
+                },
+                {
+                    "name": "late_fee",
+                    "type": "decimal(12,2)",
+                    "null": false,
+                    "def": "decimal(12,2) NOT NULL DEFAULT 0.00"
+                },
+                {
+                    "name": "late_fee_type",
+                    "type": "enum('flat','percent')",
+                    "null": false,
+                    "def": "enum('flat','percent') NOT NULL DEFAULT 'flat'"
                 },
                 {
                     "name": "reminder_days",
@@ -1496,10 +1613,22 @@
                     "def": "decimal(12,2) NOT NULL"
                 },
                 {
+                    "name": "late_fee",
+                    "type": "decimal(12,2)",
+                    "null": false,
+                    "def": "decimal(12,2) NOT NULL DEFAULT 0.00"
+                },
+                {
                     "name": "payment_method",
                     "type": "enum('Mobile Money','Cash','Bank Transfer')",
                     "null": false,
                     "def": "enum('Mobile Money','Cash','Bank Transfer') NOT NULL"
+                },
+                {
+                    "name": "channel",
+                    "type": "varchar(20)",
+                    "null": true,
+                    "def": "varchar(20) DEFAULT NULL"
                 },
                 {
                     "name": "receipt_number",
@@ -1550,6 +1679,12 @@
                     "def": "int(11) DEFAULT NULL"
                 },
                 {
+                    "name": "handover_id",
+                    "type": "int(10) unsigned",
+                    "null": true,
+                    "def": "int(10) unsigned DEFAULT NULL"
+                },
+                {
                     "name": "created_at",
                     "type": "datetime",
                     "null": false,
@@ -1563,13 +1698,94 @@
                 "idx_payments_rider": "KEY `idx_payments_rider` (`rider_id`)",
                 "idx_payments_city_status": "KEY `idx_payments_city_status` (`city_id`,`status`)",
                 "idx_payments_paidat": "KEY `idx_payments_paidat` (`paid_at`)",
-                "idx_payments_iotec_tx": "KEY `idx_payments_iotec_tx` (`iotec_transaction_id`)"
+                "idx_payments_iotec_tx": "KEY `idx_payments_iotec_tx` (`iotec_transaction_id`)",
+                "idx_payments_handover": "KEY `idx_payments_handover` (`handover_id`)"
             },
             "foreign_keys": {
                 "payments_ibfk_1": "CONSTRAINT `payments_ibfk_1` FOREIGN KEY (`rider_id`) REFERENCES `riders` (`id`)",
                 "payments_ibfk_2": "CONSTRAINT `payments_ibfk_2` FOREIGN KEY (`city_id`) REFERENCES `cities` (`id`)",
                 "payments_ibfk_3": "CONSTRAINT `payments_ibfk_3` FOREIGN KEY (`collected_by`) REFERENCES `users` (`id`) ON DELETE SET NULL"
             },
+            "checks": []
+        },
+        "permit_checks": {
+            "engine": "InnoDB",
+            "charset": "utf8mb4",
+            "collation": "utf8mb4_unicode_ci",
+            "columns": [
+                {
+                    "name": "id",
+                    "type": "int(10) unsigned",
+                    "null": false,
+                    "def": "int(10) unsigned NOT NULL AUTO_INCREMENT"
+                },
+                {
+                    "name": "rider_id",
+                    "type": "int(11)",
+                    "null": false,
+                    "def": "int(11) NOT NULL"
+                },
+                {
+                    "name": "city_id",
+                    "type": "char(3)",
+                    "null": false,
+                    "def": "char(3) NOT NULL"
+                },
+                {
+                    "name": "checked_by",
+                    "type": "int(11)",
+                    "null": false,
+                    "def": "int(11) NOT NULL"
+                },
+                {
+                    "name": "status_seen",
+                    "type": "varchar(20)",
+                    "null": false,
+                    "def": "varchar(20) NOT NULL"
+                },
+                {
+                    "name": "outcome",
+                    "type": "enum('ok','warned','impounded','other')",
+                    "null": false,
+                    "def": "enum('ok','warned','impounded','other') NOT NULL DEFAULT 'ok'"
+                },
+                {
+                    "name": "note",
+                    "type": "varchar(300)",
+                    "null": true,
+                    "def": "varchar(300) DEFAULT NULL"
+                },
+                {
+                    "name": "latitude",
+                    "type": "decimal(9,6)",
+                    "null": true,
+                    "def": "decimal(9,6) DEFAULT NULL"
+                },
+                {
+                    "name": "longitude",
+                    "type": "decimal(9,6)",
+                    "null": true,
+                    "def": "decimal(9,6) DEFAULT NULL"
+                },
+                {
+                    "name": "accuracy_m",
+                    "type": "int(10) unsigned",
+                    "null": true,
+                    "def": "int(10) unsigned DEFAULT NULL"
+                },
+                {
+                    "name": "created_at",
+                    "type": "datetime",
+                    "null": false,
+                    "def": "datetime NOT NULL DEFAULT current_timestamp()"
+                }
+            ],
+            "indexes": {
+                "PRIMARY": "PRIMARY KEY (`id`)",
+                "idx_permit_checks_city": "KEY `idx_permit_checks_city` (`city_id`,`created_at`)",
+                "idx_permit_checks_rider": "KEY `idx_permit_checks_rider` (`rider_id`,`created_at`)"
+            },
+            "foreign_keys": [],
             "checks": []
         },
         "platform_settings": {
@@ -1689,6 +1905,67 @@
             "foreign_keys": [],
             "checks": []
         },
+        "rider_imports": {
+            "engine": "InnoDB",
+            "charset": "utf8mb4",
+            "collation": "utf8mb4_unicode_ci",
+            "columns": [
+                {
+                    "name": "id",
+                    "type": "int(10) unsigned",
+                    "null": false,
+                    "def": "int(10) unsigned NOT NULL AUTO_INCREMENT"
+                },
+                {
+                    "name": "city_id",
+                    "type": "char(3)",
+                    "null": false,
+                    "def": "char(3) NOT NULL"
+                },
+                {
+                    "name": "imported_by",
+                    "type": "int(11)",
+                    "null": false,
+                    "def": "int(11) NOT NULL"
+                },
+                {
+                    "name": "file_name",
+                    "type": "varchar(200)",
+                    "null": false,
+                    "def": "varchar(200) NOT NULL"
+                },
+                {
+                    "name": "rows_total",
+                    "type": "int(10) unsigned",
+                    "null": false,
+                    "def": "int(10) unsigned NOT NULL DEFAULT 0"
+                },
+                {
+                    "name": "rows_created",
+                    "type": "int(10) unsigned",
+                    "null": false,
+                    "def": "int(10) unsigned NOT NULL DEFAULT 0"
+                },
+                {
+                    "name": "rows_skipped",
+                    "type": "int(10) unsigned",
+                    "null": false,
+                    "def": "int(10) unsigned NOT NULL DEFAULT 0"
+                },
+                {
+                    "name": "created_at",
+                    "type": "datetime",
+                    "null": false,
+                    "def": "datetime NOT NULL DEFAULT current_timestamp()"
+                }
+            ],
+            "indexes": {
+                "PRIMARY": "PRIMARY KEY (`id`)",
+                "idx_rider_imports_city": "KEY `idx_rider_imports_city` (`city_id`,`created_at`)"
+            },
+            "foreign_keys": [],
+            "checks": []
+        },
         "riders": {
             "engine": "InnoDB",
             "charset": "utf8mb4",
@@ -1773,6 +2050,18 @@
                     "def": "varchar(150) DEFAULT NULL"
                 },
                 {
+                    "name": "language",
+                    "type": "varchar(5)",
+                    "null": false,
+                    "def": "varchar(5) NOT NULL DEFAULT 'en'"
+                },
+                {
+                    "name": "sms_opt_out",
+                    "type": "tinyint(1)",
+                    "null": false,
+                    "def": "tinyint(1) NOT NULL DEFAULT 0"
+                },
+                {
                     "name": "physical_address",
                     "type": "varchar(255)",
                     "null": true,
@@ -1843,6 +2132,12 @@
                     "type": "int(11)",
                     "null": true,
                     "def": "int(11) DEFAULT NULL"
+                },
+                {
+                    "name": "import_id",
+                    "type": "int(10) unsigned",
+                    "null": true,
+                    "def": "int(10) unsigned DEFAULT NULL"
                 },
                 {
                     "name": "deleted_at",
@@ -1951,6 +2246,171 @@
             "indexes": {
                 "PRIMARY": "PRIMARY KEY (`id`)",
                 "uq_settings_key": "UNIQUE KEY `uq_settings_key` (`key`)"
+            },
+            "foreign_keys": [],
+            "checks": []
+        },
+        "sms_log": {
+            "engine": "InnoDB",
+            "charset": "utf8mb4",
+            "collation": "utf8mb4_unicode_ci",
+            "columns": [
+                {
+                    "name": "id",
+                    "type": "int(10) unsigned",
+                    "null": false,
+                    "def": "int(10) unsigned NOT NULL AUTO_INCREMENT"
+                },
+                {
+                    "name": "to_phone",
+                    "type": "varchar(20)",
+                    "null": false,
+                    "def": "varchar(20) NOT NULL"
+                },
+                {
+                    "name": "template_code",
+                    "type": "varchar(60)",
+                    "null": true,
+                    "def": "varchar(60) DEFAULT NULL"
+                },
+                {
+                    "name": "language",
+                    "type": "varchar(5)",
+                    "null": true,
+                    "def": "varchar(5) DEFAULT NULL"
+                },
+                {
+                    "name": "transport",
+                    "type": "varchar(20)",
+                    "null": false,
+                    "def": "varchar(20) NOT NULL"
+                },
+                {
+                    "name": "status",
+                    "type": "enum('sent','failed','logged')",
+                    "null": false,
+                    "def": "enum('sent','failed','logged') NOT NULL"
+                },
+                {
+                    "name": "segments",
+                    "type": "tinyint(3) unsigned",
+                    "null": false,
+                    "def": "tinyint(3) unsigned NOT NULL DEFAULT 1"
+                },
+                {
+                    "name": "cost",
+                    "type": "decimal(10,2)",
+                    "null": true,
+                    "def": "decimal(10,2) DEFAULT NULL"
+                },
+                {
+                    "name": "provider_ref",
+                    "type": "varchar(100)",
+                    "null": true,
+                    "def": "varchar(100) DEFAULT NULL"
+                },
+                {
+                    "name": "error",
+                    "type": "varchar(500)",
+                    "null": true,
+                    "def": "varchar(500) DEFAULT NULL"
+                },
+                {
+                    "name": "created_at",
+                    "type": "datetime",
+                    "null": false,
+                    "def": "datetime NOT NULL DEFAULT current_timestamp()"
+                }
+            ],
+            "indexes": {
+                "PRIMARY": "PRIMARY KEY (`id`)",
+                "idx_sms_log_created": "KEY `idx_sms_log_created` (`created_at`)",
+                "idx_sms_log_phone": "KEY `idx_sms_log_phone` (`to_phone`)"
+            },
+            "foreign_keys": [],
+            "checks": []
+        },
+        "sms_templates": {
+            "engine": "InnoDB",
+            "charset": "utf8mb4",
+            "collation": "utf8mb4_unicode_ci",
+            "columns": [
+                {
+                    "name": "id",
+                    "type": "int(10) unsigned",
+                    "null": false,
+                    "def": "int(10) unsigned NOT NULL AUTO_INCREMENT"
+                },
+                {
+                    "name": "code",
+                    "type": "varchar(60)",
+                    "null": false,
+                    "def": "varchar(60) NOT NULL"
+                },
+                {
+                    "name": "language",
+                    "type": "varchar(5)",
+                    "null": false,
+                    "def": "varchar(5) NOT NULL DEFAULT 'en'"
+                },
+                {
+                    "name": "name",
+                    "type": "varchar(120)",
+                    "null": false,
+                    "def": "varchar(120) NOT NULL"
+                },
+                {
+                    "name": "description",
+                    "type": "varchar(300)",
+                    "null": true,
+                    "def": "varchar(300) DEFAULT NULL"
+                },
+                {
+                    "name": "body",
+                    "type": "varchar(480)",
+                    "null": false,
+                    "def": "varchar(480) NOT NULL"
+                },
+                {
+                    "name": "variables",
+                    "type": "varchar(500)",
+                    "null": true,
+                    "def": "varchar(500) DEFAULT NULL"
+                },
+                {
+                    "name": "is_active",
+                    "type": "tinyint(1)",
+                    "null": false,
+                    "def": "tinyint(1) NOT NULL DEFAULT 1"
+                },
+                {
+                    "name": "needs_review",
+                    "type": "tinyint(1)",
+                    "null": false,
+                    "def": "tinyint(1) NOT NULL DEFAULT 0"
+                },
+                {
+                    "name": "updated_by",
+                    "type": "int(11)",
+                    "null": true,
+                    "def": "int(11) DEFAULT NULL"
+                },
+                {
+                    "name": "created_at",
+                    "type": "datetime",
+                    "null": false,
+                    "def": "datetime NOT NULL DEFAULT current_timestamp()"
+                },
+                {
+                    "name": "updated_at",
+                    "type": "datetime",
+                    "null": false,
+                    "def": "datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()"
+                }
+            ],
+            "indexes": {
+                "PRIMARY": "PRIMARY KEY (`id`)",
+                "uq_sms_templates_code_lang": "UNIQUE KEY `uq_sms_templates_code_lang` (`code`,`language`)"
             },
             "foreign_keys": [],
             "checks": []
@@ -2067,6 +2527,54 @@
             "foreign_keys": [],
             "checks": []
         },
+        "translations": {
+            "engine": "InnoDB",
+            "charset": "utf8mb4",
+            "collation": "utf8mb4_unicode_ci",
+            "columns": [
+                {
+                    "name": "language",
+                    "type": "varchar(5)",
+                    "null": false,
+                    "def": "varchar(5) NOT NULL"
+                },
+                {
+                    "name": "msg_key",
+                    "type": "varchar(120)",
+                    "null": false,
+                    "def": "varchar(120) NOT NULL"
+                },
+                {
+                    "name": "text",
+                    "type": "varchar(1000)",
+                    "null": false,
+                    "def": "varchar(1000) NOT NULL"
+                },
+                {
+                    "name": "needs_review",
+                    "type": "tinyint(1)",
+                    "null": false,
+                    "def": "tinyint(1) NOT NULL DEFAULT 1"
+                },
+                {
+                    "name": "updated_by",
+                    "type": "int(11)",
+                    "null": true,
+                    "def": "int(11) DEFAULT NULL"
+                },
+                {
+                    "name": "updated_at",
+                    "type": "datetime",
+                    "null": false,
+                    "def": "datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()"
+                }
+            ],
+            "indexes": {
+                "PRIMARY": "PRIMARY KEY (`language`,`msg_key`)"
+            },
+            "foreign_keys": [],
+            "checks": []
+        },
         "user_tokens": {
             "engine": "InnoDB",
             "charset": "utf8mb4",
@@ -2177,6 +2685,12 @@
                     "def": "varchar(30) DEFAULT NULL"
                 },
                 {
+                    "name": "phone_verified_at",
+                    "type": "datetime",
+                    "null": true,
+                    "def": "datetime DEFAULT NULL"
+                },
+                {
                     "name": "password_hash",
                     "type": "varchar(255)",
                     "null": false,
@@ -2189,6 +2703,12 @@
                     "def": "tinyint(1) NOT NULL DEFAULT 0"
                 },
                 {
+                    "name": "two_factor_channel",
+                    "type": "enum('email','sms')",
+                    "null": false,
+                    "def": "enum('email','sms') NOT NULL DEFAULT 'email'"
+                },
+                {
                     "name": "notify_email",
                     "type": "tinyint(1)",
                     "null": false,
@@ -2199,6 +2719,18 @@
                     "type": "tinyint(1)",
                     "null": false,
                     "def": "tinyint(1) NOT NULL DEFAULT 1"
+                },
+                {
+                    "name": "notify_sms",
+                    "type": "tinyint(1)",
+                    "null": false,
+                    "def": "tinyint(1) NOT NULL DEFAULT 1"
+                },
+                {
+                    "name": "language",
+                    "type": "varchar(5)",
+                    "null": false,
+                    "def": "varchar(5) NOT NULL DEFAULT 'en'"
                 },
                 {
                     "name": "role",
@@ -2291,6 +2823,67 @@
                 "users_ibfk_1": "CONSTRAINT `users_ibfk_1` FOREIGN KEY (`city_id`) REFERENCES `cities` (`id`)",
                 "users_ibfk_2": "CONSTRAINT `users_ibfk_2` FOREIGN KEY (`stage_id`) REFERENCES `stages` (`id`) ON DELETE SET NULL"
             },
+            "checks": []
+        },
+        "ussd_sessions": {
+            "engine": "InnoDB",
+            "charset": "utf8mb4",
+            "collation": "utf8mb4_unicode_ci",
+            "columns": [
+                {
+                    "name": "session_id",
+                    "type": "varchar(100)",
+                    "null": false,
+                    "def": "varchar(100) NOT NULL"
+                },
+                {
+                    "name": "phone",
+                    "type": "varchar(20)",
+                    "null": false,
+                    "def": "varchar(20) NOT NULL"
+                },
+                {
+                    "name": "rider_id",
+                    "type": "int(11)",
+                    "null": true,
+                    "def": "int(11) DEFAULT NULL"
+                },
+                {
+                    "name": "payment_id",
+                    "type": "int(11)",
+                    "null": true,
+                    "def": "int(11) DEFAULT NULL"
+                },
+                {
+                    "name": "steps",
+                    "type": "smallint(5) unsigned",
+                    "null": false,
+                    "def": "smallint(5) unsigned NOT NULL DEFAULT 0"
+                },
+                {
+                    "name": "last_input",
+                    "type": "varchar(200)",
+                    "null": true,
+                    "def": "varchar(200) DEFAULT NULL"
+                },
+                {
+                    "name": "created_at",
+                    "type": "datetime",
+                    "null": false,
+                    "def": "datetime NOT NULL DEFAULT current_timestamp()"
+                },
+                {
+                    "name": "updated_at",
+                    "type": "datetime",
+                    "null": false,
+                    "def": "datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()"
+                }
+            ],
+            "indexes": {
+                "PRIMARY": "PRIMARY KEY (`session_id`)",
+                "idx_ussd_sessions_phone": "KEY `idx_ussd_sessions_phone` (`phone`,`created_at`)"
+            },
+            "foreign_keys": [],
             "checks": []
         }
     }

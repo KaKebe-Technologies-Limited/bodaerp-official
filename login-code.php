@@ -1,5 +1,5 @@
 <?php
-// Second step of two-step sign-in: the 6-digit code emailed by attempt_login().
+// Second step of two-step sign-in: the 6-digit code sent by SMS or email in attempt_login().
 require_once __DIR__ . '/packages/backend/site.php';
 
 if (is_logged_in()) redirect(dashboard_url_for($_SESSION['role']));
@@ -11,16 +11,12 @@ $resent = false;
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     csrf_verify();
     if (isset($_POST['resend'])) {
-        $user = fetchOne("SELECT id, name, email FROM users WHERE id = ? AND status = 'active'", [$pending['user_id']]);
+        $user = fetchOne("SELECT * FROM users WHERE id = ? AND status = 'active'", [$pending['user_id']]);
         if ($user && rate_limit('2fa-resend:' . $user['id'], 3, 900)) {
-            $code = (string) random_int(100000, 999999);
-            $_SESSION['pending_2fa']['code_hash'] = password_hash($code, PASSWORD_DEFAULT);
-            $_SESSION['pending_2fa']['expires'] = time() + 600;
-            $_SESSION['pending_2fa']['tries'] = 0;
-            send_template_email('two_factor_code', $user['email'], ['name' => $user['name'], 'code' => $code]);
-            $resent = true;
+            $resent = two_factor_send_code($user);
+            if (!$resent) $error = 'The code could not be sent. Try again in a few minutes.';
         } else {
-            $error = 'A new code was sent recently. Check your email, or wait 15 minutes.';
+            $error = 'A new code was sent recently. Check your messages, or wait 15 minutes.';
         }
     } else {
         $remember = !empty($pending['remember']);
@@ -34,13 +30,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = $r['error'];
     }
 }
-$email = (string) fetchValue("SELECT email FROM users WHERE id = ?", [$pending['user_id']]);
-$masked = preg_replace('/(?<=.).(?=[^@]*@)/', '•', $email);
+$pending = $_SESSION['pending_2fa'] ?? $pending;
+$bySms = ($pending['channel'] ?? '') === 'sms';
+$hint = (string) ($pending['hint'] ?? '');
 $seo = ['title' => 'Enter your sign-in code | ' . get_setting('site_name', 'BodaERP'), 'noindex' => true];
 require __DIR__ . '/packages/frontend/partials/auth-start.php';
 ?>
-            <h1>Check your email</h1>
-            <p class="sub">We sent a 6-digit sign-in code to <strong><?= h($masked) ?></strong>. It works for 10 minutes.</p>
+            <h1><?= $bySms ? 'Check your phone' : 'Check your email' ?></h1>
+            <?php if (($pending['channel'] ?? '') === 'none'): ?>
+                <p class="sub">We could not send your sign-in code just now. Press "Send a new code" in a minute, or ask your administrator if it keeps failing.</p>
+            <?php elseif ($bySms): ?>
+                <p class="sub">We texted a 6-digit sign-in code to your number ending <strong><?= h($hint) ?></strong>. It works for 10 minutes.</p>
+            <?php else: ?>
+                <p class="sub">We emailed a 6-digit sign-in code to <strong><?= h($hint) ?></strong>. It works for 10 minutes.</p>
+            <?php endif; ?>
             <?php if ($resent): ?><div class="notice notice-success" role="status">A new code is on its way.</div><?php endif; ?>
             <?php if ($error): ?><div class="notice notice-error" role="alert"><?= h($error) ?></div><?php endif; ?>
             <form method="post" data-loading="Checking">

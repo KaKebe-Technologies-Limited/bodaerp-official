@@ -1,16 +1,13 @@
--- ============================================================
--- BodaERP — Full Database (Drop + Recreate + Views)
--- Import this in phpMyAdmin → select DB → Import tab
--- ⚠️  Drops all existing tables first — fresh install only
--- ============================================================
+-- BodaERP base schema (tables and views). The baseline migration runs this once, on an empty database only.
+-- It drops existing tables first, so never import it into a database that holds data.
 
 SET FOREIGN_KEY_CHECKS = 0;
 
--- ── Drop views first ────────────────────────────────────────
+-- Drop views first
 DROP VIEW IF EXISTS v_city_stats;
 DROP VIEW IF EXISTS v_stage_stats;
 
--- ── Drop tables (reverse FK order) ──────────────────────────
+-- Drop tables (reverse FK order)
 DROP TABLE IF EXISTS login_sessions;
 DROP TABLE IF EXISTS audit_logs;
 DROP TABLE IF EXISTS notifications;
@@ -23,7 +20,7 @@ DROP TABLE IF EXISTS platform_settings;
 DROP TABLE IF EXISTS cities;
 
 
--- ── anomaly detection ───────────────────────────────────────
+-- anomaly detection
 CREATE TABLE IF NOT EXISTS `anomaly_flags` (
   `id`                BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   `fingerprint`       VARCHAR(100) NOT NULL,
@@ -67,11 +64,9 @@ CREATE TABLE IF NOT EXISTS `anomaly_scan_runs` (
 
 SET FOREIGN_KEY_CHECKS = 1;
 
--- ============================================================
 -- TABLES
--- ============================================================
 
--- ── cities (tenants) ────────────────────────────────────────
+-- cities (tenants)
 CREATE TABLE cities (
   id                        CHAR(3)          PRIMARY KEY,
   name                      VARCHAR(120)     NOT NULL,
@@ -100,7 +95,7 @@ CREATE TABLE cities (
   CONSTRAINT chk_revenue_split CHECK (revenue_split_city + revenue_split_association + revenue_split_platform + revenue_split_government = 100)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- ── stages ──────────────────────────────────────────────────
+-- stages
 CREATE TABLE stages (
   id                INT AUTO_INCREMENT PRIMARY KEY,
   city_id           CHAR(3)      NOT NULL,
@@ -117,7 +112,7 @@ CREATE TABLE stages (
   INDEX idx_stage_city (city_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- ── users ───────────────────────────────────────────────────
+-- users
 CREATE TABLE users (
   id             INT AUTO_INCREMENT PRIMARY KEY,
   name           VARCHAR(150) NOT NULL,
@@ -143,7 +138,7 @@ ALTER TABLE cities
   ADD CONSTRAINT fk_cities_created_by
   FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL;
 
--- ── riders ──────────────────────────────────────────────────
+-- riders
 CREATE TABLE riders (
   id                   INT AUTO_INCREMENT PRIMARY KEY,
   user_id              INT NULL,
@@ -181,7 +176,7 @@ CREATE TABLE riders (
   INDEX idx_riders_expiry (expiry_date)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- ── payments ────────────────────────────────────────────────
+-- payments
 CREATE TABLE payments (
   id              INT AUTO_INCREMENT PRIMARY KEY,
   rider_id        INT           NOT NULL,
@@ -202,7 +197,7 @@ CREATE TABLE payments (
   INDEX idx_payments_paidat (paid_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- ── enforcement_actions ─────────────────────────────────────
+-- enforcement_actions
 CREATE TABLE enforcement_actions (
   id              INT AUTO_INCREMENT PRIMARY KEY,
   action_code     VARCHAR(20)   NOT NULL UNIQUE,
@@ -226,7 +221,7 @@ CREATE TABLE enforcement_actions (
   INDEX idx_enforcement_status (status)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- ── notifications ───────────────────────────────────────────
+-- notifications
 CREATE TABLE notifications (
   id          INT AUTO_INCREMENT PRIMARY KEY,
   rider_id    INT NOT NULL,
@@ -238,7 +233,7 @@ CREATE TABLE notifications (
   INDEX idx_notifications_rider (rider_id, is_read)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- ── audit_logs ──────────────────────────────────────────────
+-- audit_logs
 CREATE TABLE audit_logs (
   id                 BIGINT AUTO_INCREMENT PRIMARY KEY,
   user_id            INT NULL,
@@ -257,7 +252,7 @@ CREATE TABLE audit_logs (
   INDEX idx_audit_action (action)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- ── login_sessions ──────────────────────────────────────────
+-- login_sessions
 CREATE TABLE login_sessions (
   id             VARCHAR(64) PRIMARY KEY,
   user_id        INT         NOT NULL,
@@ -271,7 +266,7 @@ CREATE TABLE login_sessions (
   INDEX idx_sessions_user (user_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- ── platform_settings ───────────────────────────────────────
+-- platform_settings
 CREATE TABLE platform_settings (
   id                       TINYINT UNSIGNED PRIMARY KEY DEFAULT 1,
   platform_name            VARCHAR(100) NOT NULL DEFAULT 'BodaERP',
@@ -292,9 +287,7 @@ CREATE TABLE platform_settings (
 INSERT INTO platform_settings (id, support_email, support_phone)
 VALUES (1, 'support@kakebe.tech', '+256 700 000 000');
 
--- ============================================================
--- VIEWS (CREATE OR REPLACE — works on shared hosting)
--- ============================================================
+-- VIEWS (CREATE OR REPLACE: works on shared hosting)
 
 CREATE OR REPLACE VIEW v_stage_stats AS
 SELECT

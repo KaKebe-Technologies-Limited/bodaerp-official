@@ -1,6 +1,5 @@
 /* BodaERP portal styles. Colours follow the logo: navy #001740, blue #056CFE, red #E2262F. */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 
 :root {
     /* Logo palette. --brand / --accent / --brand-dark are set from Super Admin → Site Text & Branding (head-assets.php). */
@@ -50,7 +49,7 @@
 
     --bs-primary: #056CFE;
     --bs-primary-rgb: 5, 108, 254;
-    --bs-link-color: #056CFE;
+    --bs-link-color: var(--brand-ink, #0459d4);
     --bs-link-hover-color: #0450c0;
 }
 
@@ -289,9 +288,8 @@ h1, h2, h3, h4, h5, h6 {
 .table thead th {
     font-weight: 700;
     color: var(--text-muted);
-    text-transform: uppercase;
-    font-size: 0.66rem;
-    letter-spacing: 0.6px;
+    font-size: 0.8rem;
+    font-weight: 600;
     border-bottom: none;
     padding: 12px 16px;
     background: var(--off-white);
@@ -359,7 +357,6 @@ h1, h2, h3, h4, h5, h6 {
     .card-body { padding: 14px 12px; }
     .btn-sm { padding: 5px 10px; font-size: 0.75rem; }
 
-    /* Stack flex rows vertically */
     .d-flex.flex-wrap { gap: 8px !important; }
 
     .welcome-banner-council { padding: 14px 16px !important; }
@@ -386,7 +383,7 @@ body { background: var(--canvas); }
 .text-primary { color: var(--primary-blue) !important; }
 .bg-primary { background: var(--primary-blue-solid) !important; color: #fff !important; }
 .border-primary { border-color: var(--primary-blue) !important; }
-a { color: var(--primary-blue); }
+a { color: var(--brand-ink, #0459d4); }
 a:hover { color: var(--primary-blue-dark); }
 .form-check-input:checked { background-color: var(--primary-blue); border-color: var(--primary-blue); }
 .form-check-input:focus { box-shadow: 0 0 0 4px rgba(5, 108, 254,0.15); border-color: var(--primary-blue); }
@@ -427,5 +424,16 @@ a:hover { color: var(--primary-blue-dark); }
 .btn-light { background: #fff; border: 1px solid var(--light-gray); }
 .btn-outline-success, .btn-outline-warning, .btn-outline-info { border-width: 1.5px; }
 
-::-webkit-scrollbar-thumb { background: #cfc9f3; }
+::-webkit-scrollbar-thumb { background: #c5cbd6; }
 ::-webkit-scrollbar-track { background: transparent; }
+
+/* Text colours that meet WCAG AA (4.5:1) on white and on the light grey page background.
+   Bootstrap's warning/info/success shades are for fills, not for text. */
+.text-warning { color: #8a5a00 !important; }
+.text-success { color: #146c43 !important; }
+.text-info { color: #0e7490 !important; }
+.btn-outline-warning { --bs-btn-color: #8a5a00; --bs-btn-border-color: #d4a106; --bs-btn-hover-color: #1f1300; --bs-btn-hover-bg: #ffc107; --bs-btn-hover-border-color: #ffc107; --bs-btn-active-color: #1f1300; --bs-btn-active-bg: #ffc107; }
+.btn-outline-success { --bs-btn-color: #146c43; --bs-btn-border-color: #198754; }
+.btn-outline-info { --bs-btn-color: #0e7490; --bs-btn-border-color: #0e7490; --bs-btn-hover-bg: #0e7490; --bs-btn-hover-color: #fff; }
+.badge.bg-warning, .badge.text-bg-warning, .badge.bg-info, .badge.text-bg-info, .badge.bg-light { color: #1f2937 !important; }
+.badge.bg-light.text-warning { color: #8a5a00 !important; }

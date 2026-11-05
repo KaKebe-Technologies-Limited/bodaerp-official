@@ -1,5 +1,6 @@
 <?php
-// My Account (every role): password, email notifications, two-step sign-in, email confirmation,
+// My Account (every role): password, notifications (email, SMS, portal), optional two-step sign-in by SMS or
+// email (no authenticator app, by decision), mobile number confirmation, language for riders, email confirmation,
 // signed-in devices. Riders also download their data and send correction / deletion requests here.
 require_once __DIR__ . '/../../../backend/admin_ui.php';
 require_once __DIR__ . '/../../../backend/accounts.php';
@@ -32,17 +33,46 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             flash('success', 'Password changed. Other devices signed in to your account have been signed out.');
         }
     } elseif ($action === 'notifications') {
-        runQuery("UPDATE users SET notify_email = ?, notify_in_app = ? WHERE id = ?", [!empty($_POST['notify_email']) ? 1 : 0, !empty($_POST['notify_in_app']) ? 1 : 0, $uid]);
+        $language = language_or_default((string) ($_POST['language'] ?? $user['language']));
+        runQuery("UPDATE users SET notify_email = ?, notify_in_app = ?, notify_sms = ?, language = ? WHERE id = ?",
+            [!empty($_POST['notify_email']) ? 1 : 0, !empty($_POST['notify_in_app']) ? 1 : 0, !empty($_POST['notify_sms']) ? 1 : 0, $language, $uid]);
+        if ($riderId) runQuery("UPDATE riders SET language = ? WHERE id = ?", [$language, $riderId]);
         audit_log('UPDATE', 'user', (string) $uid, 'Notification preferences changed');
         flash('success', 'Notification preferences saved.');
+    } elseif ($action === 'phone_send') {
+        $phone = sms_normalize_phone((string) ($_POST['phone'] ?? ''));
+        if (!$phone) flash('error', 'Enter an MTN or Airtel number, for example 0772 123456.');
+        elseif (!sms_ready()) flash('error', 'Text messages are not set up on this site yet. Ask your administrator.');
+        elseif (!rate_limit('phone-code:' . $uid, 3, 900)) flash('error', 'A code was sent recently. Wait 15 minutes before asking for another.');
+        else {
+            $code = (string) random_int(100000, 999999);
+            $_SESSION['phone_confirm'] = ['phone' => $phone, 'hash' => password_hash($code, PASSWORD_DEFAULT), 'expires' => time() + 600, 'tries' => 0];
+            $ok = send_template_sms('two_factor_code', $phone, ['code' => $code]);
+            flash($ok ? 'success' : 'error', $ok ? 'We texted a 6-digit code to the number ending ' . sms_phone_hint($phone) . '. Enter it below.' : 'The text message could not be sent. Check the number and try again.');
+            if (!$ok) unset($_SESSION['phone_confirm']);
+        }
+    } elseif ($action === 'phone_confirm') {
+        $p = $_SESSION['phone_confirm'] ?? null;
+        $code = preg_replace('/\D/', '', (string) ($_POST['code'] ?? ''));
+        if (!$p || $p['expires'] < time() || $p['tries'] >= 5) { unset($_SESSION['phone_confirm']); flash('error', 'That code expired. Ask for a new one.'); }
+        elseif (!password_verify($code, $p['hash'])) { $_SESSION['phone_confirm']['tries']++; flash('error', 'That code is not right. Check the latest text message.'); }
+        else {
+            unset($_SESSION['phone_confirm']);
+            runQuery("UPDATE users SET phone = ?, phone_verified_at = NOW() WHERE id = ?", ['0' . substr($p['phone'], 3), $uid]);
+            audit_log('UPDATE', 'user', (string) $uid, 'Confirmed mobile number ending ' . sms_phone_hint($p['phone']));
+            flash('success', 'Mobile number confirmed. You can now get sign-in codes by SMS.');
+        }
     } elseif ($action === 'two_factor') {
         $on = !empty($_POST['enable']);
-        if ($on && mail_transport_name() !== 'smtp') flash('error', 'Two-step sign-in needs the site\'s email to be set up. Ask your administrator.');
-        elseif ($on && !$user['email_verified_at']) flash('error', 'Confirm your email address first, so the sign-in codes reach you.');
+        $channel = ($_POST['channel'] ?? $user['two_factor_channel']) === 'sms' ? 'sms' : 'email';
+        $smsOk = sms_ready() && $user['phone_verified_at'] && sms_normalize_phone($user['phone']);
+        if ($on && $channel === 'sms' && !$smsOk) flash('error', 'Confirm your mobile number first, so the codes reach your phone.');
+        elseif ($on && $channel === 'email' && mail_transport_name() !== 'smtp') flash('error', 'Codes by email need the site\'s email to be set up. Choose SMS, or ask your administrator.');
+        elseif ($on && $channel === 'email' && !$user['email_verified_at']) flash('error', 'Confirm your email address first, so the sign-in codes reach you.');
         else {
-            runQuery("UPDATE users SET two_factor_enabled = ? WHERE id = ?", [$on ? 1 : 0, $uid]);
-            audit_log('UPDATE', 'user', (string) $uid, 'Two-step sign-in ' . ($on ? 'turned on' : 'turned off'));
-            flash('success', $on ? 'Two-step sign-in is on. Next time you sign in we will email you a code.' : 'Two-step sign-in is off.');
+            runQuery("UPDATE users SET two_factor_enabled = ?, two_factor_channel = ? WHERE id = ?", [$on ? 1 : 0, $channel, $uid]);
+            audit_log('UPDATE', 'user', (string) $uid, 'Two-step sign-in ' . ($on ? "turned on ($channel)" : 'turned off'));
+            flash('success', $on ? 'Two-step sign-in is on. Next time you sign in we will ' . ($channel === 'sms' ? 'text' : 'email') . ' you a code.' : 'Two-step sign-in is off.');
         }
     } elseif ($action === 'verify_email') {
         if (!rate_limit('verify-mail:' . $uid, 3, 3600)) flash('error', 'A confirmation email was sent recently. Check your inbox and spam folder.');
@@ -92,10 +122,16 @@ $sessions = fetchAll("SELECT id, ip_address, user_agent, last_activity, created_
 $requests = $riderId ? fetchAll("SELECT type, status, response, created_at FROM data_requests WHERE user_id = ? ORDER BY id DESC LIMIT 5", [$uid]) : [];
 $minLen = max(8, setting_int('security_password_min_length', 8));
 $smtp = mail_transport_name() === 'smtp';
+$smsOn = sms_ready();
+$phoneConfirmed = $user['phone_verified_at'] && sms_normalize_phone($user['phone']);
+$confirmingPhone = !empty($_SESSION['phone_confirm']) && $_SESSION['phone_confirm']['expires'] > time();
+$languages = languages_enabled();
+$platformRequires = in_array($me['role'], ['super_admin', 'city_admin', 'government'], true)
+    && (int) fetchValue("SELECT require_2fa FROM platform_settings WHERE id = 1") === 1;
 
-portal_start($sidebar, 'my-account', 'My Account', [
+portal_start($sidebar, 'my-account', 'My account', [
     'subtitle' => 'Password, notifications and security for ' . $user['email'],
-    'breadcrumbs' => [role_label($me['role']) => dashboard_url_for($me['role']), 'My Account' => null],
+    'breadcrumbs' => [role_label($me['role']) => dashboard_url_for($me['role']), 'My account' => null],
 ]);
 ?>
 <div class="row g-3">
@@ -122,13 +158,42 @@ portal_start($sidebar, 'my-account', 'My Account', [
             <p class="small text-muted mt-2 mb-0">To change your email address, ask <?= $me['role'] === 'rider' ? 'your stage chairperson' : 'the BodaERP administrator' ?>.</p>
         </div></div>
 
-        <div class="card"><div class="card-body">
+        <div class="card mb-3"><div class="card-body">
+            <h2 class="h6 fw-bold mb-3"><i class="fas fa-mobile-screen me-2 text-primary" aria-hidden="true"></i>Mobile number</h2>
+            <?php if ($phoneConfirmed): ?>
+                <p class="mb-2">Number ending <?= h(sms_phone_hint($user['phone'])) ?> <span class="badge bg-success ms-1">Confirmed</span></p>
+            <?php elseif ($user['phone']): ?>
+                <p class="mb-2"><?= h($user['phone']) ?> <span class="badge bg-warning text-dark ms-1">Not confirmed</span></p>
+            <?php endif; ?>
+            <?php if (!$smsOn): ?>
+                <p class="small text-muted mb-0">Text messages are not set up on this site yet, so the number cannot be confirmed.</p>
+            <?php elseif ($confirmingPhone): ?>
+                <form method="post" class="d-flex gap-2 align-items-end flex-wrap"><?= csrf_field() ?><input type="hidden" name="action" value="phone_confirm">
+                    <div><label class="form-label small fw-semibold" for="pcode">Code from the text message</label><input class="form-control" id="pcode" name="code" inputmode="numeric" autocomplete="one-time-code" pattern="\d{6}" maxlength="6" required></div>
+                    <button class="btn btn-primary" data-busy-label="Checking">Confirm number</button>
+                </form>
+            <?php else: ?>
+                <form method="post" class="d-flex gap-2 align-items-end flex-wrap"><?= csrf_field() ?><input type="hidden" name="action" value="phone_send">
+                    <div class="flex-grow-1"><label class="form-label small fw-semibold" for="pphone"><?= $phoneConfirmed ? 'Use a different number' : 'MTN or Airtel number' ?></label><input class="form-control" id="pphone" name="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="0772 123456" value="<?= $phoneConfirmed ? '' : h($user['phone']) ?>" required></div>
+                    <button class="btn btn-outline-primary" data-busy-label="Sending">Text me a code</button>
+                </form>
+            <?php endif; ?>
+        </div></div>
+
+        <div class="card" id="notifications"><div class="card-body">
             <h2 class="h6 fw-bold mb-3"><i class="fas fa-bell me-2 text-primary" aria-hidden="true"></i>Notifications</h2>
             <form method="post">
                 <?= csrf_field() ?><input type="hidden" name="action" value="notifications">
                 <div class="form-check form-switch mb-2"><input class="form-check-input" type="checkbox" role="switch" id="ne" name="notify_email" value="1"<?= (int) $user['notify_email'] ? ' checked' : '' ?>><label class="form-check-label" for="ne">Email me receipts, renewal reminders and account notices</label></div>
+                <?php if ($me['role'] === 'rider' || $me['role'] === 'chairperson'): ?>
+                <div class="form-check form-switch mb-2"><input class="form-check-input" type="checkbox" role="switch" id="ns" name="notify_sms" value="1"<?= (int) $user['notify_sms'] ? ' checked' : '' ?>><label class="form-check-label" for="ns">Text me receipts and renewal reminders</label></div>
+                <?php else: ?><input type="hidden" name="notify_sms" value="<?= (int) $user['notify_sms'] ?>"><?php endif; ?>
                 <div class="form-check form-switch mb-3"><input class="form-check-input" type="checkbox" role="switch" id="ni" name="notify_in_app" value="1"<?= (int) $user['notify_in_app'] ? ' checked' : '' ?>><label class="form-check-label" for="ni">Show notifications in my portal</label></div>
-                <p class="small text-muted">Security emails (password changes, sign-in codes) are always sent.</p>
+                <?php if ($riderId && count($languages) > 1): ?>
+                <div class="mb-3"><label class="form-label small fw-semibold" for="lang">Language for my portal and text messages</label>
+                    <select class="form-select" id="lang" name="language"><?php foreach ($languages as $code => $label): ?><option value="<?= h($code) ?>"<?= $user['language'] === $code ? ' selected' : '' ?>><?= h($label) ?></option><?php endforeach; ?></select></div>
+                <?php endif; ?>
+                <p class="small text-muted">Security messages (password changes, sign-in codes) are always sent.</p>
                 <button class="btn btn-outline-primary btn-sm">Save preferences</button>
             </form>
         </div></div>
@@ -137,15 +202,23 @@ portal_start($sidebar, 'my-account', 'My Account', [
     <div class="col-lg-6">
         <?php if (setting_bool('feature_two_factor', true)): ?>
         <div class="card mb-3"><div class="card-body">
-            <h2 class="h6 fw-bold mb-2"><i class="fas fa-shield-halved me-2 text-primary" aria-hidden="true"></i>Two-step sign-in</h2>
-            <p class="small text-muted">After your password, we email you a 6-digit code. Someone who learns your password still cannot sign in without your email.</p>
-            <?php if (!$smtp): ?><div class="alert alert-light border small mb-2" data-keep>Not available yet: the site's email is not set up.</div><?php endif; ?>
+            <h2 class="h6 fw-bold mb-2"><i class="fas fa-shield-halved me-2 text-primary" aria-hidden="true"></i>Two-step sign-in (optional)</h2>
+            <p class="small text-muted">After your password, we send a 6-digit code by text message or email. Someone who learns your password still cannot sign in without your phone or inbox.</p>
+            <?php if ($platformRequires): ?><p class="small mb-2"><span class="badge bg-info text-dark">Required for your role</span> Your administrator has made codes compulsory for staff accounts. You can still choose where they go.</p><?php endif; ?>
+            <?php if (!$smtp && !$smsOn): ?><div class="alert alert-light border small mb-2" data-keep>Not available yet: neither email nor text messages are set up on this site.</div><?php endif; ?>
             <form method="post"><?= csrf_field() ?><input type="hidden" name="action" value="two_factor">
-                <?php if ((int) $user['two_factor_enabled']): ?>
-                    <p class="mb-2"><span class="badge bg-success">On</span></p>
-                    <button class="btn btn-outline-danger btn-sm" name="enable" value="0">Turn off</button>
+                <fieldset class="mb-3"><legend class="form-label small fw-semibold">Send my codes by</legend>
+                    <div class="form-check"><input class="form-check-input" type="radio" name="channel" id="ch-sms" value="sms"<?= $user['two_factor_channel'] === 'sms' ? ' checked' : '' ?><?= $smsOn && $phoneConfirmed ? '' : ' disabled' ?>><label class="form-check-label" for="ch-sms">Text message<?= $phoneConfirmed ? ' to the number ending ' . h(sms_phone_hint($user['phone'])) : ' (confirm your mobile number first)' ?></label></div>
+                    <div class="form-check"><input class="form-check-input" type="radio" name="channel" id="ch-email" value="email"<?= $user['two_factor_channel'] !== 'sms' ? ' checked' : '' ?><?= $smtp ? '' : ' disabled' ?>><label class="form-check-label" for="ch-email">Email to <?= h($user['email']) ?></label></div>
+                </fieldset>
+                <?php if ((int) $user['two_factor_enabled'] || $platformRequires): ?>
+                    <p class="mb-2"><span class="badge bg-success">On</span><?= $platformRequires && !(int) $user['two_factor_enabled'] ? ' <span class="small text-muted">because your role requires it</span>' : '' ?></p>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <button class="btn btn-primary btn-sm" name="enable" value="1">Save choice</button>
+                        <?php if (!$platformRequires): ?><button class="btn btn-outline-danger btn-sm" name="enable" value="0">Turn off</button><?php endif; ?>
+                    </div>
                 <?php else: ?>
-                    <button class="btn btn-primary btn-sm" name="enable" value="1"<?= $smtp ? '' : ' disabled' ?>>Turn on two-step sign-in</button>
+                    <button class="btn btn-primary btn-sm" name="enable" value="1"<?= $smtp || ($smsOn && $phoneConfirmed) ? '' : ' disabled' ?>>Turn on two-step sign-in</button>
                 <?php endif; ?>
             </form>
         </div></div>

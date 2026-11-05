@@ -33,11 +33,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         [$riderId,$rider['stage_id'],$rider['bike_plate'],$type,$amount,$desc,$status,$editId,$cityId]);
                     audit_log('UPDATE', 'enforcement_action', (string) $editId, 'Enforcement action updated');
                 } else {
-                    $count = (int) fetchValue("SELECT COUNT(*) FROM enforcement_actions") + 1;
-                    $code = 'ENF-' . date('Y') . '-' . str_pad((string) $count, 3, '0', STR_PAD_LEFT);
+                    // The code comes from the new row's id: a count would repeat a code after a deletion or when two admins save at once.
                     runQuery("INSERT INTO enforcement_actions (action_code,rider_id,city_id,stage_id,plate,type,amount,description,action_date,status,officer_user_id)
                         VALUES (?,?,?,?,?,?,?,?,CURDATE(),?,?)",
-                        [$code,$riderId,$cityId,$rider['stage_id'],$rider['bike_plate'],$type,$amount,$desc,$status,$_SESSION['user_id']]);
+                        ['TMP-' . bin2hex(random_bytes(6)),$riderId,$cityId,$rider['stage_id'],$rider['bike_plate'],$type,$amount,$desc,$status,$_SESSION['user_id']]);
+                    $actionId = (int) db()->insert_id;
+                    $code = nextActionCode($actionId);
+                    runQuery("UPDATE enforcement_actions SET action_code = ? WHERE id = ?", [$code, $actionId]);
                     audit_log('CREATE', 'enforcement_action', $code, 'Enforcement action created');
                 }
                 redirect('/pages/citycouncil/enforcement-actions.php');
@@ -75,7 +77,7 @@ $actionsById = array_column($actions, null, 'id');
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <?php $pageTitle = 'Enforcement Actions | BodaERP'; require __DIR__ . '/../../partials/head-assets.php'; ?>
+    <?php $pageTitle = 'Enforcement actions | ' . get_setting('site_name', 'BodaERP'); require __DIR__ . '/../../partials/head-assets.php'; ?>
     <style>
     </style>
 </head>
@@ -94,7 +96,7 @@ $actionsById = array_column($actions, null, 'id');
     <div class="content-area">
         <?php if ($errors): ?><div class="alert alert-danger"><?php foreach ($errors as $e) echo h($e); ?></div><?php endif; ?>
         <div class="row g-3 mb-4">
-            <div class="col-md-3 col-6"><div class="stat-hero-card tone-red"><div class="stat-hero-icon"><i class="fas fa-gavel"></i></div><div><div class="stat-hero-value"><?= $total ?></div><div class="stat-hero-label">Total Actions</div></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card tone-red"><div class="stat-hero-icon"><i class="fas fa-gavel"></i></div><div><div class="stat-hero-value"><?= $total ?></div><div class="stat-hero-label">Total actions</div></div></div></div>
             <div class="col-md-3 col-6"><div class="stat-hero-card tone-gold"><div class="stat-hero-icon"><i class="fas fa-clock"></i></div><div><div class="stat-hero-value"><?= $pending ?></div><div class="stat-hero-label">Pending</div></div></div></div>
             <div class="col-md-3 col-6"><div class="stat-hero-card tone-green"><div class="stat-hero-icon"><i class="fas fa-check-circle"></i></div><div><div class="stat-hero-value"><?= $resolved ?></div><div class="stat-hero-label">Resolved</div></div></div></div>
             <div class="col-md-3 col-6"><div class="stat-hero-card tone-blue"><div class="stat-hero-icon"><i class="fas fa-archive"></i></div><div><div class="stat-hero-value"><?= $closed ?></div><div class="stat-hero-label">Closed</div></div></div></div>
@@ -102,7 +104,7 @@ $actionsById = array_column($actions, null, 'id');
 
         <?php if ($actions): ?>
         <div class="row g-4 mb-4">
-            <div class="col-md-6"><div class="card"><div class="card-body"><h6 class="fw-bold mb-3">By Action Type</h6><div id="actionTypeChart"></div></div></div></div>
+            <div class="col-md-6"><div class="card"><div class="card-body"><h6 class="fw-bold mb-3">By action type</h6><div id="actionTypeChart"></div></div></div></div>
             <div class="col-md-6"><div class="card"><div class="card-body"><h6 class="fw-bold mb-3">By Stage</h6><div id="actionStageChart"></div></div></div></div>
         </div>
         <?php endif; ?>
@@ -111,19 +113,19 @@ $actionsById = array_column($actions, null, 'id');
             <div class="card-body">
                 <form class="row g-2 align-items-center">
                     <div class="col-md-3">
-                        <select class="form-select" name="type" data-autosubmit>
+                        <select aria-label="Filter by type" class="form-select" name="type" data-autosubmit>
                             <option value="">All Types</option>
                             <?php foreach (['warning','fine','suspension','impound'] as $t): ?><option value="<?= $t ?>" <?= $typeFilter===$t?'selected':'' ?>><?= ucfirst($t) ?></option><?php endforeach; ?>
                         </select>
                     </div>
                     <div class="col-md-3">
-                        <select class="form-select" name="status" data-autosubmit>
+                        <select aria-label="Filter by status" class="form-select" name="status" data-autosubmit>
                             <option value="">All Status</option>
                             <?php foreach (['pending','resolved','closed'] as $s): ?><option value="<?= $s ?>" <?= $statusFilter===$s?'selected':'' ?>><?= ucfirst($s) ?></option><?php endforeach; ?>
                         </select>
                     </div>
                     <div class="col-md-3">
-                        <select class="form-select" name="stage" data-autosubmit>
+                        <select aria-label="Filter by stage" class="form-select" name="stage" data-autosubmit>
                             <option value="">All Stages</option>
                             <?php foreach ($stagesList as $s): ?><option value="<?= (int)$s['id'] ?>" <?= $stageFilter===(int)$s['id']?'selected':'' ?>><?= h($s['name']) ?></option><?php endforeach; ?>
                         </select>
@@ -156,10 +158,10 @@ $actionsById = array_column($actions, null, 'id');
                                 <td><?= formatDate($a['action_date']) ?></td>
                                 <td><span class="badge <?= $statusBadge ?>"><?= ucfirst($a['status']) ?></span></td>
                                 <td class="no-export">
-                                    <button class="btn btn-sm btn-outline-warning" data-call="openEdit" data-call-args="<?= h(js_json([(int) $a['id']])) ?>"><i class="fas fa-edit"></i></button>
+                                    <button class="btn btn-sm btn-outline-warning" data-call="openEdit" data-call-args="<?= h(js_json([(int) $a['id']])) ?>" aria-label="Edit action <?= h($a['action_code']) ?>" title="Edit"><i class="fas fa-edit" aria-hidden="true"></i></button>
                                     <form method="post" class="d-inline" data-confirm="Delete this action?">
                                         <?= csrf_field() ?><input type="hidden" name="action" value="delete"><input type="hidden" name="id" value="<?= (int) $a['id'] ?>">
-                                        <button type="submit" class="btn btn-sm btn-outline-danger"><i class="fas fa-trash"></i></button>
+                                        <button type="submit" class="btn btn-sm btn-outline-danger" aria-label="Delete action <?= h($a['action_code']) ?>" title="Delete"><i class="fas fa-trash" aria-hidden="true"></i></button>
                                     </form>
                                 </td>
                             </tr>
@@ -179,26 +181,26 @@ $actionsById = array_column($actions, null, 'id');
                 <?= csrf_field() ?>
                 <input type="hidden" name="edit_id" id="editId">
                 <div class="modal-header">
-                    <h5 class="modal-title fw-bold" id="actionModalTitle">New Enforcement Action</h5>
+                    <h5 class="modal-title fw-bold" id="actionModalTitle">New enforcement action</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body p-4">
-                    <div class="mb-3"><label class="form-label fw-semibold">Rider <span class="text-danger">*</span></label>
+                    <div class="mb-3"><label for="riderSelect" class="form-label fw-semibold">Rider <span class="text-danger">*</span></label>
                         <select class="form-select" name="rider_id" id="riderSelect" required>
                             <option value="">Select rider</option>
                             <?php foreach ($riders as $r): ?><option value="<?= (int)$r['id'] ?>"><?= h($r['full_name']) ?> (<?= h($r['bike_plate']) ?>)</option><?php endforeach; ?>
                         </select>
                     </div>
-                    <div class="mb-3"><label class="form-label fw-semibold">Action Type <span class="text-danger">*</span></label>
+                    <div class="mb-3"><label for="typeSelect" class="form-label fw-semibold">Action type <span class="text-danger">*</span></label>
                         <select class="form-select" name="type" id="typeSelect"><option value="warning">Warning</option><option value="fine">Fine</option><option value="suspension">Suspension</option><option value="impound">Impound</option></select>
                     </div>
-                    <div class="mb-3"><label class="form-label fw-semibold">Amount (UGX)</label><input type="number" class="form-control" name="amount" id="amountInput"></div>
-                    <div class="mb-3"><label class="form-label fw-semibold">Description <span class="text-danger">*</span></label><textarea class="form-control" name="description" id="descInput" rows="2" required></textarea></div>
-                    <div class="mb-3"><label class="form-label fw-semibold">Status</label><select class="form-select" name="status" id="statusSelect"><option value="pending">Pending</option><option value="resolved">Resolved</option><option value="closed">Closed</option></select></div>
+                    <div class="mb-3"><label for="amountInput" class="form-label fw-semibold">Amount (UGX)</label><input type="number" class="form-control" name="amount" id="amountInput"></div>
+                    <div class="mb-3"><label for="descInput" class="form-label fw-semibold">Description <span class="text-danger">*</span></label><textarea class="form-control" name="description" id="descInput" rows="2" required></textarea></div>
+                    <div class="mb-3"><label for="statusSelect" class="form-label fw-semibold">Status</label><select class="form-select" name="status" id="statusSelect"><option value="pending">Pending</option><option value="resolved">Resolved</option><option value="closed">Closed</option></select></div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-danger"><i class="fas fa-save me-1"></i>Save Action</button>
+                    <button type="submit" class="btn btn-danger"><i class="fas fa-save me-1"></i>Save action</button>
                 </div>
             </form>
         </div>
@@ -206,7 +208,7 @@ $actionsById = array_column($actions, null, 'id');
 </div>
 
 <?php require __DIR__ . '/../../partials/scripts-footer.php'; ?>
-<script>
+<script nonce="<?= csp_nonce() ?>">
     const actionsData = <?= js_json($actionsById) ?>;
 
     function openAdd() {
