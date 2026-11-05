@@ -25,7 +25,7 @@ OVERALL: 73% complete. 27% remaining until public launch
 | **Total** | **135 of 170** | **79% raw; 73% weighted by launch risk** |
 
 ### BLOCKING PUBLIC LAUNCH
-1. Owner review of round 2 (built and verified 2026-11-01, NOT committed): login, theme, portal shell, sidebars, government data fixes, home sections, AI-tell sweep. Commit only when the owner asks.
+1. Owner review of round 2 (built and verified 2026-11-01, committed 2026-11-05 in 03a0cb8 at the owner's request): login, theme, portal shell, sidebars, government data fixes, home sections, AI-tell sweep. Still needs the owner's visual sign-off.
 2. SMTP not configured on the live server: password reset, invites, receipts and 2FA need it (docs/DEPLOYMENT.md → Email).
 3. Mobile-money (ioTec) never tested end to end, even in test mode. `IOTEC_MODE=test` until then; IPN callback URL must point at this site.
 4. Rotate the secrets that are in git history (old config/database.php DB password, ioTec IPN secret).
@@ -71,7 +71,7 @@ What was built:
 9. [x] (2026-11-01; stat cards white with tinted icon, solid banners, stat numbers no longer 3.5rem, audit log paginated 50/page) Dashboards and admin pages: cleaner cards, consistent spacing scale, page headers via `portal_start()`.
 10. [x] (2026-11-01; smoke 123/123, flows 56/56, portability clean; Playwright: 11 public pages at 320/390/768, home 320-2560, every portal page of all 5 roles at 390/768/1440, no overflow, no console errors) Re-run: `docker compose exec app php tests/smoke.php`, `tests/flows.php`, `tests/check_portability.php`; Playwright check at 390/768/1440 on login, home, each dashboard.
 11. [x] (2026-11-01) Update this file's tracker and README.
-12. Owner asked for NO commits unless requested; nothing from this work is committed yet.
+12. [x] (2026-11-05) Committed on main as 03a0cb8 when the owner asked. Still: no commits unless requested.
 
 ---
 
