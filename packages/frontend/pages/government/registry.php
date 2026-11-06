@@ -54,10 +54,10 @@ $statusTone = ['active' => 'success', 'expired' => 'danger', 'pending' => 'warni
     <div class="content-area">
 
         <div class="row g-3 row-cols-2 row-cols-xl-4 mb-4">
-            <div class="col"><div class="stat-hero-card tone-blue"><div class="stat-hero-icon"><i class="fas fa-users" aria-hidden="true"></i></div><div><div class="stat-hero-value"><?= number_format($totalRidersAll) ?></div><div class="stat-hero-label">Registered riders</div></div></div></div>
-            <div class="col"><div class="stat-hero-card tone-green"><div class="stat-hero-icon"><i class="fas fa-user-check" aria-hidden="true"></i></div><div><div class="stat-hero-value"><?= number_format($activeRidersAll) ?></div><div class="stat-hero-label">Valid permit</div></div></div></div>
-            <div class="col"><div class="stat-hero-card tone-red"><div class="stat-hero-icon"><i class="fas fa-user-clock" aria-hidden="true"></i></div><div><div class="stat-hero-value"><?= number_format($expiredRidersAll) ?></div><div class="stat-hero-label">Expired permit</div></div></div></div>
-            <div class="col"><div class="stat-hero-card tone-dark"><div class="stat-hero-icon"><i class="fas fa-flag" aria-hidden="true"></i></div><div><div class="stat-hero-value"><?= number_format($flaggedRidersAll) ?></div><div class="stat-hero-label">With enforcement records</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-blue"><div><div class="stat-hero-value"><?= number_format($totalRidersAll) ?></div><div class="stat-hero-label">Registered riders</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-green"><div><div class="stat-hero-value"><?= number_format($activeRidersAll) ?></div><div class="stat-hero-label">Valid permit</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-red"><div><div class="stat-hero-value"><?= number_format($expiredRidersAll) ?></div><div class="stat-hero-label">Expired permit</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-dark"><div><div class="stat-hero-value"><?= number_format($flaggedRidersAll) ?></div><div class="stat-hero-label">With enforcement records</div></div></div></div>
         </div>
 
         <form class="filter-bar mb-3 no-print" method="get" role="search" aria-label="Search the registry">
@@ -80,7 +80,7 @@ $statusTone = ['active' => 'success', 'expired' => 'danger', 'pending' => 'warni
 
         <div class="card">
             <div class="card-body">
-                <p class="small text-muted mb-3"><i class="fas fa-lock me-1" aria-hidden="true"></i>Contact details, NIN and other personal data are held by the rider's city council and are not shown in the national registry.</p>
+                <p class="small text-muted mb-3">Contact details, NIN and other personal data are held by the rider's city council and are not shown in the national registry.</p>
                 <div class="table-responsive">
                     <table class="table table-hover align-middle" id="registryTable">
                         <thead><tr><th>Rider</th><th>Permit number</th><th>Plate</th><th>City / stage</th><th>Status</th><th>Expiry</th><th class="no-export"><span class="visually-hidden">Details</span></th></tr></thead>

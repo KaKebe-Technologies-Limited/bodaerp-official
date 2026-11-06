@@ -36,13 +36,13 @@ $upcomingRevenue = array_sum(array_column($riders, 'annual_tax'));
 
     <div class="content-area">
         <div class="row g-3 row-cols-1 row-cols-md-3 mb-4">
-            <div class="col"><div class="stat-hero-card tone-gold"><div class="stat-hero-icon"><i class="fas fa-hourglass-half"></i></div><div><div class="stat-hero-value"><?= count($riders) ?></div><div class="stat-hero-label">Expiring in 30 days</div></div></div></div>
-            <div class="col"><div class="stat-hero-card tone-red"><div class="stat-hero-icon"><i class="fas fa-exclamation-circle"></i></div><div><div class="stat-hero-value"><?= $criticalCount ?></div><div class="stat-hero-label">Critical (&le;7 days)</div></div></div></div>
-            <div class="col"><div class="stat-hero-card tone-blue"><div class="stat-hero-icon"><i class="fas fa-coins"></i></div><div><div class="stat-hero-value"><?= h(formatCurrency($upcomingRevenue)) ?></div><div class="stat-hero-label">Renewal value</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-gold"><div><div class="stat-hero-value"><?= count($riders) ?></div><div class="stat-hero-label">Expiring in 30 days</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-red"><div><div class="stat-hero-value"><?= $criticalCount ?></div><div class="stat-hero-label">Critical (&le;7 days)</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-blue"><div><div class="stat-hero-value"><?= h(formatCurrency($upcomingRevenue)) ?></div><div class="stat-hero-label">Renewal value</div></div></div></div>
         </div>
 
         <div class="alert alert-warning d-flex justify-content-between align-items-center flex-wrap gap-2">
-            <span><i class="fas fa-bell me-2"></i>Riders whose permits expire within the next 30 days.</span>
+            <span>Riders whose permits expire within the next 30 days.</span>
             <a href="<?= BASE_URL ?>/pages/chairperson/expiring-soon.php" class="btn btn-sm btn-outline-dark no-print">View breakdown</a>
         </div>
         <div class="d-flex justify-content-end mb-2 no-print">

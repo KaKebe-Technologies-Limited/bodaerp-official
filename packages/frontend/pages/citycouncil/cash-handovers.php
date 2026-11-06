@@ -50,9 +50,9 @@ portal_start('citycouncil', 'cash-handovers', 'Cash handovers', [
 ]);
 ?>
 <div class="row g-3 mb-4">
-    <div class="col-md-4"><div class="stat-hero-card tone-gold"><div class="stat-hero-icon"><i class="fas fa-hourglass-half" aria-hidden="true"></i></div><div><div class="stat-hero-value"><?= (int) ($counts['submitted'] ?? 0) ?></div><div class="stat-hero-label">Waiting for you</div></div></div></div>
-    <div class="col-md-4"><div class="stat-hero-card tone-red"><div class="stat-hero-icon"><i class="fas fa-wallet" aria-hidden="true"></i></div><div><div class="stat-hero-value"><?= h(formatCurrency($notHanded['total'])) ?></div><div class="stat-hero-label">Cash still at stages (<?= (int) $notHanded['c'] ?> receipts)</div></div></div></div>
-    <div class="col-md-4"><div class="stat-hero-card tone-blue"><div class="stat-hero-icon"><i class="fas fa-calendar-day" aria-hidden="true"></i></div><div><div class="stat-hero-value"><?= $notHanded['oldest'] ? h((string) max(0, -daysUntil($notHanded['oldest']))) . ' days' : 'None' ?></div><div class="stat-hero-label">Oldest cash not handed over</div></div></div></div>
+    <div class="col-md-4"><div class="stat-hero-card tone-gold"><div><div class="stat-hero-value"><?= (int) ($counts['submitted'] ?? 0) ?></div><div class="stat-hero-label">Waiting for you</div></div></div></div>
+    <div class="col-md-4"><div class="stat-hero-card tone-red"><div><div class="stat-hero-value"><?= h(formatCurrency($notHanded['total'])) ?></div><div class="stat-hero-label">Cash still at stages (<?= (int) $notHanded['c'] ?> receipts)</div></div></div></div>
+    <div class="col-md-4"><div class="stat-hero-card tone-blue"><div><div class="stat-hero-value"><?= $notHanded['oldest'] ? h((string) max(0, -daysUntil($notHanded['oldest']))) . ' days' : 'None' ?></div><div class="stat-hero-label">Oldest cash not handed over</div></div></div></div>
 </div>
 
 <nav class="nav nav-pills mb-3" aria-label="Handover status">

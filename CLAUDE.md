@@ -35,8 +35,9 @@ OVERALL: 79% complete. 21% remaining until public launch
    real addresses on staff accounts, sign-in codes back on. Google Search Console: add the property (DNS TXT can be
    added on request) and submit https://bodaerp.site/sitemap.xml.
 3. LATER LIST (owner, 2026-11-07, "everything else we do later"):
-   a. Icons: removed from every text button and button-styled link (137 in 54 files, icon-only buttons kept). Icons
-      in headings, card titles, badges, tables and the sidebar remain; ask the owner whether those go too.
+   a. [x] (2026-11-07) Icons removed from text buttons (137), and from the portals: stat-card and card-title icon
+      tiles (166) and every icon in front of text (63; headings, alerts, empty states, menus). Kept on purpose
+      (owner): sidebar icons, icon-only buttons, input-field icons, chevrons, public-site feature tiles.
    b. Live accounts are still the demo people (Lira, Ocen, Akello, works@); Super Admin name "Kakebe Admin" and phone
       +256 700 000 001 are placeholders. Replace with real people when they arrive.
    c. Walk every page of every role in the browser on the live site after the button change (tests pass; no full

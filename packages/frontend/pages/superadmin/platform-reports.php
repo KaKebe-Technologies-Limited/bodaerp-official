@@ -59,11 +59,11 @@ unset($r);
             </div>
         </div>
         <div class="row g-3 row-cols-2 row-cols-xl-5 mb-4">
-            <div class="col"><div class="stat-hero-card tone-blue"><div class="stat-hero-icon"><i class="fas fa-city"></i></div><div><div class="stat-hero-value"><?= count($rows) ?></div><div class="stat-hero-label">Total cities</div></div></div></div>
-            <div class="col"><div class="stat-hero-card tone-green"><div class="stat-hero-icon"><i class="fas fa-users"></i></div><div><div class="stat-hero-value"><?= number_format($totalRiders) ?></div><div class="stat-hero-label">Total riders</div></div></div></div>
-            <div class="col"><div class="stat-hero-card tone-gold"><div class="stat-hero-icon"><i class="fas fa-map-marker-alt"></i></div><div><div class="stat-hero-value"><?= $totalStages ?></div><div class="stat-hero-label">Total stages</div></div></div></div>
-            <div class="col"><div class="stat-hero-card tone-gold"><div class="stat-hero-icon"><i class="fas fa-university"></i></div><div><div class="stat-hero-value">UGX <?= $totalGovernmentShare >= 1000000 ? number_format($totalGovernmentShare / 1000000, 1) . 'M' : number_format(round($totalGovernmentShare)) ?></div><div class="stat-hero-label">Government revenue</div></div></div></div>
-            <div class="col"><div class="stat-hero-card tone-red"><div class="stat-hero-icon"><i class="fas fa-money-bill-wave"></i></div><div><div class="stat-hero-value">UGX <?= $totalPlatformShare >= 1000000 ? number_format($totalPlatformShare / 1000000, 1) . 'M' : number_format(round($totalPlatformShare)) ?></div><div class="stat-hero-label">Platform revenue</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-blue"><div><div class="stat-hero-value"><?= count($rows) ?></div><div class="stat-hero-label">Total cities</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-green"><div><div class="stat-hero-value"><?= number_format($totalRiders) ?></div><div class="stat-hero-label">Total riders</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-gold"><div><div class="stat-hero-value"><?= $totalStages ?></div><div class="stat-hero-label">Total stages</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-gold"><div><div class="stat-hero-value">UGX <?= $totalGovernmentShare >= 1000000 ? number_format($totalGovernmentShare / 1000000, 1) . 'M' : number_format(round($totalGovernmentShare)) ?></div><div class="stat-hero-label">Government revenue</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-red"><div><div class="stat-hero-value">UGX <?= $totalPlatformShare >= 1000000 ? number_format($totalPlatformShare / 1000000, 1) . 'M' : number_format(round($totalPlatformShare)) ?></div><div class="stat-hero-label">Platform revenue</div></div></div></div>
         </div>
 
         <div class="card">

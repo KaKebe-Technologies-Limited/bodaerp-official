@@ -44,10 +44,10 @@ $agencyLabel = $_SESSION['agency_name'] ?? 'Government Portal';
     <div class="content-area">
 
         <div class="row g-3 row-cols-2 row-cols-xl-4 mb-4">
-            <div class="col"><div class="stat-hero-card tone-blue"><div class="stat-hero-icon"><i class="fas fa-city"></i></div><div><div class="stat-hero-value"><?= count($rows) ?></div><div class="stat-hero-label">Total cities</div></div></div></div>
-            <div class="col"><div class="stat-hero-card tone-green"><div class="stat-hero-icon"><i class="fas fa-users"></i></div><div><div class="stat-hero-value"><?= number_format($totalRiders) ?></div><div class="stat-hero-label">Total riders</div></div></div></div>
-            <div class="col"><div class="stat-hero-card tone-gold"><div class="stat-hero-icon"><i class="fas fa-money-bill-wave"></i></div><div><div class="stat-hero-value">UGX <?= $totalRevenue >= 1000000 ? number_format($totalRevenue/1000000,1).'M' : number_format($totalRevenue) ?></div><div class="stat-hero-label">National revenue</div></div></div></div>
-            <div class="col"><div class="stat-hero-card tone-gold"><div class="stat-hero-icon"><i class="fas fa-university"></i></div><div><div class="stat-hero-value">UGX <?= $totalGovShare >= 1000000 ? number_format($totalGovShare/1000000,1).'M' : number_format(round($totalGovShare)) ?></div><div class="stat-hero-label">Government share</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-blue"><div><div class="stat-hero-value"><?= count($rows) ?></div><div class="stat-hero-label">Total cities</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-green"><div><div class="stat-hero-value"><?= number_format($totalRiders) ?></div><div class="stat-hero-label">Total riders</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-gold"><div><div class="stat-hero-value">UGX <?= $totalRevenue >= 1000000 ? number_format($totalRevenue/1000000,1).'M' : number_format($totalRevenue) ?></div><div class="stat-hero-label">National revenue</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-gold"><div><div class="stat-hero-value">UGX <?= $totalGovShare >= 1000000 ? number_format($totalGovShare/1000000,1).'M' : number_format(round($totalGovShare)) ?></div><div class="stat-hero-label">Government share</div></div></div></div>
         </div>
 
         <div class="row g-3 g-md-4 mb-4">

@@ -70,7 +70,7 @@ $ruleLabels = array_map(fn($r) => $r[0], $rules);
     <?php elseif (!empty($flagScanResult['skipped'])): ?>
         <div class="alert alert-warning">A scan is already running. Try again in a moment.</div>
     <?php else: ?>
-        <div class="alert alert-success"><i class="fas fa-check-circle me-2"></i>Scan complete in <?= (int) $flagScanResult['ms'] ?> ms –
+        <div class="alert alert-success">Scan complete in <?= (int) $flagScanResult['ms'] ?> ms –
             <strong><?= (int) $flagScanResult['new'] ?></strong> new flag(s), <strong><?= (int) $flagScanResult['resolved'] ?></strong> auto-resolved,
             <strong><?= (int) $flagScanResult['open'] ?></strong> open overall.
             <?php if (!empty($flagScanResult['errors'])): ?><br><small class="text-danger">Some rules failed: <?= h(implode(', ', array_keys($flagScanResult['errors']))) ?></small><?php endif; ?></div>
@@ -97,11 +97,11 @@ $ruleLabels = array_map(fn($r) => $r[0], $rules);
 </div>
 
 <div class="row g-3 row-cols-2 row-cols-xl-5 mb-4">
-    <div class="col"><div class="stat-hero-card tone-dark"><div class="stat-hero-icon"><i class="fas fa-flag"></i></div><div><div class="stat-hero-value"><?= number_format($sum['open']) ?></div><div class="stat-hero-label">Open flags</div></div></div></div>
-    <div class="col"><div class="stat-hero-card tone-red"><div class="stat-hero-icon"><i class="fas fa-exclamation-circle"></i></div><div><div class="stat-hero-value"><?= number_format($sum['sev']['high']) ?></div><div class="stat-hero-label">High severity</div></div></div></div>
-    <div class="col"><div class="stat-hero-card tone-gold"><div class="stat-hero-icon"><i class="fas fa-exclamation-triangle"></i></div><div><div class="stat-hero-value"><?= number_format($sum['sev']['medium']) ?></div><div class="stat-hero-label">Medium severity</div></div></div></div>
-    <div class="col"><div class="stat-hero-card tone-blue"><div class="stat-hero-icon"><i class="fas fa-user-tag"></i></div><div><div class="stat-hero-value"><?= number_format($sum['flagged_riders']) ?></div><div class="stat-hero-label">Riders flagged</div></div></div></div>
-    <div class="col"><div class="stat-hero-card tone-green"><div class="stat-hero-icon"><i class="fas fa-heartbeat"></i></div><div><div class="stat-hero-value"><?= $sum['health'] ?>%</div><div class="stat-hero-label">Data health score</div></div></div></div>
+    <div class="col"><div class="stat-hero-card tone-dark"><div><div class="stat-hero-value"><?= number_format($sum['open']) ?></div><div class="stat-hero-label">Open flags</div></div></div></div>
+    <div class="col"><div class="stat-hero-card tone-red"><div><div class="stat-hero-value"><?= number_format($sum['sev']['high']) ?></div><div class="stat-hero-label">High severity</div></div></div></div>
+    <div class="col"><div class="stat-hero-card tone-gold"><div><div class="stat-hero-value"><?= number_format($sum['sev']['medium']) ?></div><div class="stat-hero-label">Medium severity</div></div></div></div>
+    <div class="col"><div class="stat-hero-card tone-blue"><div><div class="stat-hero-value"><?= number_format($sum['flagged_riders']) ?></div><div class="stat-hero-label">Riders flagged</div></div></div></div>
+    <div class="col"><div class="stat-hero-card tone-green"><div><div class="stat-hero-value"><?= $sum['health'] ?>%</div><div class="stat-hero-label">Data health score</div></div></div></div>
 </div>
 
 <div class="row g-3 g-md-4 mb-4">
@@ -137,7 +137,7 @@ $ruleLabels = array_map(fn($r) => $r[0], $rules);
                 </div></div>
             <?php endforeach; ?>
         </div>
-        <p class="small text-muted mt-3 mb-0"><i class="fas fa-info-circle me-1"></i>Flags are leads for human review, never automatic penalties. Severity is the check's default; a few checks raise it when the evidence is stronger.</p>
+        <p class="small text-muted mt-3 mb-0">Flags are leads for human review, never automatic penalties. Severity is the check's default; a few checks raise it when the evidence is stronger.</p>
     </div>
 </div></div>
 
@@ -196,14 +196,14 @@ $ruleLabels = array_map(fn($r) => $r[0], $rules);
                     <td>
                         <div class="flag-title"><?= h($f['title']) ?></div>
                         <div class="flag-detail"><?= h($f['details']) ?></div>
-                        <?php if ($f['review_note']): ?><span class="flag-note"><i class="fas fa-comment-dots me-1"></i><?= h($f['reviewer_name'] ?: 'Reviewer') ?>: <?= h($f['review_note']) ?></span><?php endif; ?>
+                        <?php if ($f['review_note']): ?><span class="flag-note"><?= h($f['reviewer_name'] ?: 'Reviewer') ?>: <?= h($f['review_note']) ?></span><?php endif; ?>
                     </td>
                     <td style="font-size:0.82rem;">
                         <?php if ($f['rider_name']): ?><strong><?= h($f['rider_name']) ?></strong><br><small class="text-muted"><?= h($f['bike_plate']) ?></small>
                         <?php else: ?><span class="text-muted"><?= h(ucfirst($f['entity_type'])) ?></span><br><small><?= h($f['entity_id']) ?></small><?php endif; ?>
                     </td>
                     <?php if (!$flagScopeCity): ?><td style="font-size:0.82rem;"><?= h($f['city_name'] ?: '–') ?></td><?php endif; ?>
-                    <td><span class="flag-rule-chip"><i class="fas <?= h($rules[$f['rule_code']][2] ?? 'fa-flag') ?> me-1" style="color:<?= h($cats[$f['category']][1] ?? '#056CFE') ?>;"></i><?= h($rules[$f['rule_code']][0] ?? $f['rule_code']) ?></span></td>
+                    <td><span class="flag-rule-chip"><?= h($rules[$f['rule_code']][0] ?? $f['rule_code']) ?></span></td>
                     <td style="font-size:0.78rem;white-space:nowrap;"><?= h(date('M d, Y', strtotime($f['last_seen_at']))) ?><br><small class="text-muted">since <?= h(date('M d', strtotime($f['first_detected_at']))) ?></small></td>
                     <td><span class="badge bg-<?= $stClass ?>"><?= h($stLabel) ?></span></td>
                     <?php if (!empty($flagCanReview)): ?>

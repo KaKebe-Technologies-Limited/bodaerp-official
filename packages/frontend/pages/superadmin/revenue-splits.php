@@ -145,11 +145,11 @@ $avgGovernment = $cityCount ? round(array_sum(array_column($cities, 'revenue_spl
     <div class="content-area">
 
         <div class="row g-3 row-cols-2 row-cols-xl-5 mb-4">
-            <div class="col"><div class="stat-hero-card tone-dark"><div class="stat-hero-icon"><i class="fas fa-city"></i></div><div><div class="stat-hero-value"><?= $cityCount ?></div><div class="stat-hero-label">Cities configured</div></div></div></div>
-            <div class="col"><div class="stat-hero-card tone-blue"><div class="stat-hero-icon"><i class="fas fa-landmark"></i></div><div><div class="stat-hero-value"><?= $avgCity ?>%</div><div class="stat-hero-label">Avg. city council</div></div></div></div>
-            <div class="col"><div class="stat-hero-card tone-green"><div class="stat-hero-icon"><i class="fas fa-handshake"></i></div><div><div class="stat-hero-value"><?= $avgAssoc ?>%</div><div class="stat-hero-label">Avg. association</div></div></div></div>
-            <div class="col"><div class="stat-hero-card tone-gold"><div class="stat-hero-icon"><i class="fas fa-university"></i></div><div><div class="stat-hero-value"><?= $avgGovernment ?>%</div><div class="stat-hero-label">Avg. government</div></div></div></div>
-            <div class="col"><div class="stat-hero-card tone-gold"><div class="stat-hero-icon"><i class="fas fa-microchip"></i></div><div><div class="stat-hero-value"><?= $avgPlatform ?>%</div><div class="stat-hero-label">Avg. Platform</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-dark"><div><div class="stat-hero-value"><?= $cityCount ?></div><div class="stat-hero-label">Cities configured</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-blue"><div><div class="stat-hero-value"><?= $avgCity ?>%</div><div class="stat-hero-label">Avg. city council</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-green"><div><div class="stat-hero-value"><?= $avgAssoc ?>%</div><div class="stat-hero-label">Avg. association</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-gold"><div><div class="stat-hero-value"><?= $avgGovernment ?>%</div><div class="stat-hero-label">Avg. government</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-gold"><div><div class="stat-hero-value"><?= $avgPlatform ?>%</div><div class="stat-hero-label">Avg. Platform</div></div></div></div>
         </div>
 
         <div class="alert alert-primary mb-4">
@@ -193,7 +193,7 @@ $avgGovernment = $cityCount ? round(array_sum(array_column($cities, 'revenue_spl
 
                     <div class="split-section-label">
                         <span class="lbl">Adjust distribution</span>
-                        <span class="hint"><i class="fas fa-sync-alt me-1"></i>Auto-balances to 100%</span>
+                        <span class="hint">Auto-balances to 100%</span>
                     </div>
 
                     <div class="split-slider-row row-city">

@@ -63,7 +63,7 @@ $settings['support_phone'] = get_setting('contact_phone');
             <div class="card mb-3">
                 <div class="card-body">
                     <div class="d-flex align-items-center gap-3 mb-3">
-                        <div class="icon-badge blue"><i class="fas fa-building"></i></div>
+
                         <div><h6 class="fw-bold mb-0">General</h6><small class="text-muted">Used on every page, in emails and on the contact page (the same values as in Text &amp; branding)</small></div>
                     </div>
                     <div class="row g-3">
@@ -78,7 +78,7 @@ $settings['support_phone'] = get_setting('contact_phone');
             <div class="card mb-3">
                 <div class="card-body">
                     <div class="d-flex align-items-center gap-3 mb-3">
-                        <div class="icon-badge gold"><i class="fas fa-percentage"></i></div>
+
                         <div><h6 class="fw-bold mb-0">Default new-city revenue split</h6><small class="text-muted">Pre-fills the split when a new city is added</small></div>
                     </div>
                     <div class="row g-3 align-items-end">
@@ -94,7 +94,7 @@ $settings['support_phone'] = get_setting('contact_phone');
             <div class="card mb-3">
                 <div class="card-body">
                     <div class="d-flex align-items-center gap-3 mb-3">
-                        <div class="icon-badge red"><i class="fas fa-shield-alt"></i></div>
+
                         <div><h6 class="fw-bold mb-0">Security</h6><small class="text-muted">Authentication and access controls</small></div>
                     </div>
                     <div class="form-check form-switch mb-2">
@@ -113,14 +113,14 @@ $settings['support_phone'] = get_setting('contact_phone');
 
         <div class="card mt-4"><div class="card-body d-flex align-items-center justify-content-between flex-wrap gap-3">
             <div class="d-flex align-items-center gap-3">
-                <div class="icon-badge blue"><i class="fas fa-database"></i></div>
+
                 <div><h6 class="fw-bold mb-0">Database</h6><small class="text-muted">Connection, automatic updates of tables and fields, and one-click update.</small></div>
             </div>
             <a href="<?= BASE_URL ?>/pages/superadmin/database.php" class="btn btn-outline-primary btn-sm">Open database</a>
         </div></div>
         <div class="card mt-3"><div class="card-body d-flex align-items-center justify-content-between flex-wrap gap-3">
             <div class="d-flex align-items-center gap-3">
-                <div class="icon-badge green"><i class="fas fa-server"></i></div>
+
                 <div><h6 class="fw-bold mb-0">System &amp; Updates</h6><small class="text-muted">Data packs (add a city), automatic jobs and backups.</small></div>
             </div>
             <a href="<?= BASE_URL ?>/pages/superadmin/system.php" class="btn btn-outline-primary btn-sm">Open System &amp; Updates</a>

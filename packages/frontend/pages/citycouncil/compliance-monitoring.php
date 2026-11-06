@@ -32,10 +32,10 @@ $overallRate = $totalRiders ? round(100 * $activeRiders / $totalRiders) : 0;
 
     <div class="content-area">
         <div class="row g-3 mb-4">
-            <div class="col-md-3 col-6"><div class="stat-hero-card tone-gold"><div class="stat-hero-icon"><i class="fas fa-check-circle"></i></div><div><div class="stat-hero-value"><?= $overallRate ?>%</div><div class="stat-hero-label">Compliance rate</div></div></div></div>
-            <div class="col-md-3 col-6"><div class="stat-hero-card tone-green"><div class="stat-hero-icon"><i class="fas fa-user-check"></i></div><div><div class="stat-hero-value"><?= number_format($activeRiders) ?></div><div class="stat-hero-label">Compliant riders</div></div></div></div>
-            <div class="col-md-3 col-6"><div class="stat-hero-card tone-red"><div class="stat-hero-icon"><i class="fas fa-exclamation-circle"></i></div><div><div class="stat-hero-value"><?= number_format($defaulters) ?></div><div class="stat-hero-label">Non-compliant</div></div></div></div>
-            <div class="col-md-3 col-6"><div class="stat-hero-card tone-blue"><div class="stat-hero-icon"><i class="fas fa-map-marker-alt"></i></div><div><div class="stat-hero-value"><?= count($stages) ?></div><div class="stat-hero-label">Stages monitored</div></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card tone-gold"><div><div class="stat-hero-value"><?= $overallRate ?>%</div><div class="stat-hero-label">Compliance rate</div></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card tone-green"><div><div class="stat-hero-value"><?= number_format($activeRiders) ?></div><div class="stat-hero-label">Compliant riders</div></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card tone-red"><div><div class="stat-hero-value"><?= number_format($defaulters) ?></div><div class="stat-hero-label">Non-compliant</div></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card tone-blue"><div><div class="stat-hero-value"><?= count($stages) ?></div><div class="stat-hero-label">Stages monitored</div></div></div></div>
         </div>
 
         <div class="card mb-4">

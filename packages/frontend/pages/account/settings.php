@@ -155,7 +155,7 @@ portal_start($sidebar, 'my-account', 'My account', [
     <div class="col-lg-6">
         <?php if ($me['role'] !== 'rider'): ?>
         <div class="card mb-3"><div class="card-body">
-            <h2 class="h6 fw-bold mb-3"><i class="fas fa-circle-user me-2 text-primary" aria-hidden="true"></i>Profile photo</h2>
+            <h2 class="h6 fw-bold mb-3">Profile photo</h2>
             <div class="d-flex align-items-center gap-3 mb-3">
                 <?= person_avatar($user['avatar_path'] ?? null, $user['name'], 'is-lg') ?>
                 <p class="small text-muted mb-0">Shown in the top bar and beside your name in staff lists, so colleagues recognise who did what. JPG, PNG or WebP, up to 2 MB.</p>
@@ -171,7 +171,7 @@ portal_start($sidebar, 'my-account', 'My account', [
         </div></div>
         <?php endif; ?>
         <div class="card mb-3"><div class="card-body">
-            <h2 class="h6 fw-bold mb-3"><i class="fas fa-key me-2 text-primary" aria-hidden="true"></i>Change password</h2>
+            <h2 class="h6 fw-bold mb-3">Change password</h2>
             <form method="post" autocomplete="off">
                 <?= csrf_field() ?><input type="hidden" name="action" value="password">
                 <input type="text" name="username" value="<?= h($user['email'] ?: $user['phone']) ?>" autocomplete="username" hidden>
@@ -183,7 +183,7 @@ portal_start($sidebar, 'my-account', 'My account', [
         </div></div>
 
         <div class="card mb-3"><div class="card-body">
-            <h2 class="h6 fw-bold mb-3"><i class="fas fa-envelope me-2 text-primary" aria-hidden="true"></i>Email address</h2>
+            <h2 class="h6 fw-bold mb-3">Email address</h2>
             <?php if (!$user['email']): ?>
             <p class="mb-2">No email address on this account. You sign in with your phone number <?= h($user['phone']) ?>, and password links come by SMS.</p>
             <?php else: ?>
@@ -197,7 +197,7 @@ portal_start($sidebar, 'my-account', 'My account', [
         </div></div>
 
         <div class="card mb-3"><div class="card-body">
-            <h2 class="h6 fw-bold mb-3"><i class="fas fa-mobile-screen me-2 text-primary" aria-hidden="true"></i>Mobile number</h2>
+            <h2 class="h6 fw-bold mb-3">Mobile number</h2>
             <?php if ($phoneConfirmed): ?>
                 <p class="mb-2">Number ending <?= h(sms_phone_hint($user['phone'])) ?> <span class="badge bg-success ms-1">Confirmed</span></p>
             <?php elseif ($user['phone']): ?>
@@ -219,7 +219,7 @@ portal_start($sidebar, 'my-account', 'My account', [
         </div></div>
 
         <div class="card" id="notifications"><div class="card-body">
-            <h2 class="h6 fw-bold mb-3"><i class="fas fa-bell me-2 text-primary" aria-hidden="true"></i>Notifications</h2>
+            <h2 class="h6 fw-bold mb-3">Notifications</h2>
             <form method="post">
                 <?= csrf_field() ?><input type="hidden" name="action" value="notifications">
                 <div class="form-check form-switch mb-2"><input class="form-check-input" type="checkbox" role="switch" id="ne" name="notify_email" value="1"<?= (int) $user['notify_email'] ? ' checked' : '' ?>><label class="form-check-label" for="ne">Email me receipts, renewal reminders and account notices</label></div>
@@ -240,7 +240,7 @@ portal_start($sidebar, 'my-account', 'My account', [
     <div class="col-lg-6">
         <?php if (setting_bool('feature_two_factor', true)): ?>
         <div class="card mb-3"><div class="card-body">
-            <h2 class="h6 fw-bold mb-2"><i class="fas fa-shield-halved me-2 text-primary" aria-hidden="true"></i>Two-step sign-in (optional)</h2>
+            <h2 class="h6 fw-bold mb-2">Two-step sign-in (optional)</h2>
             <p class="small text-muted">After your password, we send a 6-digit code by text message or email. Someone who learns your password still cannot sign in without your phone or inbox.</p>
             <?php if ($platformRequires): ?><p class="small mb-2"><span class="badge bg-info text-dark">Required for your role</span> Your administrator has made codes compulsory for staff accounts. You can still choose where they go.</p><?php endif; ?>
             <?php if (!$smtp && !$smsOn): ?><div class="alert alert-light border small mb-2" data-keep>Not available yet: neither email nor text messages are set up on this site.</div><?php endif; ?>
@@ -263,7 +263,7 @@ portal_start($sidebar, 'my-account', 'My account', [
         <?php endif; ?>
 
         <div class="card mb-3"><div class="card-body">
-            <h2 class="h6 fw-bold mb-3"><i class="fas fa-laptop me-2 text-primary" aria-hidden="true"></i>Signed-in devices (last 24 hours)</h2>
+            <h2 class="h6 fw-bold mb-3">Signed-in devices (last 24 hours)</h2>
             <ul class="list-unstyled small mb-3">
                 <?php foreach ($sessions as $s): ?>
                     <li class="d-flex justify-content-between border-bottom py-2"><span><?= h(mb_strimwidth((string) $s['user_agent'], 0, 60, '…')) ?><br><span class="text-muted"><?= h($s['ip_address']) ?></span></span><span class="text-muted text-end"><?= $s['id'] === session_id() ? '<strong class="text-success">This device</strong>' : h(timeAgo($s['last_activity'])) ?></span></li>
@@ -274,7 +274,7 @@ portal_start($sidebar, 'my-account', 'My account', [
 
         <?php if ($riderId): ?>
         <div class="card" id="privacy"><div class="card-body">
-            <h2 class="h6 fw-bold mb-2"><i class="fas fa-user-lock me-2 text-primary" aria-hidden="true"></i>Privacy and your data</h2>
+            <h2 class="h6 fw-bold mb-2">Privacy and your data</h2>
             <p class="small text-muted">Under Uganda's Data Protection and Privacy Act you can get a copy of your data, ask for corrections, object to how it is used, or ask for data to be deleted. Read the <a href="<?= BASE_URL ?>/p/privacy-policy">privacy policy</a>.</p>
             <a class="btn btn-outline-primary btn-sm mb-3" href="?download=1">Download my data (JSON)</a>
             <form method="post">

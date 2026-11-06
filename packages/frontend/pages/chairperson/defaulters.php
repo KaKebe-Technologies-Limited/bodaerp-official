@@ -39,9 +39,9 @@ $amountOwed = array_sum(array_column($defaulters, 'annual_tax'));
 
     <div class="content-area">
         <div class="row g-3 row-cols-1 row-cols-md-3 mb-4">
-            <div class="col"><div class="stat-hero-card tone-red"><div class="stat-hero-icon"><i class="fas fa-user-times"></i></div><div><div class="stat-hero-value"><?= count($defaulters) ?></div><div class="stat-hero-label">Total defaulters</div></div></div></div>
-            <div class="col"><div class="stat-hero-card tone-dark"><div class="stat-hero-icon"><i class="fas fa-fire"></i></div><div><div class="stat-hero-value"><?= $critical ?></div><div class="stat-hero-label">Critical (&gt;90 days)</div></div></div></div>
-            <div class="col"><div class="stat-hero-card tone-gold"><div class="stat-hero-icon"><i class="fas fa-coins"></i></div><div><div class="stat-hero-value"><?= h(formatCurrency($amountOwed)) ?></div><div class="stat-hero-label">Amount owed</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-red"><div><div class="stat-hero-value"><?= count($defaulters) ?></div><div class="stat-hero-label">Total defaulters</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-dark"><div><div class="stat-hero-value"><?= $critical ?></div><div class="stat-hero-label">Critical (&gt;90 days)</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-gold"><div><div class="stat-hero-value"><?= h(formatCurrency($amountOwed)) ?></div><div class="stat-hero-label">Amount owed</div></div></div></div>
         </div>
 
         <div class="d-flex justify-content-end mb-2 no-print">

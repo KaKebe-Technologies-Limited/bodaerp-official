@@ -41,10 +41,10 @@ $totalRiders = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE city_id = ? A
 
     <div class="content-area">
         <div class="row g-3 mb-4">
-            <div class="col-md-3 col-6"><div class="stat-hero-card tone-blue"><div class="stat-hero-icon"><i class="fas fa-map-marker-alt"></i></div><div><div class="stat-hero-value"><?= $totalStages ?></div><div class="stat-hero-label">Total stages</div></div></div></div>
-            <div class="col-md-3 col-6"><div class="stat-hero-card tone-green"><div class="stat-hero-icon"><i class="fas fa-check-circle"></i></div><div><div class="stat-hero-value"><?= $activeStages ?></div><div class="stat-hero-label">Active stages</div></div></div></div>
-            <div class="col-md-3 col-6"><div class="stat-hero-card tone-red"><div class="stat-hero-icon"><i class="fas fa-exclamation-circle"></i></div><div><div class="stat-hero-value"><?= $totalStages - $activeStages ?></div><div class="stat-hero-label">Inactive stages</div></div></div></div>
-            <div class="col-md-3 col-6"><div class="stat-hero-card tone-gold"><div class="stat-hero-icon"><i class="fas fa-users"></i></div><div><div class="stat-hero-value"><?= number_format($totalRiders) ?></div><div class="stat-hero-label">Total riders</div></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card tone-blue"><div><div class="stat-hero-value"><?= $totalStages ?></div><div class="stat-hero-label">Total stages</div></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card tone-green"><div><div class="stat-hero-value"><?= $activeStages ?></div><div class="stat-hero-label">Active stages</div></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card tone-red"><div><div class="stat-hero-value"><?= $totalStages - $activeStages ?></div><div class="stat-hero-label">Inactive stages</div></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card tone-gold"><div><div class="stat-hero-value"><?= number_format($totalRiders) ?></div><div class="stat-hero-label">Total riders</div></div></div></div>
         </div>
 
         <div class="card mb-3 no-print">
@@ -103,7 +103,7 @@ $totalRiders = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE city_id = ? A
                             <div class="col-4"><div class="fw-bold"><span class="badge <?= $cBadge ?>"><?= $compliance ?>%</span></div><small class="text-muted" style="font-size:0.7rem;">Compliance</small></div>
                         </div>
                         <div class="d-flex justify-content-between align-items-center pt-2 border-top">
-                            <small class="text-muted"><i class="fas fa-user me-1"></i><?= h($s['chairperson_name'] ?: 'No chairperson') ?></small>
+                            <small class="text-muted"><?= h($s['chairperson_name'] ?: 'No chairperson') ?></small>
                             <small class="text-muted"><?= h($s['chairperson_phone'] ?: '') ?></small>
                         </div>
                     </div>

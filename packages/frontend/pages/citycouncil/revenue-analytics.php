@@ -48,10 +48,10 @@ $transactions = fetchAll("SELECT p.*, r.full_name, s.name AS stage_name FROM pay
 
     <div class="content-area">
         <div class="row g-3 mb-4">
-            <div class="col-md-3 col-6"><div class="stat-hero-card tone-blue"><div class="stat-hero-icon"><i class="fas fa-money-bill-wave"></i></div><div><div class="stat-hero-value"><?= h(formatCurrency($totalRevenue)) ?></div><div class="stat-hero-label">Total revenue</div></div></div></div>
-            <div class="col-md-3 col-6"><div class="stat-hero-card tone-green"><div class="stat-hero-icon"><i class="fas fa-calendar"></i></div><div><div class="stat-hero-value"><?= h(formatCurrency($thisMonth)) ?></div><div class="stat-hero-label">This month</div></div></div></div>
-            <div class="col-md-3 col-6"><div class="stat-hero-card tone-gold"><div class="stat-hero-icon"><i class="fas fa-receipt"></i></div><div><div class="stat-hero-value"><?= h(formatCurrency(round($avgPayment))) ?></div><div class="stat-hero-label">Avg. payment</div></div></div></div>
-            <div class="col-md-3 col-6"><div class="stat-hero-card tone-red"><div class="stat-hero-icon"><i class="fas fa-exchange-alt"></i></div><div><div class="stat-hero-value"><?= number_format($txnCount) ?></div><div class="stat-hero-label">Transactions</div></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card tone-blue"><div><div class="stat-hero-value"><?= h(formatCurrency($totalRevenue)) ?></div><div class="stat-hero-label">Total revenue</div></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card tone-green"><div><div class="stat-hero-value"><?= h(formatCurrency($thisMonth)) ?></div><div class="stat-hero-label">This month</div></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card tone-gold"><div><div class="stat-hero-value"><?= h(formatCurrency(round($avgPayment))) ?></div><div class="stat-hero-label">Avg. payment</div></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card tone-red"><div><div class="stat-hero-value"><?= number_format($txnCount) ?></div><div class="stat-hero-label">Transactions</div></div></div></div>
         </div>
 
         <div class="row g-4 mb-4">

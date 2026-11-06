@@ -99,8 +99,8 @@ $stages = fetchAll("SELECT id, name FROM stages WHERE city_id = ? ORDER BY name"
                 <button class="btn btn-outline-success dropdown-toggle btn-sm" type="button" data-bs-toggle="dropdown">Export all matching (<?= number_format($total) ?>)
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end">
-                    <li><a class="dropdown-item" href="<?= h(query_with(['export'=>'csv'])) ?>"><i class="fas fa-file-csv me-2 text-primary"></i>CSV</a></li>
-                    <li><a class="dropdown-item" href="<?= h(query_with(['export'=>'excel'])) ?>"><i class="fas fa-file-excel me-2 text-success"></i>Excel</a></li>
+                    <li><a class="dropdown-item" href="<?= h(query_with(['export'=>'csv'])) ?>">CSV</a></li>
+                    <li><a class="dropdown-item" href="<?= h(query_with(['export'=>'excel'])) ?>">Excel</a></li>
                 </ul>
             </div>
             <?php $exportTableId='transactionsTable'; $exportFilename='payment_transactions_page'.$page; $exportTitle='Payment Transactions (this page)'; require __DIR__ . '/../../partials/export-toolbar.php'; ?>

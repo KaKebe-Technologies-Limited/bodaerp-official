@@ -52,17 +52,17 @@ $receiptMsg = $_GET['receipt'] ?? null;
         <?php if ($errors): ?><div class="alert alert-danger"><?php foreach ($errors as $e) echo h($e) . '<br>'; ?></div><?php endif; ?>
 
         <div class="row g-3 row-cols-2 row-cols-xl-4 mb-4">
-            <div class="col"><div class="stat-hero-card tone-blue"><div class="stat-hero-icon"><i class="fas fa-money-bill-wave"></i></div><div><div class="stat-hero-value"><?= h(formatCurrency($revenue)) ?></div><div class="stat-hero-label">Total collected</div></div></div></div>
-            <div class="col"><div class="stat-hero-card tone-green"><div class="stat-hero-icon"><i class="fas fa-user-check"></i></div><div><div class="stat-hero-value"><?= $activeRiders ?></div><div class="stat-hero-label">Active riders</div></div></div></div>
-            <div class="col"><div class="stat-hero-card tone-red"><div class="stat-hero-icon"><i class="fas fa-exclamation-triangle"></i></div><div><div class="stat-hero-value"><?= $defaulters ?></div><div class="stat-hero-label">Defaulters</div></div></div></div>
-            <div class="col"><div class="stat-hero-card tone-gold"><div class="stat-hero-icon"><i class="fas fa-calendar-alt"></i></div><div><div class="stat-hero-value"><?= h(formatCurrency($thisMonth)) ?></div><div class="stat-hero-label">This month</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-blue"><div><div class="stat-hero-value"><?= h(formatCurrency($revenue)) ?></div><div class="stat-hero-label">Total collected</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-green"><div><div class="stat-hero-value"><?= $activeRiders ?></div><div class="stat-hero-label">Active riders</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-red"><div><div class="stat-hero-value"><?= $defaulters ?></div><div class="stat-hero-label">Defaulters</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-gold"><div><div class="stat-hero-value"><?= h(formatCurrency($thisMonth)) ?></div><div class="stat-hero-label">This month</div></div></div></div>
         </div>
 
         <div class="row g-4">
             <div class="col-lg-4">
                 <div class="card"><div class="card-body">
                     <div class="d-flex align-items-center gap-3 mb-3">
-                        <div class="icon-badge blue"><i class="fas fa-money-bill-wave"></i></div>
+
                         <h6 class="fw-bold mb-0">Record payment</h6>
                     </div>
                     <form method="post">

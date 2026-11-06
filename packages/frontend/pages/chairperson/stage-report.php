@@ -52,10 +52,10 @@ for ($i = 11; $i >= 0; $i--) {
         </div>
 
         <div class="row g-3 row-cols-2 row-cols-md-4 mb-4">
-            <div class="col"><div class="stat-hero-card tone-blue"><div class="stat-hero-icon"><i class="fas fa-users"></i></div><div><div class="stat-hero-value"><?= $totalRiders ?></div><div class="stat-hero-label">Total riders</div></div></div></div>
-            <div class="col"><div class="stat-hero-card tone-green"><div class="stat-hero-icon"><i class="fas fa-user-check"></i></div><div><div class="stat-hero-value"><?= $active_ ?></div><div class="stat-hero-label">Active</div></div></div></div>
-            <div class="col"><div class="stat-hero-card tone-red"><div class="stat-hero-icon"><i class="fas fa-user-times"></i></div><div><div class="stat-hero-value"><?= $expired ?></div><div class="stat-hero-label">Expired</div></div></div></div>
-            <div class="col"><div class="stat-hero-card tone-gold"><div class="stat-hero-icon"><i class="fas fa-percentage"></i></div><div><div class="stat-hero-value"><?= $compliance ?>%</div><div class="stat-hero-label">Compliance rate</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-blue"><div><div class="stat-hero-value"><?= $totalRiders ?></div><div class="stat-hero-label">Total riders</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-green"><div><div class="stat-hero-value"><?= $active_ ?></div><div class="stat-hero-label">Active</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-red"><div><div class="stat-hero-value"><?= $expired ?></div><div class="stat-hero-label">Expired</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-gold"><div><div class="stat-hero-value"><?= $compliance ?>%</div><div class="stat-hero-label">Compliance rate</div></div></div></div>
         </div>
 
         <div class="card"><div class="card-body">

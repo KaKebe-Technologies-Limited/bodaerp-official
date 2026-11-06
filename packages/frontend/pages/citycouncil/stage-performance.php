@@ -40,9 +40,9 @@ $worst = $stages ? end($stages)['performance'] : 0;
 
     <div class="content-area">
         <div class="row g-3 mb-4">
-            <div class="col-md-4"><div class="stat-hero-card tone-green"><div class="stat-hero-icon"><i class="fas fa-trophy"></i></div><div><div class="stat-hero-value"><?= $best ?>%</div><div class="stat-hero-label">Best performing</div></div></div></div>
-            <div class="col-md-4"><div class="stat-hero-card tone-gold"><div class="stat-hero-icon"><i class="fas fa-chart-line"></i></div><div><div class="stat-hero-value"><?= $avg ?>%</div><div class="stat-hero-label">Average score</div></div></div></div>
-            <div class="col-md-4"><div class="stat-hero-card tone-red"><div class="stat-hero-icon"><i class="fas fa-exclamation-triangle"></i></div><div><div class="stat-hero-value"><?= $worst ?>%</div><div class="stat-hero-label">Needs attention</div></div></div></div>
+            <div class="col-md-4"><div class="stat-hero-card tone-green"><div><div class="stat-hero-value"><?= $best ?>%</div><div class="stat-hero-label">Best performing</div></div></div></div>
+            <div class="col-md-4"><div class="stat-hero-card tone-gold"><div><div class="stat-hero-value"><?= $avg ?>%</div><div class="stat-hero-label">Average score</div></div></div></div>
+            <div class="col-md-4"><div class="stat-hero-card tone-red"><div><div class="stat-hero-value"><?= $worst ?>%</div><div class="stat-hero-label">Needs attention</div></div></div></div>
         </div>
 
         <div class="card mb-4"><div class="card-body">

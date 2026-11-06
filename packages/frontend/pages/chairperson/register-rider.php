@@ -96,14 +96,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="card-body p-4 p-md-5">
                 <?php if ($errors): ?><div class="alert alert-danger"><?php foreach ($errors as $e) echo h($e) . '<br>'; ?></div><?php endif; ?>
                 <div class="d-flex align-items-center gap-3 mb-4">
-                    <div class="icon-badge blue"><i class="fas fa-user-plus"></i></div>
+
                     <div><h4 class="fw-bold mb-0">Register new rider</h4><small class="text-muted"><?= h($stage['name']) ?></small></div>
                 </div>
 
                 <form method="post" enctype="multipart/form-data">
                     <?= csrf_field() ?>
                     <div class="row">
-                        <div class="col-12 mb-3 d-flex align-items-center gap-2"><div class="icon-badge blue" style="width:32px;height:32px;font-size:0.85rem;"><i class="fas fa-user"></i></div><h6 class="fw-bold text-primary mb-0">Personal information</h6><hr class="flex-grow-1"></div>
+                        <div class="col-12 mb-3 d-flex align-items-center gap-2"><h6 class="fw-bold text-primary mb-0">Personal information</h6><hr class="flex-grow-1"></div>
                         <div class="col-md-6 mb-3"><label for="f-full-name" class="form-label fw-semibold">Full name <span class="text-danger">*</span></label><input id="f-full-name" value="<?= h($_POST['full_name'] ?? '') ?>" type="text" name="full_name" class="form-control form-control-lg" placeholder="e.g., AKELLO JAMES" required></div>
                         <div class="col-md-6 mb-3"><label for="f-nin" class="form-label fw-semibold">NIN <span class="text-danger">*</span></label><input id="f-nin" value="<?= h($_POST['nin'] ?? '') ?>" type="text" name="nin" class="form-control form-control-lg" placeholder="e.g., CM90012345ABCD" maxlength="14" autocomplete="off" required data-duplicate-check="nin" data-duplicate-url="<?= h(BASE_URL) ?>/pages/chairperson/check-duplicate.php" aria-describedby="dup-nin"><div class="duplicate-note" id="dup-nin" aria-live="polite"></div></div>
                         <div class="col-md-4 mb-3"><label for="f-dob" class="form-label fw-semibold">Date of birth</label><input id="f-dob" value="<?= h($_POST['dob'] ?? '') ?>" type="date" name="dob" class="form-control form-control-lg"></div>
@@ -126,14 +126,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <div class="input-group"><span class="input-group-text">+256</span><input id="f-nok-phone" value="<?= h(preg_replace('/^\+?256/', '', (string) ($_POST['nok_phone'] ?? ''))) ?>" type="tel" name="nok_phone" class="form-control form-control-lg" placeholder="e.g., 772123456"></div>
                         </div>
 
-                        <div class="col-12 mb-3 mt-3 d-flex align-items-center gap-2"><div class="icon-badge gold" style="width:32px;height:32px;font-size:0.85rem;"><i class="fas fa-motorcycle"></i></div><h6 class="fw-bold text-primary mb-0">Bike &amp; Stage Information</h6><hr class="flex-grow-1"></div>
+                        <div class="col-12 mb-3 mt-3 d-flex align-items-center gap-2"><h6 class="fw-bold text-primary mb-0">Bike &amp; Stage Information</h6><hr class="flex-grow-1"></div>
                         <div class="col-md-4 mb-3"><label for="f-bike-plate" class="form-label fw-semibold">Bike plate <span class="text-danger">*</span></label><input id="f-bike-plate" value="<?= h($_POST['bike_plate'] ?? '') ?>" type="text" name="bike_plate" class="form-control form-control-lg" placeholder="e.g., UAS 123K" required data-duplicate-check="bike_plate" data-duplicate-url="<?= h(BASE_URL) ?>/pages/chairperson/check-duplicate.php" aria-describedby="dup-plate"><div class="duplicate-note" id="dup-plate" aria-live="polite"></div></div>
                         <div class="col-md-4 mb-3"><label for="f-bike-model" class="form-label fw-semibold">Bike model</label><input id="f-bike-model" value="<?= h($_POST['bike_model'] ?? '') ?>" type="text" name="bike_model" class="form-control form-control-lg" placeholder="e.g., Honda CG 125"></div>
                         <div class="col-md-4 mb-3"><label for="f-show-stage" class="form-label fw-semibold">Stage</label><input id="f-show-stage" type="text" class="form-control form-control-lg" value="<?= h($stage['name']) ?>" disabled></div>
                         <div class="col-md-6 mb-3"><label for="f-route" class="form-label fw-semibold">Route</label><input id="f-route" type="text" name="route" class="form-control form-control-lg" placeholder="e.g., Railway - Town" value="<?= h($stage['route'] ?? '') ?>"></div>
                         <div class="col-md-6 mb-3"><label for="f-show-stage-chairperson" class="form-label fw-semibold">Stage chairperson</label><input id="f-show-stage-chairperson" type="text" class="form-control form-control-lg" value="<?= h($_SESSION['name']) ?>" disabled></div>
 
-                        <div class="col-12 mb-3 mt-3 d-flex align-items-center gap-2"><div class="icon-badge dark" style="width:32px;height:32px;font-size:0.85rem;"><i class="fas fa-camera"></i></div><h6 class="fw-bold text-primary mb-0">Upload photo</h6><hr class="flex-grow-1"></div>
+                        <div class="col-12 mb-3 mt-3 d-flex align-items-center gap-2"><h6 class="fw-bold text-primary mb-0">Upload photo</h6><hr class="flex-grow-1"></div>
                         <div class="col-12 mb-3">
                             <div class="upload-zone border-2 rounded-4 p-5 text-center" style="border: 2px dashed #dee2e6; cursor: pointer;" data-click-target="photoInput" role="button" tabindex="0" aria-label="Choose a rider photo">
                                 <i class="fas fa-cloud-upload-alt fa-4x text-muted mb-3"></i>
@@ -144,7 +144,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             </div>
                         </div>
 
-                        <div class="col-12 mb-3 mt-3 d-flex align-items-center gap-2"><div class="icon-badge green" style="width:32px;height:32px;font-size:0.85rem;"><i class="fas fa-money-bill-wave"></i></div><h6 class="fw-bold text-primary mb-0">Payment</h6><hr class="flex-grow-1"></div>
+                        <div class="col-12 mb-3 mt-3 d-flex align-items-center gap-2"><h6 class="fw-bold text-primary mb-0">Payment</h6><hr class="flex-grow-1"></div>
                         <div class="col-md-6 mb-3"><label for="f-annual-tax" class="form-label fw-semibold">Annual tax</label><div class="input-group"><span class="input-group-text">UGX</span><input id="f-annual-tax" type="text" class="form-control form-control-lg" value="<?= number_format($city['annual_fee']) ?>" readonly></div></div>
                         <div class="col-md-6 mb-3"><label for="f-payment-status" class="form-label fw-semibold">Payment status</label>
                             <select id="f-payment-status" name="payment_status" class="form-select form-select-lg"><option value="Unpaid"<?= ($_POST['payment_status'] ?? '') !== 'Paid' ? ' selected' : '' ?>>Not paid yet: register only</option><option value="Paid"<?= ($_POST['payment_status'] ?? '') === 'Paid' ? ' selected' : '' ?>>Paid in cash now: record the fee and activate</option></select>

@@ -113,16 +113,16 @@ $fmtSize = function (float $b): string { return $b >= 1048576 ? round($b / 10485
 
         <?php if ($flash): ?><div class="alert alert-<?= h($flash[0]) ?>"><?= h($flash[1]) ?></div><?php endif; ?>
         <?php if ($info['source'] === 'legacy config/database.php'): ?>
-            <div class="alert alert-warning py-2 small"><i class="fas fa-info-circle me-1"></i>The connection is read from the old <code>config/database.php</code>. It works, but move <code>DB_HOST</code>, <code>DB_NAME</code>, <code>DB_USER</code> and <code>DB_PASS</code> into the <code>.env</code> file when convenient (see <code>.env.example</code>).</div>
+            <div class="alert alert-warning py-2 small">The connection is read from the old <code>config/database.php</code>. It works, but move <code>DB_HOST</code>, <code>DB_NAME</code>, <code>DB_USER</code> and <code>DB_PASS</code> into the <code>.env</code> file when convenient (see <code>.env.example</code>).</div>
         <?php endif; ?>
 
         <div class="db-sync-hero <?= $status ?> mb-4">
             <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
                 <div>
                     <h4>
-                        <?php if ($status === 'ok'): ?><i class="fas fa-check-circle me-2"></i>Database is up to date
-                        <?php elseif ($status === 'pending'): ?><i class="fas fa-hourglass-half me-2"></i><?= (int) $pending ?> change<?= $pending === 1 ? '' : 's' ?> waiting to be applied
-                        <?php else: ?><i class="fas fa-exclamation-triangle me-2"></i>Some changes need attention<?php endif; ?>
+                        <?php if ($status === 'ok'): ?>Database is up to date
+                        <?php elseif ($status === 'pending'): ?><?= (int) $pending ?> change<?= $pending === 1 ? '' : 's' ?> waiting to be applied
+                        <?php else: ?>Some changes need attention<?php endif; ?>
                     </h4>
                     <p>
                         <?php if ($status === 'ok'): ?>Every table and field from your code exists here. Last change applied: <?= h($fmtDate($lastApplied)) ?>.
@@ -140,10 +140,10 @@ $fmtSize = function (float $b): string { return $b >= 1048576 ? round($b / 10485
         </div>
 
         <div class="row g-3 row-cols-2 row-cols-xl-4 mb-4">
-            <div class="col"><div class="stat-hero-card tone-dark"><div class="stat-hero-icon"><i class="fas fa-server"></i></div><div><div class="stat-hero-value" style="font-size:1.15rem;"><?= h(strtoupper($info['environment'])) ?></div><div class="stat-hero-label">Environment · <?= h($info['database']) ?></div></div></div></div>
-            <div class="col"><div class="stat-hero-card tone-blue"><div class="stat-hero-icon"><i class="fas fa-table"></i></div><div><div class="stat-hero-value" style="font-size:1.15rem;"><?= count($tables) ?> tables</div><div class="stat-hero-label">Size on disk · <?= h($fmtSize((float) $totalBytes)) ?></div></div></div></div>
-            <div class="col"><div class="stat-hero-card <?= $mig['pending'] ? 'tone-gold' : 'tone-green' ?>"><div class="stat-hero-icon"><i class="fas fa-code-branch"></i></div><div><div class="stat-hero-value" style="font-size:1.15rem;"><?= count($mig['migrations']) - $mig['pending'] ?>/<?= count($mig['migrations']) ?> applied</div><div class="stat-hero-label">Migrations</div></div></div></div>
-            <div class="col"><div class="stat-hero-card <?= $plan['actions'] ? 'tone-gold' : 'tone-green' ?>"><div class="stat-hero-icon"><i class="fas fa-columns"></i></div><div><div class="stat-hero-value" style="font-size:1.15rem;"><?= $snap ? ($plan['actions'] ? count($plan['actions']) . ' pending' : 'In sync') : 'No file yet' ?></div><div class="stat-hero-label">Schema file<?= $plan['drift'] ? ' · ' . count($plan['drift']) . ' to review' : '' ?></div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-dark"><div><div class="stat-hero-value" style="font-size:1.15rem;"><?= h(strtoupper($info['environment'])) ?></div><div class="stat-hero-label">Environment · <?= h($info['database']) ?></div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-blue"><div><div class="stat-hero-value" style="font-size:1.15rem;"><?= count($tables) ?> tables</div><div class="stat-hero-label">Size on disk · <?= h($fmtSize((float) $totalBytes)) ?></div></div></div></div>
+            <div class="col"><div class="stat-hero-card <?= $mig['pending'] ? 'tone-gold' : 'tone-green' ?>"><div><div class="stat-hero-value" style="font-size:1.15rem;"><?= count($mig['migrations']) - $mig['pending'] ?>/<?= count($mig['migrations']) ?> applied</div><div class="stat-hero-label">Migrations</div></div></div></div>
+            <div class="col"><div class="stat-hero-card <?= $plan['actions'] ? 'tone-gold' : 'tone-green' ?>"><div><div class="stat-hero-value" style="font-size:1.15rem;"><?= $snap ? ($plan['actions'] ? count($plan['actions']) . ' pending' : 'In sync') : 'No file yet' ?></div><div class="stat-hero-label">Schema file<?= $plan['drift'] ? ' · ' . count($plan['drift']) . ' to review' : '' ?></div></div></div></div>
         </div>
 
         <div class="row g-4">
@@ -151,7 +151,7 @@ $fmtSize = function (float $b): string { return $b >= 1048576 ? round($b / 10485
 
                 <div class="card mb-4"><div class="card-body">
                     <div class="d-flex align-items-center gap-3 mb-4">
-                        <div class="icon-badge blue"><i class="fas fa-route"></i></div>
+
                         <div><h6 class="fw-bold mb-0">How your changes reach the live server</h6><small class="text-muted">You only work locally: nothing to import or upload by hand</small></div>
                     </div>
                     <div class="d-flex flex-column gap-4">
@@ -161,7 +161,7 @@ $fmtSize = function (float $b): string { return $b >= 1048576 ? round($b / 10485
                                 <h6>Change the database on your computer</h6>
                                 <p>Add tables or fields however you prefer, in phpMyAdmin or with a migration. The structure (never the data) is saved to <code>database/schema.snapshot.json</code>
                                     <?php if ($isLocal): ?>
-                                        <?= $autoSave ? '<span class="db-pill ok ms-1"><i class="fas fa-circle" style="font-size:.45rem;"></i>auto-save on</span>' : '<span class="db-pill attention ms-1">auto-save off</span>' ?>
+                                        <?= $autoSave ? '<span class="db-pill ok ms-1">auto-save on</span>' : '<span class="db-pill attention ms-1">auto-save off</span>' ?>
                                     <?php else: ?>
                                         <span class="db-pill info ms-1">saved on your computer, not here</span>
                                     <?php endif; ?>
@@ -195,7 +195,7 @@ $fmtSize = function (float $b): string { return $b >= 1048576 ? round($b / 10485
                 <?php if ($plan['actions']): ?>
                 <div class="card mb-4"><div class="card-body">
                     <div class="d-flex align-items-center gap-3 mb-3">
-                        <div class="icon-badge gold"><i class="fas fa-list-check"></i></div>
+
                         <div><h6 class="fw-bold mb-0">Waiting to be applied</h6><small class="text-muted">These will be added to this database</small></div>
                     </div>
                     <div class="table-responsive"><table class="table table-sm align-middle mb-0">
@@ -216,7 +216,7 @@ $fmtSize = function (float $b): string { return $b >= 1048576 ? round($b / 10485
                 <?php if ($migFail || $failedItems): ?>
                 <div class="card mb-4 border-danger"><div class="card-body">
                     <div class="d-flex align-items-center gap-3 mb-3">
-                        <div class="icon-badge red"><i class="fas fa-exclamation-triangle"></i></div>
+
                         <div><h6 class="fw-bold mb-0">Could not be applied</h6><small class="text-muted">The site keeps working. Fix the cause (often duplicate data for a new unique index), then press “Update database now”.</small></div>
                     </div>
                     <?php if ($migFail): ?>
@@ -232,7 +232,7 @@ $fmtSize = function (float $b): string { return $b >= 1048576 ? round($b / 10485
                 <?php if ($plan['drift']): ?>
                 <div class="card mb-4"><div class="card-body">
                     <div class="d-flex align-items-center gap-3 mb-3">
-                        <div class="icon-badge gold"><i class="fas fa-eye"></i></div>
+
                         <div><h6 class="fw-bold mb-0">Needs review: not changed automatically</h6><small class="text-muted">These differ from your code but could lose data. Ask for a migration to change them safely.</small></div>
                     </div>
                     <div class="table-responsive"><table class="table table-sm align-middle mb-0">
@@ -253,7 +253,7 @@ $fmtSize = function (float $b): string { return $b >= 1048576 ? round($b / 10485
                 <div class="card mb-4"><div class="card-body">
                     <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
                         <div class="d-flex align-items-center gap-3">
-                            <div class="icon-badge green"><i class="fas fa-table"></i></div>
+
                             <div><h6 class="fw-bold mb-0">Tables</h6><small class="text-muted"><?= count($tables) ?> tables · <?= h($fmtSize((float) $totalBytes)) ?></small></div>
                         </div>
                         <button class="btn btn-sm btn-light btn-toggle-more" data-bs-toggle="collapse" data-bs-target="#tablesBox">Show / hide</button>
@@ -268,7 +268,7 @@ $fmtSize = function (float $b): string { return $b >= 1048576 ? round($b / 10485
                             </tbody>
                         </table></div>
                         <?php if ($plan['extras']): ?>
-                            <p class="small text-muted mt-3 mb-0"><i class="fas fa-info-circle me-1"></i>Only in this database, not in the schema file: <?= h(implode(', ', $plan['extras'])) ?>. They are left alone.</p>
+                            <p class="small text-muted mt-3 mb-0">Only in this database, not in the schema file: <?= h(implode(', ', $plan['extras'])) ?>. They are left alone.</p>
                         <?php endif; ?>
                     </div>
                 </div></div>
@@ -276,7 +276,7 @@ $fmtSize = function (float $b): string { return $b >= 1048576 ? round($b / 10485
                 <div class="card mb-4"><div class="card-body">
                     <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
                         <div class="d-flex align-items-center gap-3">
-                            <div class="icon-badge blue"><i class="fas fa-code-branch"></i></div>
+
                             <div><h6 class="fw-bold mb-0">Migration history</h6><small class="text-muted">For data fixes, renames and other one-off changes</small></div>
                         </div>
                         <button class="btn btn-sm btn-light btn-toggle-more" data-bs-toggle="collapse" data-bs-target="#migBox">Show / hide</button>
@@ -301,7 +301,7 @@ $fmtSize = function (float $b): string { return $b >= 1048576 ? round($b / 10485
             <div class="col-xl-5">
                 <div class="card mb-4"><div class="card-body">
                     <div class="d-flex align-items-center gap-3 mb-3">
-                        <div class="icon-badge dark"><i class="fas fa-plug"></i></div>
+
                         <div><h6 class="fw-bold mb-0">Connection</h6><small class="text-muted">Connected · answered in <?= h((string) $info['latency_ms']) ?> ms</small></div>
                     </div>
                     <dl class="db-kv">
@@ -319,7 +319,7 @@ $fmtSize = function (float $b): string { return $b >= 1048576 ? round($b / 10485
 
                 <div class="card mb-4"><div class="card-body">
                     <div class="d-flex align-items-center gap-3 mb-3">
-                        <div class="icon-badge green"><i class="fas fa-shield-alt"></i></div>
+
                         <div><h6 class="fw-bold mb-0">Safe by design</h6><small class="text-muted">What the automatic update will and won’t do</small></div>
                     </div>
                     <ul class="small text-muted ps-3 mb-0" style="line-height:1.8;">
@@ -336,7 +336,7 @@ $fmtSize = function (float $b): string { return $b >= 1048576 ? round($b / 10485
 
                 <div class="card"><div class="card-body d-flex align-items-center justify-content-between flex-wrap gap-3">
                     <div class="d-flex align-items-center gap-3">
-                        <div class="icon-badge blue"><i class="fas fa-server"></i></div>
+
                         <div><h6 class="fw-bold mb-0">System &amp; Updates</h6><small class="text-muted">Add a city (data packs), automatic jobs and scheduler</small></div>
                     </div>
                     <a href="<?= BASE_URL ?>/pages/superadmin/system.php" class="btn btn-outline-primary btn-sm">Open</a>

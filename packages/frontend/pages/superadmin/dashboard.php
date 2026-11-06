@@ -92,11 +92,11 @@ $roleColors = ['super_admin' => 'primary', 'city_admin' => 'success', 'chairpers
         </div>
 
         <div class="row g-3 row-cols-2 row-cols-md-3 row-cols-xl-5 mb-4">
-            <div class="col"><div class="stat-hero-card tone-blue"><div class="stat-hero-icon"><i class="fas fa-city"></i></div><div><div class="stat-hero-value"><?= $totalCities ?></div><div class="stat-hero-label">Active cities</div></div></div></div>
-            <div class="col"><div class="stat-hero-card tone-green"><div class="stat-hero-icon"><i class="fas fa-users"></i></div><div><div class="stat-hero-value"><?= number_format($totalRiders) ?></div><div class="stat-hero-label">Total riders</div></div></div></div>
-            <div class="col"><div class="stat-hero-card tone-gold"><div class="stat-hero-icon"><i class="fas fa-map-marker-alt"></i></div><div><div class="stat-hero-value"><?= $totalStages ?></div><div class="stat-hero-label">Total stages</div></div></div></div>
-            <div class="col"><div class="stat-hero-card tone-dark"><div class="stat-hero-icon"><i class="fas fa-user-shield"></i></div><div><div class="stat-hero-value"><?= $totalUsers ?></div><div class="stat-hero-label">Platform users</div></div></div></div>
-            <div class="col"><div class="stat-hero-card tone-red"><div class="stat-hero-icon"><i class="fas fa-money-bill-wave"></i></div><div><div class="stat-hero-value"><?= $totalRevenue >= 1000000 ? number_format($totalRevenue / 1000000, 1) . 'M' : number_format($totalRevenue) ?></div><div class="stat-hero-label">Revenue (UGX)</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-blue"><div><div class="stat-hero-value"><?= $totalCities ?></div><div class="stat-hero-label">Active cities</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-green"><div><div class="stat-hero-value"><?= number_format($totalRiders) ?></div><div class="stat-hero-label">Total riders</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-gold"><div><div class="stat-hero-value"><?= $totalStages ?></div><div class="stat-hero-label">Total stages</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-dark"><div><div class="stat-hero-value"><?= $totalUsers ?></div><div class="stat-hero-label">Platform users</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-red"><div><div class="stat-hero-value"><?= $totalRevenue >= 1000000 ? number_format($totalRevenue / 1000000, 1) . 'M' : number_format($totalRevenue) ?></div><div class="stat-hero-label">Revenue (UGX)</div></div></div></div>
         </div>
 
         <div class="row g-3 g-md-4 mb-4">
@@ -210,10 +210,10 @@ $roleColors = ['super_admin' => 'primary', 'city_admin' => 'success', 'chairpers
                 <div class="card h-100"><div class="card-body">
                     <h6 class="fw-bold mb-3">Quick actions</h6>
                     <div class="row g-2">
-                        <div class="col-6"><a href="<?= BASE_URL ?>/pages/superadmin/platform-reports.php" class="text-decoration-none"><div class="quick-action-card"><div class="icon-badge blue"><i class="fas fa-chart-line"></i></div><h6>Reports</h6></div></a></div>
-                        <div class="col-6"><a href="<?= BASE_URL ?>/pages/superadmin/audit-logs.php" class="text-decoration-none"><div class="quick-action-card"><div class="icon-badge dark"><i class="fas fa-history"></i></div><h6>Audit logs</h6></div></a></div>
-                        <div class="col-6"><a href="<?= BASE_URL ?>/pages/superadmin/revenue-splits.php" class="text-decoration-none"><div class="quick-action-card"><div class="icon-badge gold"><i class="fas fa-percentage"></i></div><h6>Rev. splits</h6></div></a></div>
-                        <div class="col-6"><a href="<?= BASE_URL ?>/pages/superadmin/platform-settings.php" class="text-decoration-none"><div class="quick-action-card"><div class="icon-badge green"><i class="fas fa-cog"></i></div><h6>Settings</h6></div></a></div>
+                        <div class="col-6"><a href="<?= BASE_URL ?>/pages/superadmin/platform-reports.php" class="text-decoration-none"><div class="quick-action-card"><h6>Reports</h6></div></a></div>
+                        <div class="col-6"><a href="<?= BASE_URL ?>/pages/superadmin/audit-logs.php" class="text-decoration-none"><div class="quick-action-card"><h6>Audit logs</h6></div></a></div>
+                        <div class="col-6"><a href="<?= BASE_URL ?>/pages/superadmin/revenue-splits.php" class="text-decoration-none"><div class="quick-action-card"><h6>Rev. splits</h6></div></a></div>
+                        <div class="col-6"><a href="<?= BASE_URL ?>/pages/superadmin/platform-settings.php" class="text-decoration-none"><div class="quick-action-card"><h6>Settings</h6></div></a></div>
                     </div>
                 </div></div>
             </div>

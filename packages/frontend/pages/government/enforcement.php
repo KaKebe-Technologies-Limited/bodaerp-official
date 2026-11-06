@@ -70,10 +70,10 @@ $agencyLabel = $_SESSION['agency_name'] ?? 'Government Portal';
     <div class="content-area">
 
         <div class="row g-3 row-cols-2 row-cols-xl-4 mb-4">
-            <div class="col"><div class="stat-hero-card tone-red"><div class="stat-hero-icon"><i class="fas fa-gavel"></i></div><div><div class="stat-hero-value"><?= number_format($totalActions) ?></div><div class="stat-hero-label">Total actions</div></div></div></div>
-            <div class="col"><div class="stat-hero-card tone-gold"><div class="stat-hero-icon"><i class="fas fa-hourglass-half"></i></div><div><div class="stat-hero-value"><?= number_format($totalPending) ?></div><div class="stat-hero-label">Pending</div></div></div></div>
-            <div class="col"><div class="stat-hero-card tone-dark"><div class="stat-hero-icon"><i class="fas fa-motorcycle"></i></div><div><div class="stat-hero-value"><?= number_format($totalImpounded) ?></div><div class="stat-hero-label">Bikes impounded</div></div></div></div>
-            <div class="col"><div class="stat-hero-card tone-blue"><div class="stat-hero-icon"><i class="fas fa-money-bill-wave"></i></div><div><div class="stat-hero-value">UGX <?= number_format($totalFinesValue) ?></div><div class="stat-hero-label">Fines issued</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-red"><div><div class="stat-hero-value"><?= number_format($totalActions) ?></div><div class="stat-hero-label">Total actions</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-gold"><div><div class="stat-hero-value"><?= number_format($totalPending) ?></div><div class="stat-hero-label">Pending</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-dark"><div><div class="stat-hero-value"><?= number_format($totalImpounded) ?></div><div class="stat-hero-label">Bikes impounded</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-blue"><div><div class="stat-hero-value">UGX <?= number_format($totalFinesValue) ?></div><div class="stat-hero-label">Fines issued</div></div></div></div>
         </div>
 
         <div class="card mb-4"><div class="card-body">
@@ -131,7 +131,7 @@ $agencyLabel = $_SESSION['agency_name'] ?? 'Government Portal';
                         <div>
                         <?php foreach ($repeatOffenders as $o): ?>
                             <div class="activity-row">
-                                <div class="icon-badge red" style="width:34px;height:34px;font-size:0.85rem;"><i class="fas fa-motorcycle"></i></div>
+
                                 <div class="flex-1" style="min-width:0;">
                                     <div class="activity-title"><?= h($o['full_name']) ?> · <?= h($o['bike_plate']) ?></div>
                                     <div class="activity-sub"><?= h($o['city_name'] ?? '–') ?></div>
@@ -151,7 +151,7 @@ $agencyLabel = $_SESSION['agency_name'] ?? 'Government Portal';
                         <?php $typeIcons = ['warning'=>['fa-exclamation-circle','warning'],'fine'=>['fa-money-bill-wave','danger'],'suspension'=>['fa-ban','dark'],'impound'=>['fa-motorcycle','danger']]; ?>
                         <?php foreach (['warning','fine','suspension','impound'] as $t): [$icon, $color] = $typeIcons[$t]; ?>
                             <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
-                                <span><i class="fas <?= $icon ?> text-<?= $color ?> me-2"></i><?= ucfirst($t) ?></span>
+                                <span><?= ucfirst($t) ?></span>
                                 <strong><?= number_format($typeMap[$t] ?? 0) ?></strong>
                             </div>
                         <?php endforeach; ?>

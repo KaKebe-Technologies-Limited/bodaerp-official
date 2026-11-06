@@ -86,10 +86,10 @@ $stagesById = array_column($stages, null, 'id');
         <?php if ($errors): ?><div class="alert alert-danger"><?php foreach ($errors as $e) echo h($e) . '<br>'; ?></div><?php endif; ?>
 
         <div class="row g-3 mb-4">
-            <div class="col-md-3 col-6"><div class="stat-hero-card tone-blue"><div class="stat-hero-icon"><i class="fas fa-map-marker-alt"></i></div><div><div class="stat-hero-value"><?= $totalStages ?></div><div class="stat-hero-label">Total stages</div></div></div></div>
-            <div class="col-md-3 col-6"><div class="stat-hero-card tone-green"><div class="stat-hero-icon"><i class="fas fa-check-circle"></i></div><div><div class="stat-hero-value"><?= $activeStages ?></div><div class="stat-hero-label">Active stages</div></div></div></div>
-            <div class="col-md-3 col-6"><div class="stat-hero-card tone-red"><div class="stat-hero-icon"><i class="fas fa-exclamation-circle"></i></div><div><div class="stat-hero-value"><?= $totalStages - $activeStages ?></div><div class="stat-hero-label">Inactive stages</div></div></div></div>
-            <div class="col-md-3 col-6"><div class="stat-hero-card tone-gold"><div class="stat-hero-icon"><i class="fas fa-users"></i></div><div><div class="stat-hero-value"><?= number_format($totalRiders) ?></div><div class="stat-hero-label">Total riders</div></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card tone-blue"><div><div class="stat-hero-value"><?= $totalStages ?></div><div class="stat-hero-label">Total stages</div></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card tone-green"><div><div class="stat-hero-value"><?= $activeStages ?></div><div class="stat-hero-label">Active stages</div></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card tone-red"><div><div class="stat-hero-value"><?= $totalStages - $activeStages ?></div><div class="stat-hero-label">Inactive stages</div></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card tone-gold"><div><div class="stat-hero-value"><?= number_format($totalRiders) ?></div><div class="stat-hero-label">Total riders</div></div></div></div>
         </div>
 
         <div class="card mb-4">
@@ -184,7 +184,7 @@ $stagesById = array_column($stages, null, 'id');
     const stagesData = <?= js_json($stagesById) ?>;
 
     function openAddStage() {
-        document.getElementById('stageModalTitle').innerHTML = '<i class="fas fa-plus-circle me-2"></i>Add New Stage';
+        document.getElementById('stageModalTitle').innerHTML = 'Add New Stage';
         document.getElementById('editStageId').value = '';
         document.getElementById('stageForm').reset();
     }
@@ -192,7 +192,7 @@ $stagesById = array_column($stages, null, 'id');
     function openEditStage(id) {
         const s = stagesData[id];
         if (!s) return;
-        document.getElementById('stageModalTitle').innerHTML = '<i class="fas fa-edit me-2"></i>Edit Stage';
+        document.getElementById('stageModalTitle').innerHTML = 'Edit Stage';
         document.getElementById('editStageId').value = s.id;
         document.getElementById('stageName').value = s.name;
         document.getElementById('stageLocation').value = s.location || '';

@@ -42,18 +42,18 @@ $pageTitle = get_setting('chairperson_dashboard_title', 'Stage dashboard');
         </div>
 
         <div class="row g-3 mb-4">
-            <div class="col-md-3 col-6"><div class="stat-hero-card tone-blue"><div class="stat-hero-icon"><i class="fas fa-users"></i></div><div><div class="stat-hero-value"><?= $totalRiders ?></div><div class="stat-hero-label">Total riders</div></div></div></div>
-            <div class="col-md-3 col-6"><div class="stat-hero-card tone-green"><div class="stat-hero-icon"><i class="fas fa-check-circle"></i></div><div><div class="stat-hero-value"><?= $activeRiders ?></div><div class="stat-hero-label">Active (paid)</div></div></div></div>
-            <div class="col-md-3 col-6"><div class="stat-hero-card tone-red"><div class="stat-hero-icon"><i class="fas fa-exclamation-triangle"></i></div><div><div class="stat-hero-value"><?= $defaulters ?></div><div class="stat-hero-label">Defaulters</div></div></div></div>
-            <div class="col-md-3 col-6"><div class="stat-hero-card tone-gold"><div class="stat-hero-icon"><i class="fas fa-money-bill-wave"></i></div><div><div class="stat-hero-value"><?= h(formatCurrency($revenue)) ?></div><div class="stat-hero-label">Revenue collected</div></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card tone-blue"><div><div class="stat-hero-value"><?= $totalRiders ?></div><div class="stat-hero-label">Total riders</div></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card tone-green"><div><div class="stat-hero-value"><?= $activeRiders ?></div><div class="stat-hero-label">Active (paid)</div></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card tone-red"><div><div class="stat-hero-value"><?= $defaulters ?></div><div class="stat-hero-label">Defaulters</div></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card tone-gold"><div><div class="stat-hero-value"><?= h(formatCurrency($revenue)) ?></div><div class="stat-hero-label">Revenue collected</div></div></div></div>
         </div>
 
         <h6 class="fw-bold mb-3">Quick actions</h6>
         <div class="row g-3 mb-4">
-            <div class="col-md-3 col-6"><a href="<?= BASE_URL ?>/pages/chairperson/register-rider.php" class="text-decoration-none"><div class="quick-action-card"><div class="icon-badge blue"><i class="fas fa-user-plus"></i></div><h6>Add rider</h6><small>Register new rider</small></div></a></div>
-            <div class="col-md-3 col-6"><a href="<?= BASE_URL ?>/pages/chairperson/my-riders.php" class="text-decoration-none"><div class="quick-action-card"><div class="icon-badge green"><i class="fas fa-users"></i></div><h6>View riders</h6><small>All stage members</small></div></a></div>
-            <div class="col-md-3 col-6"><a href="<?= BASE_URL ?>/pages/chairperson/collect-payments.php" class="text-decoration-none"><div class="quick-action-card"><div class="icon-badge gold"><i class="fas fa-money-bill-wave"></i></div><h6>Record payment</h6><small>Collect taxes</small></div></a></div>
-            <div class="col-md-3 col-6"><a href="<?= BASE_URL ?>/pages/chairperson/stage-report.php" class="text-decoration-none"><div class="quick-action-card"><div class="icon-badge red"><i class="fas fa-file-alt"></i></div><h6>Stage report</h6><small>View performance</small></div></a></div>
+            <div class="col-md-3 col-6"><a href="<?= BASE_URL ?>/pages/chairperson/register-rider.php" class="text-decoration-none"><div class="quick-action-card"><h6>Add rider</h6><small>Register new rider</small></div></a></div>
+            <div class="col-md-3 col-6"><a href="<?= BASE_URL ?>/pages/chairperson/my-riders.php" class="text-decoration-none"><div class="quick-action-card"><h6>View riders</h6><small>All stage members</small></div></a></div>
+            <div class="col-md-3 col-6"><a href="<?= BASE_URL ?>/pages/chairperson/collect-payments.php" class="text-decoration-none"><div class="quick-action-card"><h6>Record payment</h6><small>Collect taxes</small></div></a></div>
+            <div class="col-md-3 col-6"><a href="<?= BASE_URL ?>/pages/chairperson/stage-report.php" class="text-decoration-none"><div class="quick-action-card"><h6>Stage report</h6><small>View performance</small></div></a></div>
         </div>
 
         <div class="card">

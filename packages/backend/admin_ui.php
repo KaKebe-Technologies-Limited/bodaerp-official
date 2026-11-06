@@ -105,7 +105,7 @@ function action_rail(array $groups, string $label = 'Actions'): string {
         $html .= '<div class="action-rail-group">' . ($title !== '' ? '<div class="action-rail-title">' . h((string) $title) . '</div>' : '');
         foreach ($items as $item) {
             $cls = 'action-rail-item' . (!empty($item['tone']) ? ' is-' . $item['tone'] : '');
-            $inner = '<i class="fas fa-' . h($item['icon']) . '" aria-hidden="true"></i><span>' . h($item['label']) . '</span>';
+            $inner = '<span>' . h($item['label']) . '</span>';
             $attrs = '';
             foreach ($item['attrs'] ?? [] as $name => $value) $attrs .= ' ' . h($name) . ($value === true ? '' : '="' . h((string) $value) . '"');
             if (isset($item['href'])) {

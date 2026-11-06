@@ -59,14 +59,14 @@ portal_start('superadmin', 'sms', 'SMS', [
 ]);
 ?>
 <div class="row g-3 mb-4">
-    <div class="col-sm-6 col-xl-3"><div class="stat-hero-card <?= $transport === 'egosms' ? 'tone-green' : 'tone-gold' ?>"><div class="stat-hero-icon"><i class="fas fa-tower-cell" aria-hidden="true"></i></div><div>
+    <div class="col-sm-6 col-xl-3"><div class="stat-hero-card <?= $transport === 'egosms' ? 'tone-green' : 'tone-gold' ?>"><div>
         <div class="stat-hero-value"><?= $transport === 'egosms' ? ($cfg['mode'] === 'live' ? 'Live' : 'Sandbox') : 'Not set up' ?></div>
         <div class="stat-hero-label"><?= $transport === 'egosms' ? 'Sender ID ' . h($cfg['sender']) : 'Messages go to storage/sms/' ?></div></div></div></div>
-    <div class="col-sm-6 col-xl-3"><div class="stat-hero-card tone-blue"><div class="stat-hero-icon"><i class="fas fa-wallet" aria-hidden="true"></i></div><div>
+    <div class="col-sm-6 col-xl-3"><div class="stat-hero-card tone-blue"><div>
         <div class="stat-hero-value"><?= $balance !== null ? h($balance) : 'Unknown' ?></div><div class="stat-hero-label">EgoSMS balance</div></div></div></div>
-    <div class="col-sm-6 col-xl-3"><div class="stat-hero-card tone-blue"><div class="stat-hero-icon"><i class="fas fa-paper-plane" aria-hidden="true"></i></div><div>
+    <div class="col-sm-6 col-xl-3"><div class="stat-hero-card tone-blue"><div>
         <div class="stat-hero-value"><?= number_format((int) $month['c']) ?></div><div class="stat-hero-label">Sent this month (<?= number_format((int) $month['parts']) ?> parts)</div></div></div></div>
-    <div class="col-sm-6 col-xl-3"><div class="stat-hero-card <?= (int) $month['failed'] ? 'tone-red' : 'tone-green' ?>"><div class="stat-hero-icon"><i class="fas fa-triangle-exclamation" aria-hidden="true"></i></div><div>
+    <div class="col-sm-6 col-xl-3"><div class="stat-hero-card <?= (int) $month['failed'] ? 'tone-red' : 'tone-green' ?>"><div>
         <div class="stat-hero-value"><?= number_format((int) $month['failed']) ?></div><div class="stat-hero-label">Failed this month</div></div></div></div>
 </div>
 

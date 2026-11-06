@@ -41,10 +41,10 @@ $recent = fetchAll("SELECT p.*, r.full_name, s.name AS stage_name FROM payments 
     <div class="content-area">
         <p id="reconcileStatus" class="small mb-3 d-none"></p>
         <div class="row g-3 mb-4">
-            <div class="col-md-3 col-6"><div class="stat-hero-card tone-blue"><div class="stat-hero-icon"><i class="fas fa-money-bill-wave"></i></div><div><div class="stat-hero-value"><?= h(formatCurrency($totalCollected)) ?></div><div class="stat-hero-label">Total collected</div></div></div></div>
-            <div class="col-md-3 col-6"><div class="stat-hero-card tone-blue"><div class="stat-hero-icon"><i class="fas fa-exchange-alt"></i></div><div><div class="stat-hero-value"><?= number_format($txnCount) ?></div><div class="stat-hero-label">Transactions</div></div></div></div>
-            <div class="col-md-3 col-6"><div class="stat-hero-card tone-gold"><div class="stat-hero-icon"><i class="fas fa-clock"></i></div><div><div class="stat-hero-value"><?= h(formatCurrency($pendingAmt)) ?></div><div class="stat-hero-label">Pending</div></div></div></div>
-            <div class="col-md-3 col-6"><div class="stat-hero-card tone-red"><div class="stat-hero-icon"><i class="fas fa-times-circle"></i></div><div><div class="stat-hero-value"><?= h(formatCurrency($failedAmt)) ?></div><div class="stat-hero-label">Failed</div></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card tone-blue"><div><div class="stat-hero-value"><?= h(formatCurrency($totalCollected)) ?></div><div class="stat-hero-label">Total collected</div></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card tone-blue"><div><div class="stat-hero-value"><?= number_format($txnCount) ?></div><div class="stat-hero-label">Transactions</div></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card tone-gold"><div><div class="stat-hero-value"><?= h(formatCurrency($pendingAmt)) ?></div><div class="stat-hero-label">Pending</div></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card tone-red"><div><div class="stat-hero-value"><?= h(formatCurrency($failedAmt)) ?></div><div class="stat-hero-label">Failed</div></div></div></div>
         </div>
 
         <div class="row g-3 mb-4">
@@ -97,7 +97,7 @@ $recent = fetchAll("SELECT p.*, r.full_name, s.name AS stage_name FROM payments 
         const btn = document.getElementById('reconcileBtn');
         const status = document.getElementById('reconcileStatus');
         btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Checking…';
+        btn.innerHTML = 'Checking…';
         status.classList.add('d-none');
 
         const fd = new FormData();
@@ -107,7 +107,7 @@ $recent = fetchAll("SELECT p.*, r.full_name, s.name AS stage_name FROM payments 
             const res = await fetch('<?= BASE_URL ?>/api/payments.php?action=reconcile', { method: 'POST', body: fd });
             const d = await res.json();
             btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-sync-alt me-1"></i>Reconcile Pending';
+            btn.innerHTML = 'Reconcile Pending';
 
             if (!d.success) {
                 status.className = 'small mb-3 text-danger';
@@ -122,7 +122,7 @@ $recent = fetchAll("SELECT p.*, r.full_name, s.name AS stage_name FROM payments 
             if (d.confirmed > 0) setTimeout(() => location.reload(), 1800);
         } catch (err) {
             btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-sync-alt me-1"></i>Reconcile Pending';
+            btn.innerHTML = 'Reconcile Pending';
             status.className = 'small mb-3 text-danger';
             status.textContent = 'Network error.';
             status.classList.remove('d-none');

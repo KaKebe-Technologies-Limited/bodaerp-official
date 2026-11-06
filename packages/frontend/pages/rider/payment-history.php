@@ -31,7 +31,7 @@ $hasPaidThisYear = fetchValue(
     <div class="content-area">
         <?php if (!$hasPaidThisYear): ?>
         <div class="alert alert-warning d-flex justify-content-between align-items-center flex-wrap gap-2 no-print">
-            <div><i class="fas fa-exclamation-triangle me-2"></i>You haven't paid your annual tax for <strong><?= h(CURRENT_FISCAL_YEAR) ?></strong> yet: <strong><?= h(formatCurrency($due['total'])) ?></strong> due.</div>
+            <div>You haven't paid your annual tax for <strong><?= h(CURRENT_FISCAL_YEAR) ?></strong> yet: <strong><?= h(formatCurrency($due['total'])) ?></strong> due.</div>
             <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#payNowModal">Pay now</button>
         </div>
         <?php endif; ?>
@@ -117,7 +117,7 @@ $hasPaidThisYear = fetchValue(
 
         const btn = document.getElementById('payNowSubmitBtn');
         btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Sending request…';
+        btn.innerHTML = 'Sending request…';
         payNowAlert('Sending payment request…', 'info');
 
         const fd = new FormData();
@@ -132,7 +132,7 @@ $hasPaidThisYear = fetchValue(
             if (!payStart.success) {
                 payNowAlert(payStart.message || 'Payment failed.', 'danger');
                 btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-lock me-1"></i>Pay Now';
+                btn.innerHTML = 'Pay Now';
                 return;
             }
 
@@ -143,12 +143,12 @@ $hasPaidThisYear = fetchValue(
             }
 
             payNowAlert('Check your phone (' + phone + ') and approve the payment prompt…', 'warning');
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Waiting for approval…';
+            btn.innerHTML = 'Waiting for approval…';
             pollPaymentStatus(payStart.payment_id);
         } catch (err) {
             payNowAlert('Network error. Please try again.', 'danger');
             btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-lock me-1"></i>Pay Now';
+            btn.innerHTML = 'Pay Now';
         }
     }
 
@@ -173,7 +173,7 @@ $hasPaidThisYear = fetchValue(
                     payNowAlert('Payment failed or was declined. Please try again.', 'danger');
                     const btn = document.getElementById('payNowSubmitBtn');
                     btn.disabled = false;
-                    btn.innerHTML = '<i class="fas fa-lock me-1"></i>Pay Now';
+                    btn.innerHTML = 'Pay Now';
                     return;
                 }
             } catch (err) { /* keep polling: a transient network hiccup isn't fatal */ }

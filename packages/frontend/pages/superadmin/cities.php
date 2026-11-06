@@ -121,10 +121,10 @@ $totalRidersAll  = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE deleted_a
         <?php endif; ?>
 
         <div class="row g-3 row-cols-2 row-cols-xl-4 mb-4">
-            <div class="col"><div class="stat-hero-card tone-blue"><div class="stat-hero-icon"><i class="fas fa-city"></i></div><div><div class="stat-hero-value"><?= $totalCitiesAll ?></div><div class="stat-hero-label">Total cities</div></div></div></div>
-            <div class="col"><div class="stat-hero-card tone-green"><div class="stat-hero-icon"><i class="fas fa-check-circle"></i></div><div><div class="stat-hero-value"><?= $activeCitiesAll ?></div><div class="stat-hero-label">Active</div></div></div></div>
-            <div class="col"><div class="stat-hero-card tone-gold"><div class="stat-hero-icon"><i class="fas fa-hourglass-half"></i></div><div><div class="stat-hero-value"><?= $pendingCitiesAll ?></div><div class="stat-hero-label">Pending</div></div></div></div>
-            <div class="col"><div class="stat-hero-card tone-dark"><div class="stat-hero-icon"><i class="fas fa-users"></i></div><div><div class="stat-hero-value"><?= number_format($totalRidersAll) ?></div><div class="stat-hero-label">Platform riders</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-blue"><div><div class="stat-hero-value"><?= $totalCitiesAll ?></div><div class="stat-hero-label">Total cities</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-green"><div><div class="stat-hero-value"><?= $activeCitiesAll ?></div><div class="stat-hero-label">Active</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-gold"><div><div class="stat-hero-value"><?= $pendingCitiesAll ?></div><div class="stat-hero-label">Pending</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-dark"><div><div class="stat-hero-value"><?= number_format($totalRidersAll) ?></div><div class="stat-hero-label">Platform riders</div></div></div></div>
         </div>
 
         <div class="card mb-3 no-print">
@@ -318,7 +318,7 @@ $totalRidersAll  = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE deleted_a
     });
 
     function openAddCity() {
-        document.getElementById('cityModalTitle').innerHTML = '<i class="fas fa-city me-2"></i>Add New City';
+        document.getElementById('cityModalTitle').innerHTML = 'Add New City';
         document.getElementById('editCityId').value = '';
         ['cityId','cityName','cityEmail','cityPhone','cityAddress'].forEach(id => document.getElementById(id).value = '');
         document.getElementById('cityId').readOnly = false;

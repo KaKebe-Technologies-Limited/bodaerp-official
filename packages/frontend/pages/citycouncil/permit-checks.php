@@ -24,10 +24,10 @@ portal_start('citycouncil', 'permit-checks', 'Roadside checks', [
 ]);
 ?>
 <div class="row g-3 mb-4">
-    <div class="col-6 col-lg-3"><div class="stat-hero-card tone-blue"><div class="stat-hero-icon"><i class="fas fa-qrcode" aria-hidden="true"></i></div><div><div class="stat-hero-value"><?= (int) $summary['total'] ?></div><div class="stat-hero-label">Checks</div></div></div></div>
-    <div class="col-6 col-lg-3"><div class="stat-hero-card tone-red"><div class="stat-hero-icon"><i class="fas fa-circle-xmark" aria-hidden="true"></i></div><div><div class="stat-hero-value"><?= (int) $summary['not_valid'] ?></div><div class="stat-hero-label">Permit not valid</div></div></div></div>
-    <div class="col-6 col-lg-3"><div class="stat-hero-card tone-gold"><div class="stat-hero-icon"><i class="fas fa-motorcycle" aria-hidden="true"></i></div><div><div class="stat-hero-value"><?= (int) $summary['impounded'] ?></div><div class="stat-hero-label">Impounded</div></div></div></div>
-    <div class="col-6 col-lg-3"><div class="stat-hero-card tone-green"><div class="stat-hero-icon"><i class="fas fa-user-shield" aria-hidden="true"></i></div><div><div class="stat-hero-value"><?= (int) $summary['officers'] ?></div><div class="stat-hero-label">People checking</div></div></div></div>
+    <div class="col-6 col-lg-3"><div class="stat-hero-card tone-blue"><div><div class="stat-hero-value"><?= (int) $summary['total'] ?></div><div class="stat-hero-label">Checks</div></div></div></div>
+    <div class="col-6 col-lg-3"><div class="stat-hero-card tone-red"><div><div class="stat-hero-value"><?= (int) $summary['not_valid'] ?></div><div class="stat-hero-label">Permit not valid</div></div></div></div>
+    <div class="col-6 col-lg-3"><div class="stat-hero-card tone-gold"><div><div class="stat-hero-value"><?= (int) $summary['impounded'] ?></div><div class="stat-hero-label">Impounded</div></div></div></div>
+    <div class="col-6 col-lg-3"><div class="stat-hero-card tone-green"><div><div class="stat-hero-value"><?= (int) $summary['officers'] ?></div><div class="stat-hero-label">People checking</div></div></div></div>
 </div>
 
 <form class="d-flex flex-wrap gap-2 mb-3" method="get">

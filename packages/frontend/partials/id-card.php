@@ -54,7 +54,7 @@ $cardReturn = implode(', ', array_filter([stripos((string) ($cardCity['address']
             <div class="idc-photo-col">
                 <div class="idc-photo">
                     <?php if ($cardPhoto): ?><img alt="Photo of <?= h($cardRider['full_name']) ?>" src="<?= h($cardPhoto) ?>">
-                    <?php else: ?><div class="idc-photo-missing"><i class="fas fa-user" aria-hidden="true"></i><span>No photo</span></div><?php endif; ?>
+                    <?php else: ?><div class="idc-photo-missing"><span>No photo</span></div><?php endif; ?>
                 </div>
                 <div class="idc-mark"><b style="font-size: <?= $cardWordSize ?>pt"><?= h($cardWord) ?></b><span><?= h($cardDigits) ?></span></div>
             </div>

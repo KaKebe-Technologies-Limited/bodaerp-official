@@ -88,10 +88,10 @@ $appliedPacks = count(array_filter($packs, fn($p) => $p['applied']));
         <?php if ($flash): ?><div class="alert alert-<?= h($flash[0]) ?>"><?= h($flash[1]) ?></div><?php endif; ?>
 
         <div class="row g-3 row-cols-2 row-cols-xl-4 mb-4">
-            <div class="col"><div class="stat-hero-card tone-dark"><div class="stat-hero-icon"><i class="fas fa-server"></i></div><div><div class="stat-hero-value" style="font-size:1.15rem;"><?= h(ucfirst(getDbEnvironment())) ?></div><div class="stat-hero-label">Environment · <?= h(DB_NAME) ?></div></div></div></div>
-            <div class="col"><a href="<?= BASE_URL ?>/pages/superadmin/database.php" class="text-decoration-none d-block"><div class="stat-hero-card <?= $mig['pending'] || $migFailure ? 'tone-gold' : 'tone-green' ?>"><div class="stat-hero-icon"><i class="fas fa-database"></i></div><div><div class="stat-hero-value" style="font-size:1.15rem;"><?= $mig['pending'] ? (int) $mig['pending'] . ' pending' : 'Up to date' ?></div><div class="stat-hero-label">Database · open the Database page</div></div></div></a></div>
-            <div class="col"><div class="stat-hero-card <?= $failedJobs ? 'tone-red' : 'tone-blue' ?>"><div class="stat-hero-icon"><i class="fas fa-robot"></i></div><div><div class="stat-hero-value" style="font-size:1.15rem;"><?= $enabledJobs ?>/<?= count($jobs) ?> on</div><div class="stat-hero-label">Automation<?= $failedJobs ? " · {$failedJobs} failing" : '' ?></div></div></div></div>
-            <div class="col"><div class="stat-hero-card tone-gold"><div class="stat-hero-icon"><i class="fas fa-city"></i></div><div><div class="stat-hero-value" style="font-size:1.15rem;"><?= $appliedPacks ?>/<?= count($packs) ?> applied</div><div class="stat-hero-label">Data packs</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-dark"><div><div class="stat-hero-value" style="font-size:1.15rem;"><?= h(ucfirst(getDbEnvironment())) ?></div><div class="stat-hero-label">Environment · <?= h(DB_NAME) ?></div></div></div></div>
+            <div class="col"><a href="<?= BASE_URL ?>/pages/superadmin/database.php" class="text-decoration-none d-block"><div class="stat-hero-card <?= $mig['pending'] || $migFailure ? 'tone-gold' : 'tone-green' ?>"><div><div class="stat-hero-value" style="font-size:1.15rem;"><?= $mig['pending'] ? (int) $mig['pending'] . ' pending' : 'Up to date' ?></div><div class="stat-hero-label">Database · open the Database page</div></div></div></a></div>
+            <div class="col"><div class="stat-hero-card <?= $failedJobs ? 'tone-red' : 'tone-blue' ?>"><div><div class="stat-hero-value" style="font-size:1.15rem;"><?= $enabledJobs ?>/<?= count($jobs) ?> on</div><div class="stat-hero-label">Automation<?= $failedJobs ? " · {$failedJobs} failing" : '' ?></div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-gold"><div><div class="stat-hero-value" style="font-size:1.15rem;"><?= $appliedPacks ?>/<?= count($packs) ?> applied</div><div class="stat-hero-label">Data packs</div></div></div></div>
         </div>
 
         <ul class="nav nav-pills gap-2 mb-4 flex-wrap">
@@ -121,15 +121,15 @@ $appliedPacks = count(array_filter($packs, fn($p) => $p['applied']));
                 <div class="col-lg-6"><div class="pack-card">
                     <div class="d-flex align-items-start justify-content-between gap-3 mb-2">
                         <div class="d-flex align-items-center gap-3">
-                            <div class="icon-badge blue"><i class="fas fa-city"></i></div>
+
                             <div><h6 class="fw-bold mb-0"><?= h($p['title']) ?></h6>
-                                <?php if ($p['applied']): ?><small class="text-success"><i class="fas fa-check-circle me-1"></i>Applied <?= h(date('M d, Y H:i', strtotime($p['applied']['applied_at']))) ?> · run <?= (int) $p['applied']['run_count'] ?>×</small>
+                                <?php if ($p['applied']): ?><small class="text-success">Applied <?= h(date('M d, Y H:i', strtotime($p['applied']['applied_at']))) ?> · run <?= (int) $p['applied']['run_count'] ?>×</small>
                                 <?php else: ?><small class="text-muted">Not applied yet</small><?php endif; ?></div>
                         </div>
                     </div>
                     <p class="small text-muted"><?= h($p['description']) ?></p>
-                    <?php if ($p['hint']): ?><p class="small mb-2"><i class="fas fa-key text-primary me-1"></i><?= h($p['hint']) ?></p><?php endif; ?>
-                    <?php if ($p['applied']): ?><p class="small mb-3"><i class="fas fa-info-circle text-primary me-1"></i><?= h($p['applied']['summary']) ?></p><?php endif; ?>
+                    <?php if ($p['hint']): ?><p class="small mb-2"><?= h($p['hint']) ?></p><?php endif; ?>
+                    <?php if ($p['applied']): ?><p class="small mb-3"><?= h($p['applied']['summary']) ?></p><?php endif; ?>
                     <form method="post" data-confirm="Apply “<?= h($p['title']) ?>”? Existing records are left untouched.">
                         <?= csrf_field() ?><input type="hidden" name="action" value="apply_pack"><input type="hidden" name="pack" value="<?= h($p['code']) ?>">
                         <button class="btn <?= $p['applied'] ? 'btn-outline-primary' : 'btn-primary' ?> btn-sm"><?= $p['applied'] ? 'Re-apply (fill anything missing)' : 'Apply this data pack' ?></button>
@@ -144,7 +144,7 @@ $appliedPacks = count(array_filter($packs, fn($p) => $p['applied']));
         <div class="card"><div class="card-body">
             <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 mb-3">
                 <div class="d-flex align-items-center gap-3">
-                    <div class="icon-badge blue"><i class="fas fa-robot"></i></div>
+
                     <div><h6 class="fw-bold mb-0">Automatic jobs</h6><small class="text-muted">Run by themselves while the system is in use: no cron needed. Switch any job off if you prefer.</small></div>
                 </div>
                 <form method="post"><?= csrf_field() ?><input type="hidden" name="action" value="run_all">
@@ -190,7 +190,7 @@ $appliedPacks = count(array_filter($packs, fn($p) => $p['applied']));
         <?php if ($tab === 'backup'): ?>
         <div class="row g-3 g-md-4">
             <div class="col-lg-5"><div class="card h-100"><div class="card-body">
-                <div class="d-flex align-items-center gap-3 mb-3"><div class="icon-badge green"><i class="fas fa-download"></i></div>
+                <div class="d-flex align-items-center gap-3 mb-3">
                     <div><h6 class="fw-bold mb-0">Database backup</h6><small class="text-muted">A full .sql copy you can restore in phpMyAdmin</small></div></div>
                 <p class="small text-muted">Take a backup before big changes. It contains all tables and data (including password hashes), so keep the file private. Sign-in sessions are left out.</p>
                 <form method="post" action="<?= BASE_URL ?>/pages/superadmin/db-backup.php"><?= csrf_field() ?>
@@ -204,7 +204,7 @@ $appliedPacks = count(array_filter($packs, fn($p) => $p['applied']));
                 <?php endif; ?>
             </div></div></div>
             <div class="col-lg-7"><div class="card h-100"><div class="card-body">
-                <div class="d-flex align-items-center gap-3 mb-3"><div class="icon-badge gold"><i class="fas fa-clock"></i></div>
+                <div class="d-flex align-items-center gap-3 mb-3">
                     <div><h6 class="fw-bold mb-0">Scheduler (optional)</h6><small class="text-muted">Jobs already run while people use the system. Add a cron for exact timing on quiet days.</small></div></div>
                 <div class="small fw-semibold mb-1">Hostinger cron job (command)</div>
                 <div class="sys-code mb-3"><?= h($cronCli) ?></div>

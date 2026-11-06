@@ -72,7 +72,7 @@ portal_start('superadmin', 'email-templates', 'Email templates', [
 ]);
 ?>
 <?php if (mail_transport_name() !== 'smtp'): ?>
-    <div class="alert alert-warning" data-keep><i class="fas fa-triangle-exclamation me-2"></i><strong>No mail server is set up.</strong> Emails are saved to <code>storage/mail/</code> and listed in the Sent log, but nobody receives them. Add <code>SMTP_HOST</code>, <code>SMTP_PORT</code>, <code>SMTP_USER</code>, <code>SMTP_PASS</code> and <code>MAIL_FROM</code> to the server's <code>.env</code> (see docs/DEPLOYMENT.md). Two-step sign-in stays off until then.</div>
+    <div class="alert alert-warning" data-keep><strong>No mail server is set up.</strong> Emails are saved to <code>storage/mail/</code> and listed in the Sent log, but nobody receives them. Add <code>SMTP_HOST</code>, <code>SMTP_PORT</code>, <code>SMTP_USER</code>, <code>SMTP_PASS</code> and <code>MAIL_FROM</code> to the server's <code>.env</code> (see docs/DEPLOYMENT.md). Two-step sign-in stays off until then.</div>
 <?php endif; ?>
 
 <?php if ($tpl): $vars = $sample($tpl['variables']); $preview = render_email_template($tpl['code'] === '_layout' ? 'password_reset' : $tpl['code'], $vars); ?>

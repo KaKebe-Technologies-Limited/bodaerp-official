@@ -118,10 +118,10 @@ function qsMerge(array $overrides): string {
 
     <div class="content-area">
         <div class="row g-3 mb-4">
-            <div class="col-md-3 col-6"><div class="stat-hero-card tone-blue"><div class="stat-hero-icon"><i class="fas fa-users"></i></div><div><div class="stat-hero-value"><?= number_format($totalRiders) ?></div><div class="stat-hero-label">Total riders</div></div></div></div>
-            <div class="col-md-3 col-6"><div class="stat-hero-card tone-green"><div class="stat-hero-icon"><i class="fas fa-check-circle"></i></div><div><div class="stat-hero-value"><?= number_format($activeRiders) ?></div><div class="stat-hero-label">Active (paid)</div></div></div></div>
-            <div class="col-md-3 col-6"><div class="stat-hero-card tone-red"><div class="stat-hero-icon"><i class="fas fa-exclamation-circle"></i></div><div><div class="stat-hero-value"><?= number_format($expiredRiders) ?></div><div class="stat-hero-label">Expired</div></div></div></div>
-            <div class="col-md-3 col-6"><div class="stat-hero-card tone-gold"><div class="stat-hero-icon"><i class="fas fa-map-marker-alt"></i></div><div><div class="stat-hero-value"><?= $stageCount ?></div><div class="stat-hero-label">Stages</div></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card tone-blue"><div><div class="stat-hero-value"><?= number_format($totalRiders) ?></div><div class="stat-hero-label">Total riders</div></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card tone-green"><div><div class="stat-hero-value"><?= number_format($activeRiders) ?></div><div class="stat-hero-label">Active (paid)</div></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card tone-red"><div><div class="stat-hero-value"><?= number_format($expiredRiders) ?></div><div class="stat-hero-label">Expired</div></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card tone-gold"><div><div class="stat-hero-value"><?= $stageCount ?></div><div class="stat-hero-label">Stages</div></div></div></div>
         </div>
 
         <div class="card mb-4">
@@ -160,8 +160,8 @@ function qsMerge(array $overrides): string {
                 <button class="btn btn-outline-success dropdown-toggle btn-sm" type="button" data-bs-toggle="dropdown">Export all matching (<?= number_format($total) ?>)
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end">
-                    <li><a class="dropdown-item" href="<?= qsMerge(['export'=>'csv']) ?>"><i class="fas fa-file-csv me-2 text-primary"></i>CSV</a></li>
-                    <li><a class="dropdown-item" href="<?= qsMerge(['export'=>'excel']) ?>"><i class="fas fa-file-excel me-2 text-success"></i>Excel</a></li>
+                    <li><a class="dropdown-item" href="<?= qsMerge(['export'=>'csv']) ?>">CSV</a></li>
+                    <li><a class="dropdown-item" href="<?= qsMerge(['export'=>'excel']) ?>">Excel</a></li>
                 </ul>
             </div>
             <?php $exportTableId='ridersTable'; $exportFilename='city_riders_page'.$page; $exportTitle='City Riders (this page)'; require __DIR__ . '/../../partials/export-toolbar.php'; ?>

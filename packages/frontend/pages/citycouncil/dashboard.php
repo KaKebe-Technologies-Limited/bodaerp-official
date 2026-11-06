@@ -51,10 +51,10 @@ for ($i = 11; $i >= 0; $i--) {
         </div>
 
         <div class="row g-3 row-cols-2 row-cols-xl-4 mb-4">
-            <div class="col"><div class="stat-hero-card tone-green"><div class="stat-hero-icon"><i class="fas fa-users"></i></div><div><div class="stat-hero-value"><?= number_format($totalRiders) ?></div><div class="stat-hero-label">Total riders</div></div></div></div>
-            <div class="col"><div class="stat-hero-card tone-blue"><div class="stat-hero-icon"><i class="fas fa-money-bill-wave"></i></div><div><div class="stat-hero-value"><?= h(formatCurrency($totalRevenue)) ?></div><div class="stat-hero-label">Total revenue</div></div></div></div>
-            <div class="col"><div class="stat-hero-card tone-gold"><div class="stat-hero-icon"><i class="fas fa-check-circle"></i></div><div><div class="stat-hero-value"><?= $complianceRate ?>%</div><div class="stat-hero-label">Compliance rate</div></div></div></div>
-            <div class="col"><div class="stat-hero-card tone-red"><div class="stat-hero-icon"><i class="fas fa-exclamation-triangle"></i></div><div><div class="stat-hero-value"><?= number_format($defaulters) ?></div><div class="stat-hero-label">Defaulters</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-green"><div><div class="stat-hero-value"><?= number_format($totalRiders) ?></div><div class="stat-hero-label">Total riders</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-blue"><div><div class="stat-hero-value"><?= h(formatCurrency($totalRevenue)) ?></div><div class="stat-hero-label">Total revenue</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-gold"><div><div class="stat-hero-value"><?= $complianceRate ?>%</div><div class="stat-hero-label">Compliance rate</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-red"><div><div class="stat-hero-value"><?= number_format($defaulters) ?></div><div class="stat-hero-label">Defaulters</div></div></div></div>
         </div>
 
         <div class="row g-4 mb-4">
@@ -84,10 +84,10 @@ for ($i = 11; $i >= 0; $i--) {
 
         <h6 class="fw-bold mb-3">Quick actions</h6>
         <div class="row g-3">
-            <div class="col-6 col-md-3"><a href="<?= BASE_URL ?>/pages/citycouncil/revenue-analytics.php" class="text-decoration-none"><div class="quick-action-card"><div class="icon-badge blue"><i class="fas fa-file-invoice"></i></div><h6>Revenue report</h6><small>Analytics &amp; trends</small></div></a></div>
-            <div class="col-6 col-md-3"><a href="<?= BASE_URL ?>/pages/citycouncil/compliance-monitoring.php" class="text-decoration-none"><div class="quick-action-card"><div class="icon-badge green"><i class="fas fa-check-circle"></i></div><h6>Compliance</h6><small>Monitor stages</small></div></a></div>
-            <div class="col-6 col-md-3"><a href="<?= BASE_URL ?>/pages/citycouncil/city-defaulters.php" class="text-decoration-none"><div class="quick-action-card"><div class="icon-badge red"><i class="fas fa-exclamation-triangle"></i></div><h6>Defaulters</h6><small>City-wide list</small></div></a></div>
-            <div class="col-6 col-md-3"><a href="<?= BASE_URL ?>/pages/citycouncil/all-stages.php" class="text-decoration-none"><div class="quick-action-card"><div class="icon-badge gold"><i class="fas fa-map-marker-alt"></i></div><h6>All Stages</h6><small>City overview</small></div></a></div>
+            <div class="col-6 col-md-3"><a href="<?= BASE_URL ?>/pages/citycouncil/revenue-analytics.php" class="text-decoration-none"><div class="quick-action-card"><h6>Revenue report</h6><small>Analytics &amp; trends</small></div></a></div>
+            <div class="col-6 col-md-3"><a href="<?= BASE_URL ?>/pages/citycouncil/compliance-monitoring.php" class="text-decoration-none"><div class="quick-action-card"><h6>Compliance</h6><small>Monitor stages</small></div></a></div>
+            <div class="col-6 col-md-3"><a href="<?= BASE_URL ?>/pages/citycouncil/city-defaulters.php" class="text-decoration-none"><div class="quick-action-card"><h6>Defaulters</h6><small>City-wide list</small></div></a></div>
+            <div class="col-6 col-md-3"><a href="<?= BASE_URL ?>/pages/citycouncil/all-stages.php" class="text-decoration-none"><div class="quick-action-card"><h6>All Stages</h6><small>City overview</small></div></a></div>
         </div>
     </div>
 </div>

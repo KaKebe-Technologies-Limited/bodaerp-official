@@ -82,12 +82,12 @@ $agencyLabel = $_SESSION['agency_name'] ?? 'Government Portal';
         </div>
 
         <div class="row g-3 row-cols-2 row-cols-md-3 row-cols-xl-6 mb-4">
-            <div class="col"><div class="stat-hero-card tone-blue"><div class="stat-hero-icon"><i class="fas fa-city"></i></div><div><div class="stat-hero-value"><?= $totalCities ?></div><div class="stat-hero-label">Cities</div></div></div></div>
-            <div class="col"><div class="stat-hero-card tone-green"><div class="stat-hero-icon"><i class="fas fa-users"></i></div><div><div class="stat-hero-value"><?= number_format($totalRiders) ?></div><div class="stat-hero-label">Total riders</div></div></div></div>
-            <div class="col"><div class="stat-hero-card tone-gold"><div class="stat-hero-icon"><i class="fas fa-check-circle"></i></div><div><div class="stat-hero-value"><?= $complianceRate ?>%</div><div class="stat-hero-label">Compliance rate</div></div></div></div>
-            <div class="col"><div class="stat-hero-card tone-dark"><div class="stat-hero-icon"><i class="fas fa-map-marker-alt"></i></div><div><div class="stat-hero-value"><?= $totalStages ?></div><div class="stat-hero-label">Total stages</div></div></div></div>
-            <div class="col"><div class="stat-hero-card tone-red"><div class="stat-hero-icon"><i class="fas fa-gavel"></i></div><div><div class="stat-hero-value"><?= number_format($totalEnforce) ?></div><div class="stat-hero-label">Enforcement actions</div></div></div></div>
-            <div class="col"><div class="stat-hero-card tone-gold"><div class="stat-hero-icon"><i class="fas fa-university"></i></div><div><div class="stat-hero-value"><?= $totalRevenue >= 1000000 ? number_format($totalRevenue / 1000000, 1) . 'M' : number_format($totalRevenue) ?></div><div class="stat-hero-label">National revenue (UGX)</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-blue"><div><div class="stat-hero-value"><?= $totalCities ?></div><div class="stat-hero-label">Cities</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-green"><div><div class="stat-hero-value"><?= number_format($totalRiders) ?></div><div class="stat-hero-label">Total riders</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-gold"><div><div class="stat-hero-value"><?= $complianceRate ?>%</div><div class="stat-hero-label">Compliance rate</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-dark"><div><div class="stat-hero-value"><?= $totalStages ?></div><div class="stat-hero-label">Total stages</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-red"><div><div class="stat-hero-value"><?= number_format($totalEnforce) ?></div><div class="stat-hero-label">Enforcement actions</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-gold"><div><div class="stat-hero-value"><?= $totalRevenue >= 1000000 ? number_format($totalRevenue / 1000000, 1) . 'M' : number_format($totalRevenue) ?></div><div class="stat-hero-label">National revenue (UGX)</div></div></div></div>
         </div>
 
         <div class="row g-3 g-md-4 mb-4">
@@ -171,7 +171,7 @@ $agencyLabel = $_SESSION['agency_name'] ?? 'Government Portal';
                         <div>
                         <?php foreach ($recentEnforcement as $e): ?>
                             <div class="activity-row">
-                                <div class="icon-badge red" style="width:34px;height:34px;font-size:0.85rem;"><i class="fas fa-gavel"></i></div>
+
                                 <div class="flex-1" style="min-width:0;">
                                     <div class="activity-title"><?= h(ucfirst($e['type'])) ?> · <?= h($e['plate'] ?: 'N/A') ?></div>
                                     <div class="activity-sub"><?= h($e['city_name'] ?? '–') ?> · <?= formatDate($e['action_date']) ?></div>

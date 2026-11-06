@@ -42,7 +42,7 @@ $stage = fetchOne("SELECT * FROM stages WHERE id = ?", [$stageId]);
             <div class="col-lg-6">
                 <div class="card"><div class="card-body">
                     <div class="d-flex align-items-center gap-3 mb-3">
-                        <div class="icon-badge blue"><i class="fas fa-map-marker-alt"></i></div>
+
                         <h5 class="fw-bold mb-0">Stage information</h5>
                     </div>
                     <form method="post">
@@ -61,7 +61,7 @@ $stage = fetchOne("SELECT * FROM stages WHERE id = ?", [$stageId]);
             <div class="col-lg-6">
                 <div class="card"><div class="card-body">
                     <div class="d-flex align-items-center gap-3 mb-3">
-                        <div class="icon-badge gold"><i class="fas fa-bell"></i></div>
+
                         <div><h5 class="fw-bold mb-0">Notifications &amp; Tax</h5><small class="text-muted">Set city-wide by City Council</small></div>
                     </div>
                     <div class="form-check form-switch mb-2"><input id="f-check-check" class="form-check-input" type="checkbox" checked disabled><label for="f-check-check" class="form-check-label">Notify on new rider registration</label></div>

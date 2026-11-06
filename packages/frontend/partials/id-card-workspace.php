@@ -110,7 +110,7 @@ foreach ($cardBack as $backUrl => $backLabel) $cardGoTo[] = ['label' => $backLab
                 <dt class="col-5 text-muted fw-normal">Permit valid until</dt><dd class="col-7"><?= formatDate($cardRider['expiry_date'], 'd M Y') ?></dd>
             </dl>
             <?php foreach ($cardProblems as [$level, $problem]): ?>
-                <div class="alert alert-<?= $level ?> small py-2 mb-2"><i class="fas fa-triangle-exclamation me-1" aria-hidden="true"></i><?= h($problem) ?></div>
+                <div class="alert alert-<?= $level ?> small py-2 mb-2"><?= h($problem) ?></div>
             <?php endforeach; ?>
             <?php if ($cardRow['valid_until'] && $cardRider['expiry_date'] && $cardRow['valid_until'] !== $cardRider['expiry_date']): ?>
                 <div class="alert alert-info small py-2 mb-2">The permit now runs to <?= formatDate($cardRider['expiry_date'], 'd M Y') ?>, but this card was made when it ran to <?= formatDate($cardRow['valid_until'], 'd M Y') ?>. Issue a card for the renewal so the printed date is right.</div>

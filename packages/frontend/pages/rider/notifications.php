@@ -24,7 +24,7 @@ portal_start('rider', 'notifications', t('rider.notes.title', 'Messages'), [
 ]);
 ?>
 <?php if ($portalNoticesOff): ?>
-    <div class="alert alert-info d-flex align-items-center gap-2" data-keep><i class="fas fa-bell-slash" aria-hidden="true"></i><span><?= h(t('rider.notes.off', 'New messages are switched off for your account, so only older ones appear here.')) ?> <a href="<?= BASE_URL ?>/pages/account/settings.php#notifications"><?= h(t('rider.notes.turn_on', 'Turn them back on')) ?></a></span></div>
+    <div class="alert alert-info d-flex align-items-center gap-2" data-keep><span><?= h(t('rider.notes.off', 'New messages are switched off for your account, so only older ones appear here.')) ?> <a href="<?= BASE_URL ?>/pages/account/settings.php#notifications"><?= h(t('rider.notes.turn_on', 'Turn them back on')) ?></a></span></div>
 <?php endif; ?>
 <section class="card measure-wide">
     <div class="card-body p-0">

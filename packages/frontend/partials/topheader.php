@@ -40,11 +40,11 @@ if (!$tbTrail && ($active ?? '') === 'my-account') $tbTrail = ['My account'];
                 <strong><?= h($tbName) ?></strong>
                 <span><?= h($_SESSION['email'] ?? '') ?></span>
             </div>
-            <a class="dropdown-item<?= ($active ?? '') === 'my-account' ? ' active' : '' ?>" href="<?= BASE_URL ?>/pages/account/settings.php"><i class="fas fa-user-gear" aria-hidden="true"></i> My account</a>
+            <a class="dropdown-item<?= ($active ?? '') === 'my-account' ? ' active' : '' ?>" href="<?= BASE_URL ?>/pages/account/settings.php">My account</a>
             <div class="dropdown-divider"></div>
             <form method="post" action="<?= BASE_URL ?>/logout.php" id="logoutForm">
                 <?= csrf_field() ?>
-                <button type="submit" class="dropdown-item text-danger"><i class="fas fa-right-from-bracket" aria-hidden="true"></i> Sign out</button>
+                <button type="submit" class="dropdown-item text-danger">Sign out</button>
             </form>
         </div>
     </div>

@@ -108,7 +108,7 @@ $actionsById = array_column($actions, null, 'id');
     <?php if ($appeals): ?>
     <div class="content-area pb-0">
         <div class="card border-warning"><div class="card-body">
-            <h2 class="section-title"><i class="fas fa-scale-balanced me-2 text-warning" aria-hidden="true"></i><?= count($appeals) ?> appeal<?= count($appeals) === 1 ? '' : 's' ?> waiting for an answer</h2>
+            <h2 class="section-title"><?= count($appeals) ?> appeal<?= count($appeals) === 1 ? '' : 's' ?> waiting for an answer</h2>
             <?php foreach ($appeals as $ap): ?>
             <div class="border rounded-3 p-3 mb-3">
                 <div class="d-flex flex-wrap justify-content-between gap-2"><strong><?= h($ap['full_name'] ?? 'Unknown rider') ?> · <code><?= h($ap['action_code']) ?></code> · <?= h(ENFORCEMENT_LABELS[$ap['type']] ?? $ap['type']) ?></strong><small class="text-muted">Appealed <?= formatDate($ap['appeal_at']) ?></small></div>
@@ -131,10 +131,10 @@ $actionsById = array_column($actions, null, 'id');
     <div class="content-area">
         <?php if ($errors): ?><div class="alert alert-danger"><?php foreach ($errors as $e) echo h($e); ?></div><?php endif; ?>
         <div class="row g-3 mb-4">
-            <div class="col-md-3 col-6"><div class="stat-hero-card tone-red"><div class="stat-hero-icon"><i class="fas fa-gavel"></i></div><div><div class="stat-hero-value"><?= $total ?></div><div class="stat-hero-label">Total actions</div></div></div></div>
-            <div class="col-md-3 col-6"><div class="stat-hero-card tone-gold"><div class="stat-hero-icon"><i class="fas fa-clock"></i></div><div><div class="stat-hero-value"><?= $pending ?></div><div class="stat-hero-label">Pending</div></div></div></div>
-            <div class="col-md-3 col-6"><div class="stat-hero-card tone-green"><div class="stat-hero-icon"><i class="fas fa-check-circle"></i></div><div><div class="stat-hero-value"><?= $resolved ?></div><div class="stat-hero-label">Resolved</div></div></div></div>
-            <div class="col-md-3 col-6"><div class="stat-hero-card tone-blue"><div class="stat-hero-icon"><i class="fas fa-archive"></i></div><div><div class="stat-hero-value"><?= $closed ?></div><div class="stat-hero-label">Closed</div></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card tone-red"><div><div class="stat-hero-value"><?= $total ?></div><div class="stat-hero-label">Total actions</div></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card tone-gold"><div><div class="stat-hero-value"><?= $pending ?></div><div class="stat-hero-label">Pending</div></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card tone-green"><div><div class="stat-hero-value"><?= $resolved ?></div><div class="stat-hero-label">Resolved</div></div></div></div>
+            <div class="col-md-3 col-6"><div class="stat-hero-card tone-blue"><div><div class="stat-hero-value"><?= $closed ?></div><div class="stat-hero-label">Closed</div></div></div></div>
         </div>
 
         <?php if ($actions): ?>
@@ -247,14 +247,14 @@ $actionsById = array_column($actions, null, 'id');
     const actionsData = <?= js_json($actionsById) ?>;
 
     function openAdd() {
-        document.getElementById('actionModalTitle').innerHTML = '<i class="fas fa-gavel me-2"></i>New Enforcement Action';
+        document.getElementById('actionModalTitle').innerHTML = 'New Enforcement Action';
         document.getElementById('actionForm').reset();
         document.getElementById('editId').value = '';
     }
     function openEdit(id) {
         const a = actionsData[id];
         if (!a) return;
-        document.getElementById('actionModalTitle').innerHTML = '<i class="fas fa-edit me-2"></i>Edit Action';
+        document.getElementById('actionModalTitle').innerHTML = 'Edit Action';
         document.getElementById('editId').value = a.id;
         document.getElementById('riderSelect').value = a.rider_id;
         document.getElementById('typeSelect').value = a.type;

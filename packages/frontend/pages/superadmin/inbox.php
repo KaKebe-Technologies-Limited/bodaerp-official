@@ -70,7 +70,7 @@ $rows = fetchAll("SELECT id, name, email, organisation, subject, status, created
 portal_start('superadmin', 'inbox', 'Contact inbox', [
     'subtitle' => 'Messages sent through the public contact form',
     'breadcrumbs' => ['Super Admin' => '/pages/superadmin/dashboard.php', 'Contact Inbox' => $id ? '/pages/superadmin/inbox.php' : null] + ($id ? [$msg['subject'] => null] : []),
-    'actions' => $id ? '' : '<a class="btn btn-outline-secondary btn-sm" href="' . h(query_with(['export' => 1])) . '"><i class="fas fa-file-csv me-1"></i>Export CSV</a>',
+    'actions' => $id ? '' : '<a class="btn btn-outline-secondary btn-sm" href="' . h(query_with(['export' => 1])) . '">Export CSV</a>',
 ]);
 ?>
 <?php if ($id): ?>

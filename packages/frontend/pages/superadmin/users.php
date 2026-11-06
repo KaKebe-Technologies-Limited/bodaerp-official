@@ -160,10 +160,10 @@ $adminUsersAll    = (int) fetchValue("SELECT COUNT(*) FROM users WHERE deleted_a
         <?php endif; ?>
 
         <div class="row g-3 row-cols-2 row-cols-xl-4 mb-4">
-            <div class="col"><div class="stat-hero-card tone-blue"><div class="stat-hero-icon"><i class="fas fa-users"></i></div><div><div class="stat-hero-value"><?= number_format($totalUsersAll) ?></div><div class="stat-hero-label">Total users</div></div></div></div>
-            <div class="col"><div class="stat-hero-card tone-green"><div class="stat-hero-icon"><i class="fas fa-user-check"></i></div><div><div class="stat-hero-value"><?= number_format($activeUsersAll) ?></div><div class="stat-hero-label">Active</div></div></div></div>
-            <div class="col"><div class="stat-hero-card tone-red"><div class="stat-hero-icon"><i class="fas fa-user-slash"></i></div><div><div class="stat-hero-value"><?= number_format($suspendedUsersAll) ?></div><div class="stat-hero-label">Suspended</div></div></div></div>
-            <div class="col"><div class="stat-hero-card tone-dark"><div class="stat-hero-icon"><i class="fas fa-user-shield"></i></div><div><div class="stat-hero-value"><?= number_format($adminUsersAll) ?></div><div class="stat-hero-label">Admins</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-blue"><div><div class="stat-hero-value"><?= number_format($totalUsersAll) ?></div><div class="stat-hero-label">Total users</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-green"><div><div class="stat-hero-value"><?= number_format($activeUsersAll) ?></div><div class="stat-hero-label">Active</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-red"><div><div class="stat-hero-value"><?= number_format($suspendedUsersAll) ?></div><div class="stat-hero-label">Suspended</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-dark"><div><div class="stat-hero-value"><?= number_format($adminUsersAll) ?></div><div class="stat-hero-label">Admins</div></div></div></div>
         </div>
 
         <div class="card mb-3 no-print">
@@ -320,14 +320,14 @@ $adminUsersAll    = (int) fetchValue("SELECT COUNT(*) FROM users WHERE deleted_a
 
     $('userRole').addEventListener('change', toggleFields);
     $('userCity').addEventListener('change', toggleFields);
-    document.querySelector('[data-add-user]').addEventListener('click', () => fill({}, '<i class="fas fa-user-plus me-2"></i>Add User'));
+    document.querySelector('[data-add-user]').addEventListener('click', () => fill({}, 'Add User'));
     document.querySelectorAll('[data-edit-user]').forEach(btn => btn.addEventListener('click', () => {
         const u = usersData[btn.dataset.editUser];
         if (!u) return;
-        fill(u, '<i class="fas fa-user-edit me-2"></i>Edit User');
+        fill(u, 'Edit User');
         bootstrap.Modal.getOrCreateInstance($('userModal')).show();
     }));
-    if (posted) { fill(posted, posted.edit_user_id ? '<i class="fas fa-user-edit me-2"></i>Edit User' : '<i class="fas fa-user-plus me-2"></i>Add User'); bootstrap.Modal.getOrCreateInstance($('userModal')).show(); }
+    if (posted) { fill(posted, posted.edit_user_id ? 'Edit User' : 'Add User'); bootstrap.Modal.getOrCreateInstance($('userModal')).show(); }
 </script>
 </body>
 </html>

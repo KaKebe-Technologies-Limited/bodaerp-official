@@ -84,7 +84,7 @@ require __DIR__ . '/packages/frontend/partials/auth-start.php';
                 <div class="role-selector" role="group" aria-labelledby="roleLabel" data-role-selector>
                     <?php foreach ($demoRoles as $rk => [$rName, $rBadge, $rIcon]): [$re, $rp] = $firstOfRole[$rk]; ?>
                         <button type="button" class="role-btn r-<?= $rk ?>" aria-pressed="false" data-demo-role="<?= $rk ?>" data-demo-email="<?= h($re) ?>" data-demo-pass="<?= h($rp) ?>">
-                            <i class="fas <?= $rIcon ?>" aria-hidden="true"></i><span class="role-name"><?= h($rName) ?></span><span class="role-badge"><?= h($rBadge) ?></span>
+                            <span class="role-name"><?= h($rName) ?></span><span class="role-badge"><?= h($rBadge) ?></span>
                             <span class="check" aria-hidden="true"><i class="fas fa-check"></i></span>
                         </button>
                     <?php endforeach; ?>
@@ -121,7 +121,7 @@ require __DIR__ . '/packages/frontend/partials/auth-start.php';
 
             <?php if ($showDemoLogins): ?>
                 <div class="demo-credentials">
-                    <div class="demo-title"><i class="fas fa-key" aria-hidden="true"></i> Demo accounts (this computer only, never on a live server)</div>
+                    <div class="demo-title">Demo accounts (this computer only, never on a live server)</div>
                     <?php foreach ($demo as [$rk, $label, $de, $dp]): ?>
                         <button type="button" class="demo-row r-<?= $rk ?>" data-demo-role="<?= $rk ?>" data-demo-email="<?= h($de) ?>" data-demo-pass="<?= h($dp) ?>">
                             <span class="who"><?= h($label) ?></span><code><?= h($de) ?> / <?= h($dp) ?></code>
