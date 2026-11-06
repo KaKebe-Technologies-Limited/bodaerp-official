@@ -308,6 +308,23 @@ function is_logged_in(): bool {
     return !empty($_SESSION['user_id']);
 }
 
+/**
+ * True only while the sign-in is still usable: not idle past SESSION_TIMEOUT and not revoked elsewhere (password
+ * change, admin action). Public pages use it to choose between the account avatar and the Sign in button; they do
+ * not sign anyone out, require_role() does that on the next portal page.
+ */
+function session_is_current(): bool {
+    if (!is_logged_in()) return false;
+    if (time() - ($_SESSION['last_activity'] ?? 0) > SESSION_TIMEOUT) return false;
+    try {
+        $active = fetchValue("SELECT is_active FROM login_sessions WHERE id = ? AND user_id = ?", [session_id(), $_SESSION['user_id']]);
+    } catch (Throwable $e) {
+        error_log('BodaERP session check failed, header shows Sign in: ' . $e->getMessage());
+        return false;
+    }
+    return !($active !== null && (int) $active === 0);
+}
+
 function current_user(): ?array {
     return is_logged_in() ? $_SESSION : null;
 }

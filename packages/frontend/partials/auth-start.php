@@ -19,5 +19,4 @@ $authCardClass = $authCardClass ?? '';
             <a href="<?= BASE_URL ?>/" class="logo-section" aria-label="<?= h($siteName) ?> home page">
                 <img class="logo-icon" src="<?= h(brand_logo_url()) ?>" alt="" width="64" height="64">
                 <span class="brand-name"><span class="b1"><?= h($brandA) ?></span><span class="b2"><?= h($brandB) ?></span></span>
-                <span class="brand-tag"><?= h(get_setting('site_tagline', '')) ?></span>
             </a>

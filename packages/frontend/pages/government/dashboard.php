@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . '/../../../backend/auth.php';
-require_role(['government']);
+require_role(['government', 'super_admin']);
 
 $active = 'dashboard';
 

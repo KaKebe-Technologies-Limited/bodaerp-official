@@ -3,7 +3,7 @@
 // rider and their permit: name, permit number, plate, city/stage, status and dates. NIN, phone, email, date of
 // birth, address, next of kin, photo and the QR verification token are deliberately never selected here.
 require_once __DIR__ . '/../../../backend/auth.php';
-require_role(['government']);
+require_role(['government', 'super_admin']);
 $active = 'registry';
 
 $search = trim((string) ($_GET['q'] ?? ''));

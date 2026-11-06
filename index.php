@@ -24,9 +24,14 @@ $photoStyle = function (string $settingKey): string {
     return $full === '' ? '' : ' style="--photo: url(\'' . h($full) . '\'); --photo-sm: url(\'' . h($small) . '\')"';
 };
 $interval = max(0, min(30, (int) get_setting('home_slider_interval', '7')));
-// Light sections alternate grey and white in the order they render, so two neighbours never share a colour
-// whichever sections are switched off. The hero, the stats band and the closing band are dark.
-$tone = function (): string { static $n = 0; return $n++ % 2 === 0 ? ' section-alt' : ''; };
+// Light sections take the next tone in the order they render (grey, white, blue tint, white, dot grid, white), so
+// two neighbours never share a colour whichever sections are switched off. The hero, stats and closing bands are dark.
+$tone = function (): string {
+    static $n = 0;
+    $tones = ['section-alt', '', 'section-tint', '', 'section-dots', ''];
+    $class = $tones[$n++ % count($tones)];
+    return $class === '' ? '' : ' ' . $class;
+};
 $seo = ['title' => get_setting('seo_default_title', 'BodaERP'), 'description' => get_setting('seo_default_description', ''),
     'nodes' => [['@type' => 'Service', '@id' => app_url('') . '#service', 'name' => 'Boda-boda rider registration and permit management',
         'serviceType' => 'Rider registration, permit fee collection and permit verification',

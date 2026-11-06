@@ -95,10 +95,10 @@ require __DIR__ . '/packages/frontend/partials/auth-start.php';
                 <?= csrf_field() ?>
                 <?php if ($next): ?><input type="hidden" name="next" value="<?= h(BASE_URL . $next) ?>"><?php endif; ?>
                 <div class="login-field">
-                    <label for="email">Email address or phone number</label>
+                    <label for="email">Email or phone</label>
                     <div class="input-box">
                         <i class="fas fa-user" aria-hidden="true"></i>
-                        <input type="text" id="email" name="email" value="<?= h($email) ?>" placeholder="name@bodaerp.site or 0772 123456" autocomplete="username" inputmode="email" required autofocus>
+                        <input type="text" id="email" name="email" value="<?= h($email) ?>" autocomplete="username" inputmode="email" required autofocus>
                     </div>
                 </div>
                 <div class="login-field">

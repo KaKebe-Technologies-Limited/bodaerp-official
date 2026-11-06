@@ -11,6 +11,8 @@
     --line: #e3e8f0;
     --surface: #ffffff;
     --surface-alt: #f4f7fb;
+    --surface-tint: #edf4ff;
+    --dot: rgba(0, 23, 64, .09);
     --dark: var(--brand-dark);
     --radius-sm: 8px;
     --radius: 12px;
@@ -44,10 +46,10 @@ body.public :focus-visible { outline: 3px solid color-mix(in srgb, var(--brand) 
 .brand-mark .b1 { color: var(--brand-dark); }
 .brand-mark .b2 { color: var(--accent); }
 .header-actions { display: flex; align-items: center; gap: var(--space-2); }
-.account-btn { width: 40px; height: 40px; border-radius: 50%; display: inline-grid; place-items: center; background: var(--surface-alt); border: 1.5px solid var(--line); color: var(--brand-dark) !important; text-decoration: none; font-weight: 700; font-size: .85rem; transition: border-color .15s ease, background-color .15s ease; }
-.account-btn:hover { border-color: var(--brand); background: color-mix(in srgb, var(--brand) 8%, #fff); }
-.account-btn.is-signed-in { background: var(--brand-dark); border-color: var(--brand-dark); color: #fff !important; }
-.account-btn.is-signed-in:hover { background: var(--brand); border-color: var(--brand); }
+.account-btn { width: 40px; height: 40px; border-radius: 50%; display: inline-grid; place-items: center; background: var(--brand-dark); border: 1.5px solid var(--brand-dark); color: #fff !important; text-decoration: none; font-weight: 700; font-size: .85rem; transition: border-color .15s ease, background-color .15s ease; }
+.account-btn:hover { background: var(--brand); border-color: var(--brand); }
+.btn-signin { padding: 9px 18px; font-size: .92rem; }
+@media (max-width: 380px) { .btn-signin { padding: 8px 12px; } }
 .site-nav { display: flex; align-items: center; justify-content: center; gap: 4px; }
 .site-nav a { position: relative; color: var(--ink-soft) !important; text-decoration: none; padding: 10px 14px; border-radius: var(--radius-sm); font-weight: 500; font-size: .98rem; transition: color .15s ease; }
 .site-nav a::after { content: ""; position: absolute; left: 14px; right: 14px; bottom: 4px; height: 2px; border-radius: 2px; background: var(--accent); transform: scaleX(0); transition: transform .2s ease; }
@@ -79,7 +81,7 @@ body.public :focus-visible { outline: 3px solid color-mix(in srgb, var(--brand) 
 
 .section { padding: var(--space-8) 0; }
 
-.page-hero { background: var(--surface-alt); border-bottom: 1px solid var(--line); padding: var(--space-7) 0 var(--space-6); }
+.page-hero { background-color: var(--surface-tint); background-image: radial-gradient(var(--dot) 1.2px, transparent 1.4px); background-size: 22px 22px; border-bottom: 1px solid var(--line); padding: var(--space-7) 0 var(--space-6); }
 .page-hero h1 { font-weight: 800; letter-spacing: -.6px; font-size: clamp(1.7rem, 3.4vw, 2.4rem); margin: 0 0 var(--space-2); }
 .page-hero p { color: var(--ink-soft); margin: 0; max-width: var(--measure); }
 .breadcrumbs { font-size: .85rem; color: var(--muted); margin-bottom: var(--space-3); }
@@ -174,6 +176,9 @@ body.public :focus-visible { outline: 3px solid color-mix(in srgb, var(--brand) 
 
 /* Home: how it works, who uses it, cities, FAQ preview, permit check */
 .section-alt { background: var(--surface-alt); }
+/* More light tones for the homepage rotation (index.php $tone): a brand-blue tint and a grey with a fine dot grid. */
+.section-tint { background: var(--surface-tint); }
+.section-dots { background-color: var(--surface-alt); background-image: radial-gradient(var(--dot) 1.2px, transparent 1.4px); background-size: 22px 22px; }
 
 .section { padding: var(--space-8) 0; }
 .section-head { max-width: 680px; margin: 0 auto var(--space-7); text-align: center; }

@@ -155,6 +155,10 @@ What was built:
 - **Portal look follows the Goodname Finance staff portal** (owner, 2026-11-06): Outfit, navy sidebar + top bar, dropdown groups, accent page header. No badges/eyebrow labels on the public site, no slide numbers or pause button on the hero, no text about where the system is made. Use `data-*` attributes (`data-confirm`, `data-autosubmit`, `data-print`, `data-copy`, `data-copy-from`, `data-check-all`, `data-preview-target`, `data-fallback-src`, `data-hide-broken`), never inline handlers. To call a page function use `data-call` / `data-call-input` / `data-call-submit` with `data-call-args` (JSON via `h(js_json([...]))`), and add its name to `PAGE_ACTIONS` in `main.js`.
 - Two-step sign-in is enforced only when SMTP is configured (otherwise admins would be locked out).
 - Roles are fixed in code (`ROLE_LABELS` in auth.php); there is no role/permission editor.
+- **Super Admin reads the national (government) portal** (owner, 2026-11-07): government pages allow `super_admin`; `portal_nav_current()` gives them the government menu plus an Admin link back. Every other cross-role page stays refused (tests/access.php).
+- **Sidebar labels are one word each; the browser tab title is the sidebar label** (owner, 2026-11-07), set in head-assets.php through `portal_page_label()`. Pages outside the menu keep their own `$pageTitle`.
+- **Public header:** "Sign in" button when nobody is signed in or the sign-in has expired or been revoked (`session_is_current()`); the initials avatar only for a live sign-in.
+- **Public section tones:** neighbours never share a colour. Homepage light sections rotate grey / white / blue tint / white / dot grid / white (`$tone()` in index.php); inner pages: dotted blue-tint header, white body, navy footer.
 - Views `v_stage_stats` / `v_city_stats` must stay views.
 
 ## Commands

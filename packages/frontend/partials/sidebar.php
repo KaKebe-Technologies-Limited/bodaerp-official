@@ -4,7 +4,7 @@
 // current page always starts open. On a laptop the sidebar folds to icons (main.js remembers the choice). The page sets
 // $active to its menu key. Profile, My account and Sign out live in the top bar.
 require_once __DIR__ . '/../../backend/portal_nav.php';
-$portalNav = portal_nav((string) ($_SESSION['role'] ?? ''));
+$portalNav = portal_nav_current();
 $siteName = get_setting('site_name', 'BodaERP');
 $active = $active ?? '';
 $navHref = fn(string $file) => BASE_URL . '/pages/' . $portalNav['folder'] . '/' . $file;

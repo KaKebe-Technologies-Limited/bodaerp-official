@@ -1,7 +1,15 @@
 <?php require_once __DIR__ . '/../../backend/site.php'; ?>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title><?= h($pageTitle ?? 'BodaERP') ?></title>
+<?php
+// A page that is in the sidebar takes its sidebar label as the tab title, so the tab and the menu always match.
+if (!empty($_SESSION['role'])) {
+    require_once __DIR__ . '/../../backend/portal_nav.php';
+    $navLabel = portal_page_label();
+    if ($navLabel !== null) $pageTitle = $navLabel . ' | ' . get_setting('site_name', 'BodaERP');
+}
+?>
+<title><?= h($pageTitle ?? get_setting('site_name', 'BodaERP')) ?></title>
 <meta name="theme-color" content="<?= h(brand_color('brand_color_dark', BRAND_DEFAULT_DARK)) ?>">
 <?= brand_favicon_tags() ?>
 

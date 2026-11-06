@@ -62,7 +62,6 @@ body.auth-page a.logo-section:hover { text-decoration: none; }
 .logo-section .brand-name { font-weight: 900; font-size: 1.8rem; line-height: 1.1; letter-spacing: -.5px; }
 .logo-section .b1 { color: var(--brand-dark); }
 .logo-section .b2 { color: var(--accent); }
-.logo-section .brand-tag { color: #5b6478; font-size: .85rem; margin-top: 4px; max-width: 34ch; }
 
 .login-card h1 { font-size: 1.25rem; font-weight: 800; color: var(--brand-dark); text-align: center; margin: 0 0 6px; letter-spacing: -.2px; }
 .login-card .sub { color: #5b6478; font-size: .9rem; text-align: center; margin: 0 0 20px; }

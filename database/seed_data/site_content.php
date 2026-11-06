@@ -62,9 +62,9 @@ return [
         ['home_why_text', 'Boda-bodas are how many people get to work, to school, to market and to hospital. Knowing who is riding, and whether they hold a valid permit, protects everyone on the road.', 'textarea', 'home', 'Text under the "why it matters" heading', 0, 28],
         ['home_cta_image', '/assets/images/home/lira-sunset.webp', 'image', 'home', 'Background photo behind the closing "talk to us" band', 0, 25],
 
-        ['login_heading', 'Sign in to BodaERP', 'text', 'login', 'Heading on the sign-in page', 0, 1],
-        ['login_subheading', 'One sign-in for council staff, stage chairpersons, riders and government officers.', 'text', 'login', 'Text under the sign-in heading', 0, 2],
-        ['login_help_text', 'Riders get their account from their stage chairperson. Council staff get theirs from the BodaERP administrator.', 'textarea', 'login', 'Help text under the sign-in form', 0, 3],
+        ['login_heading', 'Sign in', 'text', 'login', 'Heading on the sign-in page', 0, 1],
+        ['login_subheading', '', 'text', 'login', 'Text under the sign-in heading (empty = hidden)', 0, 2],
+        ['login_help_text', '', 'textarea', 'login', 'Help text under the sign-in form (empty = hidden)', 0, 3],
 
         ['security_login_max_attempts', '5', 'number', 'security', 'Failed sign-ins allowed before an account is locked', 0, 1],
         ['security_lockout_minutes', '15', 'number', 'security', 'Minutes an account stays locked after too many failed sign-ins', 0, 2],

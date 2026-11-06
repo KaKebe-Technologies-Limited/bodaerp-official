@@ -116,7 +116,8 @@ runQuery("UPDATE riders SET photo_path = ? WHERE id = ?", [$otherCityRider['phot
 $r = http($photo, $jars['rider']);
 $t->ok($r['code'] === 403 || $r['code'] === 404, "a rider cannot load another rider's photo", 'HTTP ' . $r['code']);
 
-// 2. Every role is refused every other role's pages.
+// 2. Every role is refused every other role's pages. The one exception: a Super Admin reads the national
+// (government) portal, with that portal's menu and a link back.
 foreach ($folders as $role => $myFolder) {
     foreach ($folders as $otherRole => $folder) {
         if ($role === $otherRole) continue;
@@ -124,6 +125,10 @@ foreach ($folders as $role => $myFolder) {
             $name = basename($f);
             if ($name === 'db-backup.php') continue;
             $r = http("$base/pages/$folder/$name", $jars[$role]);
+            if ($role === 'super_admin' && $folder === 'government') {
+                $t->ok($r['code'] === 200 && str_contains($r['body'], 'superadmin/dashboard.php'), "super_admin reads government/$name with a link back", 'HTTP ' . $r['code']);
+                continue;
+            }
             $t->ok($r['code'] === 403 || ($r['code'] >= 300 && $r['code'] < 400), "$role refused $folder/$name", 'HTTP ' . $r['code']);
         }
     }
