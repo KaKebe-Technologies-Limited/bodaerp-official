@@ -66,7 +66,7 @@ portal_start('superadmin', 'content', $page ? 'Edit page' : 'New page', [
             <h2 class="h6 fw-bold">Publishing</h2>
             <div class="form-check"><input class="form-check-input" type="radio" name="status" id="st_pub" value="published"<?= $v['status'] === 'published' ? ' checked' : '' ?>><label class="form-check-label" for="st_pub">Published: anyone can see it</label></div>
             <div class="form-check mb-3"><input class="form-check-input" type="radio" name="status" id="st_draft" value="draft"<?= $v['status'] !== 'published' ? ' checked' : '' ?>><label class="form-check-label" for="st_draft">Draft: only administrators can preview it</label></div>
-            <button class="btn btn-primary w-100" data-busy-label="Saving"><i class="fas fa-floppy-disk me-1"></i>Save page</button>
+            <button class="btn btn-primary w-100" data-busy-label="Saving">Save page</button>
             <?php if ($page): ?><p class="small text-muted mt-2 mb-0">Last saved <?= h(formatDate($page['updated_at'], 'j M Y, H:i')) ?></p><?php endif; ?>
         </div></div>
         <div class="card"><div class="card-body">

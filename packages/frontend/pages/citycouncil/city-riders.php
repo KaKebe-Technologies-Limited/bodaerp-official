@@ -150,15 +150,14 @@ function qsMerge(array $overrides): string {
                             <option value="oldest" <?= $sort==='oldest'?'selected':'' ?>>Oldest first</option>
                         </select>
                     </div>
-                    <div class="col-md-3"><button type="submit" class="btn btn-primary w-100"><i class="fas fa-search me-1"></i>Apply</button></div>
+                    <div class="col-md-3"><button type="submit" class="btn btn-primary w-100">Apply</button></div>
                 </form>
             </div>
         </div>
 
         <div class="d-flex justify-content-end gap-2 mb-2 no-print">
             <div class="dropdown">
-                <button class="btn btn-outline-success dropdown-toggle btn-sm" type="button" data-bs-toggle="dropdown">
-                    <i class="fas fa-file-export me-1"></i>Export all matching (<?= number_format($total) ?>)
+                <button class="btn btn-outline-success dropdown-toggle btn-sm" type="button" data-bs-toggle="dropdown">Export all matching (<?= number_format($total) ?>)
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end">
                     <li><a class="dropdown-item" href="<?= qsMerge(['export'=>'csv']) ?>"><i class="fas fa-file-csv me-2 text-primary"></i>CSV</a></li>
@@ -248,7 +247,7 @@ function qsMerge(array $overrides): string {
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-warning"><i class="fas fa-save me-1"></i>Update rider</button>
+                    <button type="submit" class="btn btn-warning">Update rider</button>
                 </div>
             </form>
         </div>

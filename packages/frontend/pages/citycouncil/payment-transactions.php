@@ -89,15 +89,14 @@ $stages = fetchAll("SELECT id, name FROM stages WHERE city_id = ? ORDER BY name"
                             <option value="Failed" <?= $statusFilter==='Failed'?'selected':'' ?>>Failed</option>
                         </select>
                     </div>
-                    <div class="col-12"><button type="submit" class="btn btn-primary"><i class="fas fa-filter me-1"></i>Apply filters</button></div>
+                    <div class="col-12"><button type="submit" class="btn btn-primary">Apply filters</button></div>
                 </form>
             </div>
         </div>
 
         <div class="d-flex justify-content-end gap-2 mb-2 no-print">
             <div class="dropdown">
-                <button class="btn btn-outline-success dropdown-toggle btn-sm" type="button" data-bs-toggle="dropdown">
-                    <i class="fas fa-file-export me-1"></i>Export all matching (<?= number_format($total) ?>)
+                <button class="btn btn-outline-success dropdown-toggle btn-sm" type="button" data-bs-toggle="dropdown">Export all matching (<?= number_format($total) ?>)
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end">
                     <li><a class="dropdown-item" href="<?= h(query_with(['export'=>'csv'])) ?>"><i class="fas fa-file-csv me-2 text-primary"></i>CSV</a></li>

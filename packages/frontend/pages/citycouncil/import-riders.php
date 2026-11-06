@@ -131,7 +131,7 @@ portal_start('citycouncil', 'import-riders', 'Import riders', [
             <h2 class="section-title">How the file should look</h2>
             <p class="small">One rider per row, with these headings in the first row. Required: <strong><?= h(implode(', ', array_map(fn($c) => $c[0], array_filter(IMPORT_COLUMNS, fn($c) => $c[1])))) ?></strong>.</p>
             <p class="small">The stage must already exist in Manage stages. Riders with a "Permit valid until" date in the future become active; the rest wait for their first payment.</p>
-            <a class="btn btn-outline-primary btn-sm" href="?template=1"><i class="fas fa-download me-1" aria-hidden="true"></i>Download the template</a>
+            <a class="btn btn-outline-primary btn-sm" href="?template=1">Download the template</a>
         </div>
     </aside>
 </div>

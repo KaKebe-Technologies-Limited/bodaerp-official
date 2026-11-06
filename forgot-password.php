@@ -43,7 +43,7 @@ require __DIR__ . '/packages/frontend/partials/auth-start.php';
                     <div class="notice notice-info">Developer machine only: <a href="<?= h($devLink) ?>">open the reset link</a>.</div>
                 <?php endif; ?>
                 <p class="sub">Nothing after a few minutes? Check your spam folder, or ask your stage chairperson or city office to send you a new link.</p>
-                <a class="btn-login" href="<?= BASE_URL ?>/login.php"><i class="fas fa-arrow-left" aria-hidden="true"></i> Back to sign in</a>
+                <a class="btn-login" href="<?= BASE_URL ?>/login.php">Back to sign in</a>
             <?php else: ?>
                 <p class="sub">Enter the email address on your account, or the phone number if you are a rider without email. We send a link to choose a new password.</p>
                 <?php if ($error): ?><div class="notice notice-error" role="alert"><?= h($error) ?></div><?php endif; ?>
@@ -56,7 +56,7 @@ require __DIR__ . '/packages/frontend/partials/auth-start.php';
                             <input type="text" id="email" name="email" value="<?= h($email) ?>" placeholder="name@bodaerp.site or 0772 123456" autocomplete="username" required autofocus>
                         </div>
                     </div>
-                    <button type="submit" class="btn-login"><i class="fas fa-paper-plane" aria-hidden="true"></i> Send me a reset link</button>
+                    <button type="submit" class="btn-login">Send me a reset link</button>
                 </form>
                 <p class="auth-links"><a href="<?= BASE_URL ?>/login.php">Back to sign in</a></p>
             <?php endif; ?>

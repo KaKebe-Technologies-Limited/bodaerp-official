@@ -108,7 +108,7 @@ $settings['support_phone'] = get_setting('contact_phone');
                 </div>
             </div>
 
-            <button type="submit" class="btn btn-primary"><i class="fas fa-save me-2"></i>Save settings</button>
+            <button type="submit" class="btn btn-primary">Save settings</button>
         </form>
 
         <div class="card mt-4"><div class="card-body d-flex align-items-center justify-content-between flex-wrap gap-3">

@@ -71,7 +71,7 @@ $roleColors = ['super_admin' => 'primary', 'city_admin' => 'success', 'chairpers
 
 <div class="main-content" id="mainContent">
     <?php ob_start(); ?>
-<a href="<?= BASE_URL ?>/pages/superadmin/cities.php" class="btn btn-primary btn-sm"><i class="fas fa-plus me-1" aria-hidden="true"></i>Add a city</a>
+<a href="<?= BASE_URL ?>/pages/superadmin/cities.php" class="btn btn-primary btn-sm">Add a city</a>
     <?php $headerActions = ob_get_clean();
     $pageTitle = 'Platform overview';
     $pageSubtitle = 'All cities on BodaERP';
@@ -144,7 +144,7 @@ $roleColors = ['super_admin' => 'primary', 'city_admin' => 'success', 'chairpers
                             <i class="fas fa-search"></i>
                             <input type="text" class="form-control form-control-sm" id="citySearchInput" placeholder="Search cities..." aria-label="Search cities">
                         </div>
-                        <a href="<?= BASE_URL ?>/pages/superadmin/cities.php" class="btn btn-outline-primary btn-sm"><i class="fas fa-cog me-1"></i>Manage All</a>
+                        <a href="<?= BASE_URL ?>/pages/superadmin/cities.php" class="btn btn-outline-primary btn-sm">Manage All</a>
                     </div>
                 </div>
                 <div class="table-responsive">
@@ -203,7 +203,7 @@ $roleColors = ['super_admin' => 'primary', 'city_admin' => 'success', 'chairpers
                         </div>
                     <?php endforeach; ?>
                     </div>
-                    <a href="<?= BASE_URL ?>/pages/superadmin/users.php" class="btn btn-sm btn-outline-primary mt-2"><i class="fas fa-list me-1"></i>All Users</a>
+                    <a href="<?= BASE_URL ?>/pages/superadmin/users.php" class="btn btn-sm btn-outline-primary mt-2">All Users</a>
                 </div></div>
             </div>
             <div class="col-md-5">

@@ -36,7 +36,7 @@ require __DIR__ . '/packages/frontend/partials/auth-start.php';
             <?php if (!$user): ?>
                 <h1>This link has expired</h1>
                 <p class="sub">Password links work once, for a limited time. Request a new one and use it straight away.</p>
-                <a class="btn-login" href="<?= BASE_URL ?>/forgot-password.php"><i class="fas fa-rotate" aria-hidden="true"></i> Request a new link</a>
+                <a class="btn-login" href="<?= BASE_URL ?>/forgot-password.php">Request a new link</a>
                 <p class="auth-links"><a href="<?= BASE_URL ?>/login.php">Back to sign in</a></p>
             <?php else: ?>
                 <h1><?= $welcome ? 'Welcome, ' . h(strtok($user['name'], ' ')) : 'Choose a new password' ?></h1>
@@ -63,7 +63,7 @@ require __DIR__ . '/packages/frontend/partials/auth-start.php';
                             <input type="password" id="password_confirm" name="password_confirm" autocomplete="new-password" required>
                         </div>
                     </div>
-                    <button type="submit" class="btn-login"><i class="fas fa-check" aria-hidden="true"></i> Save password</button>
+                    <button type="submit" class="btn-login">Save password</button>
                 </form>
             <?php endif; ?>
 <?php require __DIR__ . '/packages/frontend/partials/auth-end.php';

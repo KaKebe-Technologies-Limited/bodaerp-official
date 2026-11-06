@@ -151,8 +151,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         </div>
 
                         <div class="col-12 mt-4">
-                            <button type="submit" class="btn btn-primary btn-lg px-5"><i class="fas fa-save me-2"></i>Register & generate ID</button>
-                            <a href="<?= BASE_URL ?>/pages/chairperson/dashboard.php" class="btn btn-outline-secondary btn-lg px-5"><i class="fas fa-times me-2"></i>Cancel</a>
+                            <button type="submit" class="btn btn-primary btn-lg px-5">Register & generate ID</button>
+                            <a href="<?= BASE_URL ?>/pages/chairperson/dashboard.php" class="btn btn-outline-secondary btn-lg px-5">Cancel</a>
                         </div>
                     </div>
                 </form>

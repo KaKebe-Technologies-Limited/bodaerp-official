@@ -39,9 +39,9 @@ portal_start('rider', 'dashboard', t('rider.dash.title', 'My permit'), [
             </dl>
             <div class="d-flex flex-wrap gap-2">
                 <?php if ($renewalOpen): ?>
-                    <a class="btn btn-primary" href="<?= BASE_URL ?>/pages/rider/payment-history.php"><i class="fas fa-mobile-screen me-1" aria-hidden="true"></i><?= h(t('rider.dash.pay', 'Renew with mobile money')) ?></a>
+                    <a class="btn btn-primary" href="<?= BASE_URL ?>/pages/rider/payment-history.php"><?= h(t('rider.dash.pay', 'Renew with mobile money')) ?></a>
                 <?php endif; ?>
-                <a class="btn btn-outline-primary" href="<?= BASE_URL ?>/pages/rider/my-id-card.php"><i class="fas fa-id-card me-1" aria-hidden="true"></i><?= h(t('rider.dash.card', 'Show my ID card')) ?></a>
+                <a class="btn btn-outline-primary" href="<?= BASE_URL ?>/pages/rider/my-id-card.php"><?= h(t('rider.dash.card', 'Show my ID card')) ?></a>
             </div>
             <?php if ($renewalOpen): ?><p class="small text-muted mt-3 mb-0"><?= h(t('rider.dash.cash', 'You can also pay cash to your stage chairperson and get a receipt.')) ?></p><?php endif; ?>
         </div>

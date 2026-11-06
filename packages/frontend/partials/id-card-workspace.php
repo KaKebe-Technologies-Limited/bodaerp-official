@@ -62,7 +62,7 @@ foreach ($cardBack as $backUrl => $backLabel) $cardGoTo[] = ['label' => $backLab
                 </fieldset>
                 <p class="form-text">The permit number, plate, stage, route, expiry date and photo come from the rider record<?= $cardEditUrl ? ' (<a href="' . h(BASE_URL . $cardEditUrl) . '">Edit rider</a>)' : '' ?>, so the card always matches what a QR check shows. Every change is kept in the audit log.</p>
                 <div class="d-flex gap-2">
-                    <button class="btn btn-primary flex-grow-1" data-busy-label="Saving"><i class="fas fa-floppy-disk me-1" aria-hidden="true"></i>Save card</button>
+                    <button class="btn btn-primary flex-grow-1" data-busy-label="Saving">Save card</button>
                     <a class="btn btn-outline-secondary" href="<?= h(BASE_URL . $cardSelf) ?>">Undo</a>
                 </div>
                 <?php if ($cardRow['edited_at']): ?><p class="small text-muted mt-2 mb-0">Last changed <?= h(timeAgo($cardRow['edited_at'])) ?>.</p><?php endif; ?>
@@ -84,8 +84,8 @@ foreach ($cardBack as $backUrl => $backLabel) $cardGoTo[] = ['label' => $backLab
                     <span class="sign-pad-hint" data-sign-hint>Sign here</span>
                 </div>
                 <div class="d-flex gap-2 mb-3">
-                    <button type="button" class="btn btn-outline-secondary btn-sm" data-sign-clear><i class="fas fa-eraser me-1" aria-hidden="true"></i>Clear</button>
-                    <button type="submit" class="btn btn-primary btn-sm flex-grow-1" data-busy-label="Saving"><i class="fas fa-signature me-1" aria-hidden="true"></i>Use this signature</button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm" data-sign-clear>Clear</button>
+                    <button type="submit" class="btn btn-primary btn-sm flex-grow-1" data-busy-label="Saving">Use this signature</button>
                 </div>
                 <label class="form-label" for="cardSignFile">Or upload a photo of the signature</label>
                 <input type="file" class="form-control mb-2" id="cardSignFile" name="signature_file" accept="image/png,image/jpeg,image/webp" data-max-mb="2" data-sign-file>
@@ -118,19 +118,19 @@ foreach ($cardBack as $backUrl => $backLabel) $cardGoTo[] = ['label' => $backLab
             <div class="d-grid gap-2 mt-3">
                 <?php if ($cardRow['status'] !== 'collected'): ?>
                 <form method="post"><?= csrf_field() ?><input type="hidden" name="card_action" value="printed">
-                    <button class="btn btn-outline-primary w-100"><i class="fas fa-print me-1" aria-hidden="true"></i><?= $cardRow['printed_at'] ? 'Printed again' : 'Mark as printed' ?></button>
+                    <button class="btn btn-outline-primary w-100"><?= $cardRow['printed_at'] ? 'Printed again' : 'Mark as printed' ?></button>
                 </form>
                 <form method="post" data-confirm="Confirm that <?= h($cardRiderName) ?> has card <?= h($cardRow['serial']) ?> in hand?" data-confirm-ok="Yes, handed over"><?= csrf_field() ?><input type="hidden" name="card_action" value="collected">
-                    <button class="btn btn-success w-100"><i class="fas fa-hand-holding me-1" aria-hidden="true"></i>Handed to the rider</button>
+                    <button class="btn btn-success w-100">Handed to the rider</button>
                 </form>
                 <?php else: ?>
                 <form method="post"><?= csrf_field() ?><input type="hidden" name="card_action" value="printed">
-                    <button class="btn btn-outline-primary w-100"><i class="fas fa-print me-1" aria-hidden="true"></i>Record a reprint of this card</button>
+                    <button class="btn btn-outline-primary w-100">Record a reprint of this card</button>
                 </form>
                 <?php endif; ?>
                 <form method="post" data-confirm="Mark card <?= h($cardRow['serial']) ?> of <?= h($cardRiderName) ?> as lost? Its QR code stops working at once. You can issue a new card straight after." data-confirm-ok="Mark as lost"><?= csrf_field() ?><input type="hidden" name="card_action" value="lost">
                     <input type="hidden" name="note" value="Reported at the stage">
-                    <button class="btn btn-outline-danger w-100"><i class="fas fa-circle-exclamation me-1" aria-hidden="true"></i>Card lost or stolen</button>
+                    <button class="btn btn-outline-danger w-100">Card lost or stolen</button>
                 </form>
             </div>
             <?php else: ?>
@@ -152,7 +152,7 @@ foreach ($cardBack as $backUrl => $backLabel) $cardGoTo[] = ['label' => $backLab
                 <label class="form-label" for="cardNote">Note <span class="text-muted">(optional)</span></label>
                 <input type="text" class="form-control mb-2" id="cardNote" name="note" maxlength="300" placeholder="For example: new plate UFA 123B">
                 <p class="small text-muted">Lost, damaged or changed details give the rider a new QR code, so the old card fails a check. A renewal or reprint keeps the same QR code.</p>
-                <button class="btn btn-primary w-100" data-busy-label="Making the card"><i class="fas fa-id-card me-1" aria-hidden="true"></i>Make the card</button>
+                <button class="btn btn-primary w-100" data-busy-label="Making the card">Make the card</button>
             </form>
         </div></div>
 

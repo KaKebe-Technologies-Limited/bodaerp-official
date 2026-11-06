@@ -95,7 +95,7 @@ $stagesById = array_column($stages, null, 'id');
         <div class="card mb-4">
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
-                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#stageModal" data-call="openAddStage"><i class="fas fa-plus me-2"></i>Add stage</button>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#stageModal" data-call="openAddStage">Add stage</button>
                     <?php $exportTableId='stagesTable'; $exportFilename='stages'; $exportTitle='Stage Management'; require __DIR__ . '/../../partials/export-toolbar.php'; ?>
                 </div>
                 <form class="row g-2 align-items-center no-print" method="get">
@@ -107,7 +107,7 @@ $stagesById = array_column($stages, null, 'id');
                             <option value="inactive" <?= $statusFilter==='inactive'?'selected':'' ?>>Inactive</option>
                         </select>
                     </div>
-                    <div class="col-md-2"><button type="submit" class="btn btn-outline-primary w-100"><i class="fas fa-search me-1"></i>Search</button></div>
+                    <div class="col-md-2"><button type="submit" class="btn btn-outline-primary w-100">Search</button></div>
                 </form>
             </div>
         </div>
@@ -172,7 +172,7 @@ $stagesById = array_column($stages, null, 'id');
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary"><i class="fas fa-save me-1"></i>Save stage</button>
+                    <button type="submit" class="btn btn-primary">Save stage</button>
                 </div>
             </form>
         </div>

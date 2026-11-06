@@ -196,3 +196,7 @@ body.auth-page a.btn-login { color: #fff; }
     .login-container { animation: none; }
     .role-btn, .btn-login { transition: none; }
 }
+
+.login-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 18px; margin-top: 22px; font-size: .88rem; }
+.login-links a { color: var(--brand-ink, #0450c0); text-decoration: none; font-weight: 500; }
+.login-links a:hover { text-decoration: underline; text-underline-offset: 3px; }

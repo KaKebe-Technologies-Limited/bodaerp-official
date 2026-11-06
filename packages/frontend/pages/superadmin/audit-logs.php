@@ -53,7 +53,7 @@ $roleColors   = ['super_admin'=>'primary','city_admin'=>'success','chairperson'=
                                 <option value="<?= h($c['id']) ?>" <?= $filterCity === $c['id'] ? 'selected' : '' ?>><?= h($c['name']) ?></option>
                             <?php endforeach; ?>
                         </select>
-                        <button type="submit" class="btn btn-sm btn-outline-secondary"><i class="fas fa-filter me-1"></i>Filter</button>
+                        <button type="submit" class="btn btn-sm btn-outline-secondary">Filter</button>
                         <?php $exportTableId='auditTable'; $exportFilename='audit_logs'; $exportTitle='System Audit Trail'; require __DIR__ . '/../../partials/export-toolbar.php'; ?>
                     </form>
                 </div>

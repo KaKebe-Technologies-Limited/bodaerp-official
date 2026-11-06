@@ -32,7 +32,7 @@ $hasPaidThisYear = fetchValue(
         <?php if (!$hasPaidThisYear): ?>
         <div class="alert alert-warning d-flex justify-content-between align-items-center flex-wrap gap-2 no-print">
             <div><i class="fas fa-exclamation-triangle me-2"></i>You haven't paid your annual tax for <strong><?= h(CURRENT_FISCAL_YEAR) ?></strong> yet: <strong><?= h(formatCurrency($due['total'])) ?></strong> due.</div>
-            <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#payNowModal"><i class="fas fa-mobile-alt me-1"></i>Pay now</button>
+            <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#payNowModal">Pay now</button>
         </div>
         <?php endif; ?>
 
@@ -59,7 +59,7 @@ $hasPaidThisYear = fetchValue(
                             <td><code><?= h($p['receipt_number']) ?></code></td>
                             <td><?= h($p['payment_method']) ?></td>
                             <td><span class="badge <?= $sc[$p['status']] ?>"><?= h($p['status']) ?></span></td>
-                            <td class="no-export"><?php if ($p['status'] === 'Confirmed' && $p['receipt_number']): ?><a class="btn btn-sm btn-outline-primary" href="<?= BASE_URL ?>/pages/rider/receipt.php?id=<?= (int) $p['id'] ?>" aria-label="Open receipt <?= h($p['receipt_number']) ?>"><i class="fas fa-receipt me-1" aria-hidden="true"></i>Receipt</a><?php endif; ?></td>
+                            <td class="no-export"><?php if ($p['status'] === 'Confirmed' && $p['receipt_number']): ?><a class="btn btn-sm btn-outline-primary" href="<?= BASE_URL ?>/pages/rider/receipt.php?id=<?= (int) $p['id'] ?>" aria-label="Open receipt <?= h($p['receipt_number']) ?>">Receipt</a><?php endif; ?></td>
                         </tr>
                     <?php endforeach; ?>
                     </tbody>
@@ -92,7 +92,7 @@ $hasPaidThisYear = fetchValue(
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-        <button type="button" class="btn btn-primary" id="payNowSubmitBtn" data-call="submitPayNow"><i class="fas fa-lock me-1"></i>Pay now</button>
+        <button type="button" class="btn btn-primary" id="payNowSubmitBtn" data-call="submitPayNow">Pay now</button>
       </div>
     </div>
   </div>

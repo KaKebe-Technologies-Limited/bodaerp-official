@@ -80,7 +80,7 @@ $receiptMsg = $_GET['receipt'] ?? null;
                         <div class="mb-3"><label for="f-method" class="form-label fw-semibold">Payment method</label>
                             <select id="f-method" class="form-select" name="method"><?php foreach (PAYMENT_METHODS as $m): ?><option value="<?= h($m) ?>"><?= h($m === 'Mobile Money' ? 'Mobile money (paid to the stage number)' : ($m === 'Bank' ? 'Bank deposit' : $m)) ?></option><?php endforeach; ?></select>
                         </div>
-                        <button type="submit" class="btn btn-primary w-100"><i class="fas fa-check me-1"></i>Record payment</button>
+                        <button type="submit" class="btn btn-primary w-100">Record payment</button>
                     </form>
                 </div></div>
             </div>

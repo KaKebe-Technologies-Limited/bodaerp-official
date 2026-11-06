@@ -33,7 +33,7 @@ $totalRiders = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE city_id = ? A
 
 <div class="main-content" id="mainContent">
     <?php ob_start(); ?>
-<a href="<?= BASE_URL ?>/pages/citycouncil/stage-management.php" class="btn btn-primary btn-sm"><i class="fas fa-gear me-1" aria-hidden="true"></i>Manage stages</a>
+<a href="<?= BASE_URL ?>/pages/citycouncil/stage-management.php" class="btn btn-primary btn-sm">Manage stages</a>
     <?php $headerActions = ob_get_clean();
     $pageTitle = 'Stages';
     $pageSubtitle = '';
@@ -58,7 +58,7 @@ $totalRiders = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE city_id = ? A
                             <option value="inactive" <?= $statusFilter==='inactive'?'selected':'' ?>>Inactive</option>
                         </select>
                     </div>
-                    <div class="col-md-2"><button type="submit" class="btn btn-outline-primary w-100"><i class="fas fa-search me-1"></i>Search</button></div>
+                    <div class="col-md-2"><button type="submit" class="btn btn-outline-primary w-100">Search</button></div>
                     <div class="col-md-2 text-md-end">
                         <?php $exportTableId='stagesExportTable'; $exportFilename='all_stages'; $exportTitle='All Stages'; require __DIR__ . '/../../partials/export-toolbar.php'; ?>
                     </div>

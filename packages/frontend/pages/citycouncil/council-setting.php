@@ -128,7 +128,7 @@ $totalRiders = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE city_id = ? A
                 </div>
             </div>
 
-            <button type="submit" class="btn btn-primary mt-3"><i class="fas fa-save me-1"></i>Save all settings</button>
+            <button type="submit" class="btn btn-primary mt-3">Save all settings</button>
         </form>
     </div>
 </div>

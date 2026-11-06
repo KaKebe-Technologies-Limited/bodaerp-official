@@ -96,7 +96,7 @@ portal_start('superadmin', 'email-templates', 'Email templates', [
         <form method="post" class="card mt-3"><div class="card-body d-flex flex-wrap gap-2 align-items-end">
             <?= csrf_field() ?><input type="hidden" name="id" value="<?= (int) $tpl['id'] ?>"><input type="hidden" name="action" value="test">
             <div class="flex-grow-1"><label class="form-label small fw-semibold" for="test_to">Send a test with sample values to</label><input class="form-control" type="email" id="test_to" name="test_to" value="<?= h($_SESSION['email']) ?>" required></div>
-            <button class="btn btn-outline-primary" data-busy-label="Sending"><i class="fas fa-paper-plane me-1"></i>Send test</button>
+            <button class="btn btn-outline-primary" data-busy-label="Sending">Send test</button>
         </div></form>
         <?php endif; ?>
     </div>

@@ -31,8 +31,8 @@ $recent = fetchAll("SELECT p.*, r.full_name, s.name AS stage_name FROM payments 
 
 <div class="main-content" id="mainContent">
     <?php ob_start(); ?>
-<button type="button" class="btn btn-outline-primary btn-sm" id="reconcileBtn" data-call="reconcilePending" title="Ask ioTec again about pending mobile-money payments, to confirm ones that went through"><i class="fas fa-rotate me-1" aria-hidden="true"></i>Re-check pending</button>
-<a href="<?= BASE_URL ?>/pages/citycouncil/payment-transactions.php" class="btn btn-primary btn-sm"><i class="fas fa-list me-1" aria-hidden="true"></i>All transactions</a>
+<button type="button" class="btn btn-outline-primary btn-sm" id="reconcileBtn" data-call="reconcilePending" title="Ask ioTec again about pending mobile-money payments, to confirm ones that went through">Re-check pending</button>
+<a href="<?= BASE_URL ?>/pages/citycouncil/payment-transactions.php" class="btn btn-primary btn-sm">All transactions</a>
     <?php $headerActions = ob_get_clean();
     $pageTitle = 'Payments';
     $pageSubtitle = '';

@@ -34,7 +34,15 @@ OVERALL: 79% complete. 21% remaining until public launch
 2. Owner: email for bodaerp.site (a mailbox or SMTP service + MX/SPF/DKIM), then SMTP_* in `/opt/bodaerp/.env`,
    real addresses on staff accounts, sign-in codes back on. Google Search Console: add the property (DNS TXT can be
    added on request) and submit https://bodaerp.site/sitemap.xml.
-3. Round 6, the full plan in docs/ROUND6_PLAN.md (notifications for every role, notices, stages and chairpersons by
+3. LATER LIST (owner, 2026-11-07, "everything else we do later"):
+   a. Icons: removed from every text button and button-styled link (137 in 54 files, icon-only buttons kept). Icons
+      in headings, card titles, badges, tables and the sidebar remain; ask the owner whether those go too.
+   b. Live accounts are still the demo people (Lira, Ocen, Akello, works@); Super Admin name "Kakebe Admin" and phone
+      +256 700 000 001 are placeholders. Replace with real people when they arrive.
+   c. Walk every page of every role in the browser on the live site after the button change (tests pass; no full
+      Playwright pass was run on the live site for this change).
+   d. Email + sign-in codes (item 2), Search Console, then round 6.
+4. Round 6, the full plan in docs/ROUND6_PLAN.md (notifications for every role, notices, stages and chairpersons by
    city admins, chairperson search/add/move without delete, transfers, removal and restore, renewal requests with a
    view-only rider card, complaints for everyone including the public, pop-up permit check by number or plate,
    reports, monitoring, README with every role). Update its status table as phases finish.

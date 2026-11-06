@@ -4,8 +4,7 @@ $exportBtnClass = $exportBtnClass ?? 'btn-outline-success';
 $exportTitle = $exportTitle ?? '';
 ?>
 <div class="dropdown d-inline-block no-print">
-    <button class="btn <?= $exportBtnClass ?> dropdown-toggle" type="button" data-bs-toggle="dropdown">
-        <i class="fas fa-file-export me-1"></i>Export
+    <button class="btn <?= $exportBtnClass ?> dropdown-toggle" type="button" data-bs-toggle="dropdown">Export
     </button>
     <ul class="dropdown-menu dropdown-menu-end">
         <li><button type="button" class="dropdown-item" data-call="exportTablePDF" data-call-args="<?= h(js_json([(string) $exportTableId, (string) $exportFilename, (string) $exportTitle])) ?>"><i class="fas fa-file-pdf me-2 text-danger"></i>PDF</button></li>

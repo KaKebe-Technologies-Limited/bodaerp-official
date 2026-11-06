@@ -26,7 +26,7 @@ $initials = $signedIn ? mb_strtoupper(implode('', array_map(fn($w) => mb_substr(
                 <?php if ($initials !== ''): ?><span aria-hidden="true"><?= h($initials) ?></span><?php else: ?><i class="fas fa-user" aria-hidden="true"></i><?php endif; ?>
             </a>
             <?php else: ?>
-            <a class="btn-brand btn-signin" href="<?= BASE_URL ?>/login.php"><i class="fas fa-right-to-bracket" aria-hidden="true"></i> Sign in</a>
+            <a class="btn-brand btn-signin" href="<?= BASE_URL ?>/login.php">Sign in</a>
             <?php endif; ?>
             <button class="nav-toggle" type="button" aria-controls="siteNav" aria-expanded="false" data-nav-toggle>
                 <i class="fas fa-bars" aria-hidden="true"></i><span class="visually-hidden">Menu</span>

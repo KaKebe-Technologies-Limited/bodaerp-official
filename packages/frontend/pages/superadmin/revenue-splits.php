@@ -215,7 +215,7 @@ $avgGovernment = $cityCount ? round(array_sum(array_column($cities, 'revenue_spl
 
                     <div class="split-card-footer">
                         <button type="button" class="btn btn-outline-secondary btn-sm" data-call="resetSplit" data-call-args="<?= h(js_json([(string) $id])) ?>">Reset</button>
-                        <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-save me-1"></i>Save changes</button>
+                        <button type="submit" class="btn btn-primary btn-sm">Save changes</button>
                     </div>
                 </form>
             </div>

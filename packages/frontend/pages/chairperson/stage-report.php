@@ -47,7 +47,7 @@ for ($i = 11; $i >= 0; $i--) {
                     <p>A snapshot of riders, compliance, and revenue for your stage.</p>
                 </div>
                 <div class="d-flex align-items-center gap-2"><span class="dash-meta">Generated <?= date('M d, Y') ?></span>
-                    <button type="button" class="btn btn-light btn-sm no-print" data-print><i class="fas fa-print me-1" aria-hidden="true"></i>Print report</button></div>
+                    <button type="button" class="btn btn-light btn-sm no-print" data-print>Print report</button></div>
             </div>
         </div>
 

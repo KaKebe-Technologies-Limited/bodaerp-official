@@ -276,7 +276,7 @@ portal_start($sidebar, 'my-account', 'My account', [
         <div class="card" id="privacy"><div class="card-body">
             <h2 class="h6 fw-bold mb-2"><i class="fas fa-user-lock me-2 text-primary" aria-hidden="true"></i>Privacy and your data</h2>
             <p class="small text-muted">Under Uganda's Data Protection and Privacy Act you can get a copy of your data, ask for corrections, object to how it is used, or ask for data to be deleted. Read the <a href="<?= BASE_URL ?>/p/privacy-policy">privacy policy</a>.</p>
-            <a class="btn btn-outline-primary btn-sm mb-3" href="?download=1"><i class="fas fa-download me-1"></i>Download my data (JSON)</a>
+            <a class="btn btn-outline-primary btn-sm mb-3" href="?download=1">Download my data (JSON)</a>
             <form method="post">
                 <?= csrf_field() ?><input type="hidden" name="action" value="data_request">
                 <div class="mb-2"><label class="form-label small fw-semibold" for="rtype">Request</label><select class="form-select form-select-sm" id="rtype" name="type"><option value="correction">Correct my details</option><option value="objection">Object to how my data is used</option><option value="deletion">Delete my data</option></select></div>

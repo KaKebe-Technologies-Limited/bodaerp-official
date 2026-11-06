@@ -41,12 +41,12 @@ $sc = ['active'=>'bg-success','expired'=>'bg-danger','pending'=>'bg-warning text
                     <p class="text-muted mb-0"><?= h($rider['id_number']) ?> · <?= h($rider['stage_name']) ?></p>
                 </div>
                 <div class="d-flex gap-2">
-                    <a href="<?= BASE_URL ?>/pages/chairperson/id-preview.php?id=<?= $riderId ?>" class="btn btn-outline-primary"><i class="fas fa-id-card me-1"></i>ID card</a>
-                    <a href="<?= BASE_URL ?>/pages/chairperson/edit-rider.php?id=<?= $riderId ?>" class="btn btn-primary"><i class="fas fa-edit me-1"></i>Edit</a>
+                    <a href="<?= BASE_URL ?>/pages/chairperson/id-preview.php?id=<?= $riderId ?>" class="btn btn-outline-primary">ID card</a>
+                    <a href="<?= BASE_URL ?>/pages/chairperson/edit-rider.php?id=<?= $riderId ?>" class="btn btn-primary">Edit</a>
                     <?php if ($rider['email'] || $rider['phone']): ?>
                     <form method="post" class="d-inline" data-confirm="Send <?= h($rider['full_name']) ?> a link to <?= $account && $account['password_changed_at'] ? 'choose a new portal password' : 'set up their portal password' ?> by <?= $rider['email'] ? 'email to ' . h($rider['email']) : 'SMS to their phone' ?>? You never see the password." data-confirm-ok="Send the link">
                         <?= csrf_field() ?><input type="hidden" name="action" value="invite">
-                        <button class="btn btn-outline-success" data-busy-label="Sending"><i class="fas fa-paper-plane me-1" aria-hidden="true"></i><?= !$account ? 'Give portal access' : ($account['password_changed_at'] ? 'Reset portal access' : 'Resend portal invite') ?></button>
+                        <button class="btn btn-outline-success" data-busy-label="Sending"><?= !$account ? 'Give portal access' : ($account['password_changed_at'] ? 'Reset portal access' : 'Resend portal invite') ?></button>
                     </form>
                     <?php endif; ?>
                 </div>

@@ -70,7 +70,7 @@ portal_start('rider', 'my-id-card', t('rider.card.title', 'My ID card'), [
             <p class="small text-muted"><?= h(t('rider.card.lost_text', 'Report it here at once. The QR code on the missing card stops working, so nobody else can use it at a roadside check. Then ask your chairperson for a new card.')) ?></p>
             <form method="post" data-confirm="<?= h(t('rider.card.lost_confirm', 'Report card {serial} as lost? Its QR code stops working straight away, even if you find the card later.', ['serial' => $cardRow['serial']])) ?>" data-confirm-ok="<?= h(t('rider.card.lost_ok', 'Report it lost')) ?>">
                 <?= csrf_field() ?><input type="hidden" name="card_action" value="lost">
-                <button class="btn btn-outline-danger w-100"><i class="fas fa-circle-exclamation me-1" aria-hidden="true"></i><?= h(t('rider.card.lost_button', 'My card is lost or stolen')) ?></button>
+                <button class="btn btn-outline-danger w-100"><?= h(t('rider.card.lost_button', 'My card is lost or stolen')) ?></button>
             </form>
         </div></div>
         <?php endif; ?>

@@ -15,5 +15,5 @@ require __DIR__ . '/packages/frontend/partials/auth-start.php';
 ?>
             <h1>This confirmation link has expired</h1>
             <p class="sub">Confirmation links work once, for 48 hours. Sign in and use "Send confirmation email" on your account page to get a new one.</p>
-            <a class="btn-login" href="<?= BASE_URL ?>/login.php"><i class="fas fa-right-to-bracket" aria-hidden="true"></i> Sign in</a>
+            <a class="btn-login" href="<?= BASE_URL ?>/login.php">Sign in</a>
 <?php require __DIR__ . '/packages/frontend/partials/auth-end.php';

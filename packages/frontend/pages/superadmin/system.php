@@ -132,7 +132,7 @@ $appliedPacks = count(array_filter($packs, fn($p) => $p['applied']));
                     <?php if ($p['applied']): ?><p class="small mb-3"><i class="fas fa-info-circle text-primary me-1"></i><?= h($p['applied']['summary']) ?></p><?php endif; ?>
                     <form method="post" data-confirm="Apply “<?= h($p['title']) ?>”? Existing records are left untouched.">
                         <?= csrf_field() ?><input type="hidden" name="action" value="apply_pack"><input type="hidden" name="pack" value="<?= h($p['code']) ?>">
-                        <button class="btn <?= $p['applied'] ? 'btn-outline-primary' : 'btn-primary' ?> btn-sm"><i class="fas fa-play me-1"></i><?= $p['applied'] ? 'Re-apply (fill anything missing)' : 'Apply this data pack' ?></button>
+                        <button class="btn <?= $p['applied'] ? 'btn-outline-primary' : 'btn-primary' ?> btn-sm"><?= $p['applied'] ? 'Re-apply (fill anything missing)' : 'Apply this data pack' ?></button>
                     </form>
                 </div></div>
                 <?php endforeach; ?>
@@ -148,7 +148,7 @@ $appliedPacks = count(array_filter($packs, fn($p) => $p['applied']));
                     <div><h6 class="fw-bold mb-0">Automatic jobs</h6><small class="text-muted">Run by themselves while the system is in use: no cron needed. Switch any job off if you prefer.</small></div>
                 </div>
                 <form method="post"><?= csrf_field() ?><input type="hidden" name="action" value="run_all">
-                    <button class="btn btn-outline-primary btn-sm"><i class="fas fa-forward me-1"></i>Run all enabled jobs now</button></form>
+                    <button class="btn btn-outline-primary btn-sm">Run all enabled jobs now</button></form>
             </div>
             <?php if ($attention): ?>
                 <div class="alert alert-warning" data-keep>
@@ -178,7 +178,7 @@ $appliedPacks = count(array_filter($packs, fn($p) => $p['applied']));
                                 <div class="form-check form-switch m-0"><input class="form-check-input" type="checkbox" <?= $j['enabled'] ? 'checked' : '' ?> data-autosubmit title="Turn this job on or off"></div></form>
                         </td>
                         <td><form method="post"><?= csrf_field() ?><input type="hidden" name="action" value="run_job"><input type="hidden" name="job" value="<?= h($j['code']) ?>">
-                            <button class="btn btn-sm btn-outline-primary"><i class="fas fa-play me-1"></i>Run now</button></form></td>
+                            <button class="btn btn-sm btn-outline-primary">Run now</button></form></td>
                     </tr>
                 <?php endforeach; ?>
                 </tbody>
@@ -194,7 +194,7 @@ $appliedPacks = count(array_filter($packs, fn($p) => $p['applied']));
                     <div><h6 class="fw-bold mb-0">Database backup</h6><small class="text-muted">A full .sql copy you can restore in phpMyAdmin</small></div></div>
                 <p class="small text-muted">Take a backup before big changes. It contains all tables and data (including password hashes), so keep the file private. Sign-in sessions are left out.</p>
                 <form method="post" action="<?= BASE_URL ?>/pages/superadmin/db-backup.php"><?= csrf_field() ?>
-                    <button class="btn btn-primary"><i class="fas fa-file-download me-2"></i>Download backup (.sql)</button></form>
+                    <button class="btn btn-primary">Download backup (.sql)</button></form>
                 <hr>
                 <?php if ($backups): $latestBackup = $backups[0]; ?>
                     <p class="small mb-1"><strong>Latest automatic backup:</strong> <?= h(date('M d, Y H:i', $latestBackup['time'])) ?>, <?= number_format($latestBackup['bytes'] / 1048576, 1) ?> MB, <?= $latestBackup['encrypted'] ? 'encrypted' : 'not encrypted' ?>.</p>
@@ -211,9 +211,9 @@ $appliedPacks = count(array_filter($packs, fn($p) => $p['applied']));
                 <div class="small fw-semibold mb-1">…or ping this URL every few minutes (e.g. cron-job.org)</div>
                 <div class="sys-code mb-2" id="cronUrl"><?= h($cronUrl) ?></div>
                 <div class="d-flex gap-2 flex-wrap">
-                    <button type="button" class="btn btn-sm btn-outline-secondary" data-copy-from="cronUrl"><i class="fas fa-copy me-1"></i>Copy URL</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" data-copy-from="cronUrl">Copy URL</button>
                     <form method="post" data-confirm="Generate a new token? Any cron job using the old URL will stop working until updated."><?= csrf_field() ?><input type="hidden" name="action" value="regen_token">
-                        <button class="btn btn-sm btn-outline-danger"><i class="fas fa-sync-alt me-1"></i>Regenerate token</button></form>
+                        <button class="btn btn-sm btn-outline-danger">Regenerate token</button></form>
                 </div>
             </div></div></div>
         </div>

@@ -70,8 +70,8 @@ $rows = fetchAll("SELECT r.id, r.full_name, r.id_number, r.bike_plate, r.photo_p
     <form method="post" id="cardBulk">
         <?= csrf_field() ?><input type="hidden" name="bulk_action" value="printed">
         <div class="d-flex flex-wrap gap-2 mb-2">
-            <button type="submit" class="btn btn-sm btn-primary" formaction="<?= h(BASE_URL . $listSheetUrl) ?>" formmethod="get" formnovalidate><i class="fas fa-print me-1" aria-hidden="true"></i>Print selected on A4</button>
-            <button type="submit" class="btn btn-sm btn-outline-primary"><i class="fas fa-check me-1" aria-hidden="true"></i>Mark selected as printed</button>
+            <button type="submit" class="btn btn-sm btn-primary" formaction="<?= h(BASE_URL . $listSheetUrl) ?>" formmethod="get" formnovalidate>Print selected on A4</button>
+            <button type="submit" class="btn btn-sm btn-outline-primary">Mark selected as printed</button>
         </div>
         <div class="table-responsive">
             <table class="table table-hover align-middle">

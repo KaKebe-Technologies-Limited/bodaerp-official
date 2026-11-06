@@ -54,7 +54,7 @@ $stage = fetchOne("SELECT * FROM stages WHERE id = ?", [$stageId]);
                         <div class="mb-3"><label for="f-chairperson-phone" class="form-label fw-semibold">Chairperson phone</label>
                             <div class="input-group"><span class="input-group-text">+256</span><input id="f-chairperson-phone" type="tel" name="chairperson_phone" class="form-control" value="<?= h(preg_replace('/^\+256/', '', $stage['chairperson_phone'] ?? '')) ?>"></div>
                         </div>
-                        <button type="submit" class="btn btn-primary"><i class="fas fa-save me-1"></i>Save changes</button>
+                        <button type="submit" class="btn btn-primary">Save changes</button>
                     </form>
                 </div></div>
             </div>

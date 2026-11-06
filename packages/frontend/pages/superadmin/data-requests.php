@@ -71,13 +71,13 @@ portal_start('superadmin', 'data-requests', 'Rider data requests', [
     </div>
     <?php if ($r['details']): ?><div class="message-body mt-3"><?= h($r['details']) ?></div><?php endif; ?>
     <?php if ($r['type'] === 'deletion'): ?><p class="small text-muted mt-2 mb-0">Permit and payment records may have to be kept for the city council's revenue records. Remove what is not legally required and explain what was kept.</p><?php endif; ?>
-    <?php if ($r['rid'] && $status === 'open' && $r['type'] !== 'deletion'): ?><a class="btn btn-outline-primary btn-sm mt-3" href="<?= BASE_URL ?>/pages/superadmin/edit-rider.php?id=<?= (int) $r['rid'] ?>"><i class="fas fa-pen me-1" aria-hidden="true"></i>Open and correct the rider record</a><?php endif; ?>
+    <?php if ($r['rid'] && $status === 'open' && $r['type'] !== 'deletion'): ?><a class="btn btn-outline-primary btn-sm mt-3" href="<?= BASE_URL ?>/pages/superadmin/edit-rider.php?id=<?= (int) $r['rid'] ?>">Open and correct the rider record</a><?php endif; ?>
     <?php if ($r['rid'] && $status === 'open' && $r['type'] === 'deletion'): ?>
     <form method="post" class="mt-3 border-top pt-3" data-confirm="Remove the personal details of <?= h($r['full_name'] ?? '') ?> (<?= h($r['id_number'] ?? '') ?>)? Name, NIN, phone, email, address, next of kin and photo are erased, the portal account is closed and the ID card stops working. Payments and the permit number stay. This cannot be undone." data-confirm-ok="Remove the details" data-confirm-typed="REMOVE">
         <?= csrf_field() ?><input type="hidden" name="id" value="<?= (int) $r['id'] ?>"><input type="hidden" name="op" value="anonymise">
         <label class="form-label small fw-semibold" for="anon<?= (int) $r['id'] ?>">Note to the rider (emailed before the details are removed)</label>
         <textarea class="form-control mb-2" id="anon<?= (int) $r['id'] ?>" name="response" rows="2" required>Payments and your permit number are kept because the city council must keep revenue records.</textarea>
-        <button class="btn btn-danger btn-sm"><i class="fas fa-user-slash me-1" aria-hidden="true"></i>Remove personal details and complete</button>
+        <button class="btn btn-danger btn-sm">Remove personal details and complete</button>
     </form>
     <?php endif; ?>
     <?php if ($status === 'open'): ?>

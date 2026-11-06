@@ -40,7 +40,7 @@ $transactions = fetchAll("SELECT p.*, r.full_name, s.name AS stage_name FROM pay
 
 <div class="main-content" id="mainContent">
     <?php ob_start(); ?>
-<a href="<?= BASE_URL ?>/pages/citycouncil/revenue-report.php" class="btn btn-outline-primary btn-sm no-print"><i class="fas fa-file-lines me-1" aria-hidden="true"></i>Annual report</a>
+<a href="<?= BASE_URL ?>/pages/citycouncil/revenue-report.php" class="btn btn-outline-primary btn-sm no-print">Annual report</a>
     <?php $headerActions = ob_get_clean();
     $pageTitle = 'Revenue';
     $pageSubtitle = '';

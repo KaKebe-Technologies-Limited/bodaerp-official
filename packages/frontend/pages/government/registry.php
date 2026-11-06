@@ -74,7 +74,7 @@ $statusTone = ['active' => 'success', 'expired' => 'danger', 'pending' => 'warni
                 <option value="expired"<?= $filterStatus === 'expired' ? ' selected' : '' ?>>Expired</option>
                 <option value="pending"<?= $filterStatus === 'pending' ? ' selected' : '' ?>>Pending</option>
             </select>
-            <button type="submit" class="btn btn-primary"><i class="fas fa-magnifying-glass me-1" aria-hidden="true"></i>Search</button>
+            <button type="submit" class="btn btn-primary">Search</button>
             <?php $exportTableId = 'registryTable'; $exportFilename = 'national_rider_registry'; $exportTitle = 'National rider registry'; require __DIR__ . '/../../partials/export-toolbar.php'; ?>
         </form>
 

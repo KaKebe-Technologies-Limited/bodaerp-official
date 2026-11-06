@@ -73,7 +73,7 @@ portal_start('superadmin', 'media', 'Media library', [
     <form method="post" enctype="multipart/form-data" class="row g-2 align-items-end">
         <?= csrf_field() ?><input type="hidden" name="action" value="upload">
         <div class="col-md-8"><label class="form-label fw-semibold" for="files">Upload files</label><input class="form-control" type="file" id="files" name="files[]" multiple required accept="image/jpeg,image/png,image/webp,image/gif,application/pdf" data-max-mb="5"><div class="form-text">JPG, PNG, WebP, GIF or PDF, up to 5 MB each. You can also drag images straight into any page editor.</div></div>
-        <div class="col-md-4"><button class="btn btn-primary w-100" data-busy-label="Uploading"><i class="fas fa-upload me-1"></i>Upload</button></div>
+        <div class="col-md-4"><button class="btn btn-primary w-100" data-busy-label="Uploading">Upload</button></div>
     </form>
 </div></div>
 
@@ -86,7 +86,7 @@ portal_start('superadmin', 'media', 'Media library', [
     <?php if (!$mediaFiles): echo empty_state('fa-photo-film', 'No files yet', 'Upload an image or PDF above.'); else: ?>
     <form method="post" id="bulkMedia" data-confirm="Delete the selected files? Files still used on a page, in an email or in settings are kept.">
         <?= csrf_field() ?><input type="hidden" name="action" value="bulk_delete">
-        <button class="btn btn-sm btn-outline-danger mb-3"><i class="fas fa-trash me-1"></i>Delete selected</button>
+        <button class="btn btn-sm btn-outline-danger mb-3">Delete selected</button>
     </form>
     <div class="row g-3">
         <?php foreach ($mediaFiles as $m): $url = media_url($m['path']); $isImg = str_starts_with($m['mime'], 'image/'); ?>
@@ -104,7 +104,7 @@ portal_start('superadmin', 'media', 'Media library', [
                     </form>
                     <?php endif; ?>
                     <div class="d-flex gap-1 mt-2">
-                        <button type="button" class="btn btn-sm btn-light flex-grow-1" data-copy="<?= h(absolute_url($m['path'])) ?>"><i class="fas fa-link me-1"></i>Copy link</button>
+                        <button type="button" class="btn btn-sm btn-light flex-grow-1" data-copy="<?= h(absolute_url($m['path'])) ?>">Copy link</button>
                         <form method="post" data-confirm="Delete <?= h($m['original_name']) ?>?"><?= csrf_field() ?><input type="hidden" name="action" value="delete"><input type="hidden" name="id" value="<?= (int) $m['id'] ?>"><button class="btn btn-sm btn-outline-danger" aria-label="Delete <?= h($m['original_name']) ?>"><i class="fas fa-trash"></i></button></form>
                     </div>
                 </div>

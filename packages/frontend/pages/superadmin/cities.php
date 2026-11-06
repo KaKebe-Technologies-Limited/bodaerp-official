@@ -109,7 +109,7 @@ $totalRidersAll  = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE deleted_a
 
 <div class="main-content" id="mainContent">
     <?php ob_start(); ?>
-<button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#cityModal" data-call="openAddCity"><i class="fas fa-plus me-1" aria-hidden="true"></i>Add a city</button>
+<button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#cityModal" data-call="openAddCity">Add a city</button>
     <?php $headerActions = ob_get_clean();
     $pageTitle = 'Cities';
     $pageSubtitle = 'Add cities and set their fees, ID prefix and branding';
@@ -139,7 +139,7 @@ $totalRidersAll  = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE deleted_a
                             <option value="inactive" <?= $statusFilter==='inactive'?'selected':'' ?>>Inactive</option>
                         </select>
                     </div>
-                    <div class="col-md-2"><button type="submit" class="btn btn-primary w-100"><i class="fas fa-filter me-1"></i>Filter</button></div>
+                    <div class="col-md-2"><button type="submit" class="btn btn-primary w-100">Filter</button></div>
                     <div class="col-md-3 text-md-end">
                         <?php $exportTableId='citiesTable'; $exportFilename='cities'; $exportTitle='Cities Report'; require __DIR__ . '/../../partials/export-toolbar.php'; ?>
                     </div>
@@ -290,7 +290,7 @@ $totalRidersAll  = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE deleted_a
                 </div>
                 <div class="modal-footer border-0 pb-3">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary"><i class="fas fa-save me-2"></i>Save city</button>
+                    <button type="submit" class="btn btn-primary">Save city</button>
                 </div>
             </form>
         </div>

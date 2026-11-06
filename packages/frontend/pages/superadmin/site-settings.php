@@ -113,7 +113,7 @@ portal_start('superadmin', 'site-settings', 'Site text & branding', [
                     </div>
                 <?php endforeach; ?>
             </div>
-            <?php if ($settings): ?><div class="card-footer bg-white"><button class="btn btn-primary" data-busy-label="Saving"><i class="fas fa-floppy-disk me-1"></i>Save <?= h(strtolower($labels[$cat][0] ?? $cat)) ?></button></div><?php endif; ?>
+            <?php if ($settings): ?><div class="card-footer bg-white"><button class="btn btn-primary" data-busy-label="Saving">Save <?= h(strtolower($labels[$cat][0] ?? $cat)) ?></button></div><?php endif; ?>
         </form>
     </div>
 </div>

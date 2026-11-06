@@ -26,7 +26,7 @@ $totalRiders = array_sum(array_column($rows, 'rider_count'));
 
 <div class="main-content" id="mainContent">
     <?php ob_start(); ?>
-<a href="<?= BASE_URL ?>/pages/citycouncil/revenue-analytics.php" class="btn btn-outline-secondary btn-sm no-print"><i class="fas fa-chart-line me-1" aria-hidden="true"></i>Back to revenue</a>
+<a href="<?= BASE_URL ?>/pages/citycouncil/revenue-analytics.php" class="btn btn-outline-secondary btn-sm no-print">Back to revenue</a>
     <?php $headerActions = ob_get_clean();
     $pageTitle = 'Revenue report';
     $pageSubtitle = '';

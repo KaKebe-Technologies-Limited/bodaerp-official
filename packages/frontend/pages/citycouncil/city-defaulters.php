@@ -102,7 +102,7 @@ $amountOwed = array_sum(array_map(fn($d) => (float) $d['annual_tax'], $defaulter
                                     <form method="post" class="d-inline" data-confirm="Send a renewal reminder to <?= h($d['full_name']) ?>?">
                                         <?= csrf_field() ?>
                                         <input type="hidden" name="rider_id" value="<?= (int) $d['id'] ?>">
-                                        <button type="submit" class="btn btn-sm btn-outline-warning"><i class="fas fa-bell"></i> Remind</button>
+                                        <button type="submit" class="btn btn-sm btn-outline-warning">Remind</button>
                                     </form>
                                 </td>
                             </tr>

@@ -91,7 +91,7 @@ portal_start('superadmin', 'inbox', 'Contact inbox', [
             <?= csrf_field() ?><input type="hidden" name="action" value="reply"><input type="hidden" name="id" value="<?= (int) $msg['id'] ?>">
             <label class="form-label fw-semibold" for="reply">Reply by email to <?= h($msg['email']) ?></label>
             <textarea id="reply" name="reply" data-rich-text="email" required aria-label="Reply"></textarea>
-            <button class="btn btn-primary mt-3" data-busy-label="Sending"><i class="fas fa-paper-plane me-1"></i>Send reply</button>
+            <button class="btn btn-primary mt-3" data-busy-label="Sending">Send reply</button>
         </div></form>
     </div>
     <div class="col-lg-4">

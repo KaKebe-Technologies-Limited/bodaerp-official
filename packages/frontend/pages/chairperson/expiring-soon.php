@@ -34,7 +34,7 @@ $riders = fetchAll(
         </div>
 
         <div class="d-flex justify-content-between align-items-center mb-2 no-print">
-            <a href="<?= BASE_URL ?>/pages/chairperson/expiry-alerts.php" class="btn btn-sm btn-outline-secondary"><i class="fas fa-bell me-1"></i>Back to expiry alerts</a>
+            <a href="<?= BASE_URL ?>/pages/chairperson/expiry-alerts.php" class="btn btn-sm btn-outline-secondary">Back to expiry alerts</a>
             <?php $exportTableId='expiringSoonTable'; $exportFilename='expiring_soon'; $exportTitle='Expiring Soon'; require __DIR__ . '/../../partials/export-toolbar.php'; ?>
         </div>
         <div class="card"><div class="card-body p-0">

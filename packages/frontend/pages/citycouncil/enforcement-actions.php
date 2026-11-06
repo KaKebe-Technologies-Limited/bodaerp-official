@@ -100,7 +100,7 @@ $actionsById = array_column($actions, null, 'id');
 
 <div class="main-content" id="mainContent">
     <?php ob_start(); ?>
-<button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#actionModal" data-call="openAdd"><i class="fas fa-plus me-1" aria-hidden="true"></i>Record an action</button>
+<button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#actionModal" data-call="openAdd">Record an action</button>
     <?php $headerActions = ob_get_clean();
     $pageTitle = 'Enforcement actions';
     $pageSubtitle = '';
@@ -235,7 +235,7 @@ $actionsById = array_column($actions, null, 'id');
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-danger"><i class="fas fa-save me-1"></i>Save action</button>
+                    <button type="submit" class="btn btn-danger">Save action</button>
                 </div>
             </form>
         </div>

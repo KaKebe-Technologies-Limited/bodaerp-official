@@ -1,8 +1,18 @@
 <?php
 // Closing half of the sign-in shell (see auth-start.php).
 ?>
-            <p class="login-footer"><?= site_text('footer_copyright', '&copy; {year} ' . h(get_setting('site_name', 'BodaERP'))) ?>
-                · <a href="<?= BASE_URL ?>/p/privacy-policy">Privacy</a> · <a href="<?= BASE_URL ?>/contact.php">Help</a></p>
+            <?php
+            $authPage = basename($_SERVER['SCRIPT_NAME'] ?? '');
+            $authLinks = array_filter([
+                'login.php' => $authPage !== 'login.php' ? 'Sign in' : null,
+                'forgot-password.php' => !in_array($authPage, ['login.php', 'forgot-password.php', 'reset-password.php'], true) ? 'Forgot password' : null,
+                '' => 'Home', 'verify.php' => 'Check a permit', 'faq.php' => 'FAQ', 'contact.php' => 'Contact', 'p/privacy-policy' => 'Privacy',
+            ]);
+            ?>
+            <nav class="login-links" aria-label="More">
+                <?php foreach ($authLinks as $path => $label): ?><a href="<?= BASE_URL ?>/<?= h($path) ?>"><?= h($label) ?></a><?php endforeach; ?>
+            </nav>
+            <p class="login-footer"><?= site_text('footer_copyright', '&copy; {year} ' . h(get_setting('site_name', 'BodaERP'))) ?></p>
         </div>
     </div>
 </main>

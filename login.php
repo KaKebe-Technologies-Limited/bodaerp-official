@@ -115,7 +115,7 @@ require __DIR__ . '/packages/frontend/partials/auth-start.php';
                     <?php else: ?><span></span><?php endif; ?>
                     <a href="<?= BASE_URL ?>/forgot-password.php">Forgot password?</a>
                 </div>
-                <button type="submit" class="btn-login"><i class="fas fa-right-to-bracket" aria-hidden="true"></i> Sign in</button>
+                <button type="submit" class="btn-login">Sign in</button>
             </form>
             <?php if ($help = get_setting('login_help_text', '')): ?><p class="auth-help"><?= h($help) ?></p><?php endif; ?>
 

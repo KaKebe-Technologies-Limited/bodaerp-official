@@ -43,7 +43,7 @@ $upcomingRevenue = array_sum(array_column($riders, 'annual_tax'));
 
         <div class="alert alert-warning d-flex justify-content-between align-items-center flex-wrap gap-2">
             <span><i class="fas fa-bell me-2"></i>Riders whose permits expire within the next 30 days.</span>
-            <a href="<?= BASE_URL ?>/pages/chairperson/expiring-soon.php" class="btn btn-sm btn-outline-dark no-print"><i class="fas fa-chart-bar me-1"></i>View breakdown</a>
+            <a href="<?= BASE_URL ?>/pages/chairperson/expiring-soon.php" class="btn btn-sm btn-outline-dark no-print">View breakdown</a>
         </div>
         <div class="d-flex justify-content-end mb-2 no-print">
             <?php $exportTableId='expiryTable'; $exportFilename='expiry_alerts'; $exportTitle='Expiry Alerts'; require __DIR__ . '/../../partials/export-toolbar.php'; ?>
@@ -62,7 +62,7 @@ $upcomingRevenue = array_sum(array_column($riders, 'annual_tax'));
                             <td class="no-export">
                                 <form method="post" class="d-inline" data-confirm="Send <?= h($r['full_name']) ?> a reminder that their permit expires on <?= h(formatDate($r['expiry_date'])) ?>?" data-confirm-ok="Send reminder">
                                     <?= csrf_field() ?><input type="hidden" name="rider_id" value="<?= (int)$r['id'] ?>">
-                                    <button type="submit" class="btn btn-sm btn-outline-warning"><i class="fas fa-bell"></i> Remind</button>
+                                    <button type="submit" class="btn btn-sm btn-outline-warning">Remind</button>
                                 </form>
                             </td>
                         </tr>

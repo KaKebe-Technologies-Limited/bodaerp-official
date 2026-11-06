@@ -66,8 +66,8 @@ $currentPath = '/';
                     <p class="hero-text"><?= h($slide['body']) ?></p>
                     <?php if ($slide['link_label'] && $slide['link_url']): ?>
                     <div class="hero-actions">
-                        <a class="btn-brand btn-lg-brand" href="<?= h(site_link($slide['link_url'])) ?>"><?= h($slide['link_label']) ?> <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
-                        <?php if (!str_contains($slide['link_url'], 'verify.php')): ?><a class="btn-outline-light" href="<?= BASE_URL ?>/verify.php"><i class="fas fa-qrcode" aria-hidden="true"></i> <?= h(get_setting('home_cta_secondary', 'Check a rider\'s permit')) ?></a><?php endif; ?>
+                        <a class="btn-brand btn-lg-brand" href="<?= h(site_link($slide['link_url'])) ?>"><?= h($slide['link_label']) ?></a>
+                        <?php if (!str_contains($slide['link_url'], 'verify.php')): ?><a class="btn-outline-light" href="<?= BASE_URL ?>/verify.php"><?= h(get_setting('home_cta_secondary', 'Check a rider\'s permit')) ?></a><?php endif; ?>
                     </div>
                     <?php endif; ?>
                 </div>
@@ -209,7 +209,7 @@ $currentPath = '/';
                     <div class="faq-preview">
                         <?php foreach ($faqPreview as $q): ?><?= render_faq_item($q['title'], $q['body']) ?><?php endforeach; ?>
                     </div>
-                    <a class="link-arrow" href="<?= BASE_URL ?>/faq.php">Read all questions and answers <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+                    <a class="link-arrow" href="<?= BASE_URL ?>/faq.php">Read all questions and answers</a>
                 </div>
                 <?php endif; ?>
             </div>
@@ -228,7 +228,7 @@ $currentPath = '/';
                     <label for="homePermit">Permit number on the ID card</label>
                     <div class="verify-row">
                         <input id="homePermit" name="code" required maxlength="40" pattern="[A-Za-z0-9\-]{4,40}" data-pattern-message="Permit numbers use letters, digits and dashes, for example BODA-LIR-000123." placeholder="BODA-LIR-000123" autocapitalize="characters" autocomplete="off" enterkeyhint="search">
-                        <button type="submit" class="btn-brand"><i class="fas fa-magnifying-glass" aria-hidden="true"></i> Check permit</button>
+                        <button type="submit" class="btn-brand">Check permit</button>
                     </div>
                 </form>
             </div>
@@ -240,7 +240,7 @@ $currentPath = '/';
             <h2><?= h(get_setting('home_cta_title')) ?></h2>
             <p><?= h(get_setting('home_cta_text')) ?></p>
             <div class="cta-actions">
-                <a class="btn-light-solid" href="<?= BASE_URL ?>/contact.php"><i class="fas fa-envelope" aria-hidden="true"></i> <?= h(get_setting('home_cta_button', 'Contact us')) ?></a>
+                <a class="btn-light-solid" href="<?= BASE_URL ?>/contact.php"><?= h(get_setting('home_cta_button', 'Contact us')) ?></a>
                 <a class="btn-outline-light" href="<?= BASE_URL ?>/p/about">About <?= h(get_setting('site_name', 'BodaERP')) ?></a>
             </div>
         </div>

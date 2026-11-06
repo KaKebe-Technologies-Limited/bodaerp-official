@@ -124,7 +124,7 @@ $adminUsersAll    = (int) fetchValue("SELECT COUNT(*) FROM users WHERE deleted_a
 
 <div class="main-content" id="mainContent">
     <?php ob_start(); ?>
-<button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#userModal" data-add-user><i class="fas fa-user-plus me-1" aria-hidden="true"></i>Add a user</button>
+<button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#userModal" data-add-user>Add a user</button>
     <?php $headerActions = ob_get_clean();
     $pageTitle = 'Users';
     $pageSubtitle = 'Accounts for every role and city';
@@ -152,7 +152,7 @@ $adminUsersAll    = (int) fetchValue("SELECT COUNT(*) FROM users WHERE deleted_a
                     <option value="active"<?= $filterStatus === 'active' ? ' selected' : '' ?>>Active</option>
                     <option value="suspended"<?= $filterStatus === 'suspended' ? ' selected' : '' ?>>Suspended</option>
                 </select>
-                <button type="submit" class="btn btn-outline-secondary btn-sm"><i class="fas fa-magnifying-glass me-1" aria-hidden="true"></i>Search</button>
+                <button type="submit" class="btn btn-outline-secondary btn-sm">Search</button>
             </form>
         <?php foreach (flash_take() as [$ft, $fm]): ?><div class="alert alert-<?= $ft === 'error' ? 'danger' : 'success' ?>" role="status"><?= h($fm) ?></div><?php endforeach; ?>
         <?php if ($errors): ?>
@@ -280,7 +280,7 @@ $adminUsersAll    = (int) fetchValue("SELECT COUNT(*) FROM users WHERE deleted_a
                 </div>
                 <div class="modal-footer border-0 pb-3">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary"><i class="fas fa-save me-2"></i>Save user</button>
+                    <button type="submit" class="btn btn-primary">Save user</button>
                 </div>
             </form>
         </div>

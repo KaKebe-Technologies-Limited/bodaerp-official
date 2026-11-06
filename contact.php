@@ -101,7 +101,7 @@ $field = function (string $name, string $label, string $type = 'text', bool $req
                                 <?php $field('subject', 'Subject'); ?>
                                 <?php $field('message', 'Message', 'textarea', true, 'Up to 5,000 characters.'); ?>
                                 <p class="small text-muted">We use these details only to reply to you. See our <a href="<?= BASE_URL ?>/p/privacy-policy">privacy policy</a>.</p>
-                                <button type="submit" class="btn-brand"><i class="fas fa-paper-plane" aria-hidden="true"></i> Send message</button>
+                                <button type="submit" class="btn-brand">Send message</button>
                             </form>
                         <?php endif; ?>
                     </div>

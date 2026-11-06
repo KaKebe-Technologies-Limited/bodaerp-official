@@ -144,7 +144,7 @@ $currentPath = '/verify.php';
                             <div class="field"><label for="check-note">Note (optional)</label><input id="check-note" name="note" maxlength="300"></div>
                             <label class="d-block mb-3"><input type="checkbox" name="with_location" value="1" data-officer-location> Add my location from this phone</label>
                             <p class="hint mb-3" data-officer-location-status aria-live="polite"></p>
-                            <button class="btn-brand" type="submit"><i class="fas fa-clipboard-check" aria-hidden="true"></i> Save check</button>
+                            <button class="btn-brand" type="submit">Save check</button>
                         </form>
                         <?php endif; ?>
                     <?php else: ?>
@@ -162,7 +162,7 @@ $currentPath = '/verify.php';
                             <input id="code" name="code" required maxlength="40" pattern="[A-Za-z0-9\-]{4,40}" data-pattern-message="Permit numbers use letters, digits and dashes, for example BODA-LIR-000123." placeholder="For example BODA-LIR-000123" value="<?= h($code) ?>" autocapitalize="characters">
                             <div class="hint">Printed under the rider's name on the ID card.</div>
                         </div>
-                        <button class="btn-brand" type="submit"><i class="fas fa-magnifying-glass" aria-hidden="true"></i> Check permit</button>
+                        <button class="btn-brand" type="submit">Check permit</button>
                     </form>
                 </div>
             </div>

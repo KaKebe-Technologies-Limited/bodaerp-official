@@ -132,9 +132,9 @@ $fmtSize = function (float $b): string { return $b >= 1048576 ? round($b / 10485
                 </div>
                 <div class="d-flex gap-2 flex-wrap">
                     <form method="post"><?= csrf_field() ?><input type="hidden" name="action" value="update_now">
-                        <button class="btn btn-light"><i class="fas fa-sync-alt me-2"></i>Update database now</button></form>
+                        <button class="btn btn-light">Update database now</button></form>
                     <form method="post" action="<?= BASE_URL ?>/pages/superadmin/db-backup.php"><?= csrf_field() ?>
-                        <button class="btn btn-outline-light" style="border-radius:99px;font-weight:600;"><i class="fas fa-file-download me-2"></i>Backup (.sql)</button></form>
+                        <button class="btn btn-outline-light" style="border-radius:99px;font-weight:600;">Backup (.sql)</button></form>
                 </div>
             </div>
         </div>
@@ -168,7 +168,7 @@ $fmtSize = function (float $b): string { return $b >= 1048576 ? round($b / 10485
                                 </p>
                                 <?php if ($isLocal && $canSave): ?>
                                     <form method="post" class="mt-2"><?= csrf_field() ?><input type="hidden" name="action" value="save_snapshot">
-                                        <button class="btn btn-sm btn-outline-primary"><i class="fas fa-save me-1"></i>Save local schema now</button></form>
+                                        <button class="btn btn-sm btn-outline-primary">Save local schema now</button></form>
                                 <?php endif; ?>
                             </div>
                         </div>

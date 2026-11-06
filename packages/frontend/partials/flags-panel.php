@@ -89,7 +89,7 @@ $ruleLabels = array_map(fn($r) => $r[0], $rules);
             <?php if (!empty($flagCanReview) && ($flagCanScan ?? true)): ?>
                 <form method="post" class="d-inline ms-2">
                     <?= csrf_field() ?><input type="hidden" name="action" value="scan">
-                    <button class="btn btn-light btn-sm fw-bold" type="submit"><i class="fas fa-sync-alt me-1"></i>Run scan now</button>
+                    <button class="btn btn-light btn-sm fw-bold" type="submit">Run scan now</button>
                 </form>
             <?php endif; ?>
         </div>

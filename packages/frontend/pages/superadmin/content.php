@@ -141,8 +141,8 @@ portal_start('superadmin', 'content', 'Pages & content', [
     'subtitle' => 'Public website pages, menus, home page and FAQ',
     'breadcrumbs' => ['Super Admin' => '/pages/superadmin/dashboard.php', 'Pages & Content' => null],
     'actions' => '<form method="post" data-confirm="Put back any default page, menu link, FAQ, email template or setting that was deleted? Records you edited stay as they are." data-confirm-ok="Restore">'
-        . csrf_field() . '<input type="hidden" name="action" value="restore_defaults"><button class="btn btn-outline-secondary btn-sm"><i class="fas fa-rotate-left me-1"></i>Restore missing defaults</button></form>'
-        . ($tab === 'pages' ? '<a class="btn btn-primary btn-sm" href="' . BASE_URL . '/pages/superadmin/content-edit.php"><i class="fas fa-plus me-1"></i>New page</a>' : ''),
+        . csrf_field() . '<input type="hidden" name="action" value="restore_defaults"><button class="btn btn-outline-secondary btn-sm">Restore missing defaults</button></form>'
+        . ($tab === 'pages' ? '<a class="btn btn-primary btn-sm" href="' . BASE_URL . '/pages/superadmin/content-edit.php">New page</a>' : ''),
 ]);
 ?>
 <ul class="nav nav-tabs mb-3" role="tablist">

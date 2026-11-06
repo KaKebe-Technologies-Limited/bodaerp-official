@@ -51,7 +51,7 @@ $sel = fn(string $f, string $v) => (string) ($_POST[$f] ?? $editRider[$f] ?? '')
         <section class="card"><div class="card-body">
             <p class="small text-muted">Every change is recorded in the audit log with the old and new value, and the rider is told what changed. Changes to the name, NIN, birth date, plate, stage or photo need a new ID card.</p>
             <div class="d-grid gap-2">
-                <button class="btn btn-primary" data-busy-label="Saving"><i class="fas fa-floppy-disk me-1" aria-hidden="true"></i>Save changes</button>
+                <button class="btn btn-primary" data-busy-label="Saving">Save changes</button>
                 <a class="btn btn-outline-secondary" href="<?= h(BASE_URL . $editBack) ?>">Cancel</a>
             </div>
         </div></section>

@@ -54,7 +54,7 @@ require __DIR__ . '/packages/frontend/partials/auth-start.php';
                         <input id="code" name="code" inputmode="numeric" autocomplete="one-time-code" pattern="\d{6}" data-pattern-message="Enter the 6 digits from the message." maxlength="6" required autofocus>
                     </div>
                 </div>
-                <button type="submit" class="btn-login"><i class="fas fa-shield-halved" aria-hidden="true"></i> Confirm and sign in</button>
+                <button type="submit" class="btn-login">Confirm and sign in</button>
             </form>
             <form method="post" class="auth-links">
                 <?= csrf_field() ?>
