@@ -26,8 +26,8 @@ OVERALL: 79% complete. 21% remaining until public launch
 
 ### NEXT (owner, 2026-11-07)
 1. [x] (2026-11-07) bodaerp.site live on the Kakebe VPS behind a shared Traefik (Let's Encrypt, auto renewal; Roru's
-   expired certificate fixed the same way). Database = the development database of that day; every account has a new
-   random password (`/root/bodaerp-passwords.txt` on the server); sign-in codes off until email works. Same day: SEO
+   expired certificate fixed the same way). Demo data cleared: one account per role left (Lira city, Railway Stage, one rider);
+   each has a random password (`/root/bodaerp-passwords.txt` on the server); sign-in codes off until email works. Same day: SEO
    titles/descriptions per page, schema.org JSON-LD (Organization, WebSite, WebPage/FAQPage/ContactPage/AboutPage,
    BreadcrumbList, Service), 1200x630 share card, footer photo-credit line removed, homepage light sections
    alternate (`$tone()` in index.php) so no two neighbours share a colour. Details: docs/DEPLOYMENT.md "Kakebe VPS".

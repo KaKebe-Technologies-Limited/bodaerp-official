@@ -35,10 +35,11 @@ A record is refused next to the ALIAS), `www` CNAME `bodaerp.site.` (Traefik red
 cd /opt/bodaerp && docker compose exec -T db sh -c 'mariadb-dump -uroot -p"$MARIADB_ROOT_PASSWORD" --single-transaction --routines --triggers bodaerp' | gzip > /root/bodaerp-$(date +%F).sql.gz
 ```
 
-**Go-live state (2026-11-07):** the database is the development database of that day (demo cities, stages, riders
-and payments), not the old Hostinger one (that held only the first demo seed). Every account got a new random
-password (the README demo passwords would otherwise work on a public site); they are in
-`/root/bodaerp-passwords.txt`. Sign-in codes are switched off (`platform_settings.require_2fa = 0`, setting
+**Go-live state (2026-11-07):** demo data cleared (owner). Left: one account per role (Super Admin
+`admin@bodaerp.site`, Lira city admin `lira@`, government `works@`, Railway Stage chairperson `ocen@`, rider `akello@`)
+with Lira City, Railway Stage and that rider's record, ID card and payment. Each has a random password (the README
+demo passwords would otherwise work on a public site), listed in `/root/bodaerp-passwords.txt`. The full database
+from before the wipe is in `/root/bodaerp-before-demo-wipe-2026-11-06-2200.sql.gz`. Sign-in codes are switched off (`platform_settings.require_2fa = 0`, setting
 `feature_two_factor = 0`) because no email or SMS route exists yet and the `@bodaerp.site` addresses have no
 mailbox (no MX record). Turn them back on in Super Admin once SMTP works and staff accounts have real addresses.
 

@@ -13,7 +13,7 @@ Docker is a dev convenience only (`docker compose up -d --build`, ports 7080-708
 server run without it. Full detail in CLAUDE.md, README.md and docs/.
 
 ## Recent decisions
-- 2026-11-07: Live database = the development database of the day (owner); the Hostinger one only held the first demo seed.
+- 2026-11-07: Live demo data cleared (owner); one account per role kept with Lira City, Railway Stage and one rider. Backup of the full DB in /root on the VPS.
 - 2026-11-07: Every live account got a random password (README demo passwords + public repo); list in /root/bodaerp-passwords.txt.
 - 2026-11-07: Sign-in codes off on the live site until email works (owner: "remove otp for now").
 - 2026-11-07: Traefik terminates TLS for Roru too (owner), so its certificate renews itself.
