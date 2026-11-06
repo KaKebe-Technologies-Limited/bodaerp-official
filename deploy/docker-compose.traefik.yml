@@ -9,6 +9,9 @@ services:
     ports: !reset []
 
   app:
+    build:
+      args:
+        SERVER_PROFILE: live
     depends_on: !override
       db:
         condition: service_healthy
@@ -24,9 +27,6 @@ services:
       USSD_TOKEN: ${USSD_TOKEN:-}
       MAILPIT_API: ""
       TEST_BASE_URL: ""
-    volumes:
-      - ./docker/php/php-prod.ini:/usr/local/etc/php/conf.d/zz-bodaerp-dev.ini:ro
-      - ./docker/php/apache-site.prod.conf:/etc/apache2/sites-available/000-default.conf:ro
     ports: !reset []
     networks: [default, web]
     healthcheck:
