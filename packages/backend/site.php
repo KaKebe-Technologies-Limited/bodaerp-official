@@ -38,7 +38,7 @@ function menu_items(string $menu): array {
 }
 
 function content_items(string $group): array {
-    try { return fetchAll("SELECT id, icon, title, body FROM content_items WHERE group_code = ? AND is_active = 1 ORDER BY sort_order, id", [$group]); }
+    try { return fetchAll("SELECT id, icon, title, body, image, link_label, link_url FROM content_items WHERE group_code = ? AND is_active = 1 ORDER BY sort_order, id", [$group]); }
     catch (Throwable $e) { error_log('BodaERP content_items: ' . $e->getMessage()); return []; }
 }
 
@@ -75,6 +75,50 @@ function brand_favicon_tags(): string {
 }
 
 /** The brand colours as CSS custom properties, for public pages and portals alike. */
+/**
+ * A photo for a CSS background: the full image and, for bundled photos that have one, the 960px version for phones.
+ * Returns ['', ''] when no photo is set, so the section falls back to its plain colour.
+ */
+function home_photo(string $stored): array {
+    $stored = trim($stored);
+    if ($stored === '' || !preg_match('#^(/[A-Za-z0-9/_.-]+|https://\S+)$#', $stored)) return ['', ''];
+    $full = media_url($stored, '');
+    $small = $full;
+    if (str_starts_with($stored, '/assets/images/')) {
+        $candidate = preg_replace('/\.(webp|jpe?g|png)$/i', '-960.$1', $stored);
+        if (is_file(__DIR__ . '/../frontend' . $candidate)) $small = media_url($candidate, '');
+    }
+    return [$full, $small];
+}
+
+/**
+ * A round photo for a list row: the stored photo when there is one, the person's initials when there is none or it
+ * fails to load (the initials sit under the photo, and data-hide-broken removes a broken image).
+ */
+function person_avatar(?string $photo, string $name, string $extraClass = ''): string {
+    $words = preg_split('/\s+/', trim($name)) ?: [];
+    $initials = mb_strtoupper(implode('', array_map(fn($w) => mb_substr($w, 0, 1), array_slice($words, 0, 2))));
+    $img = trim((string) $photo) !== '' && !str_contains((string) $photo, 'avatar-placeholder')
+        ? '<img src="' . h(media_url($photo)) . '" alt="" loading="lazy" decoding="async" width="40" height="40" data-hide-broken>' : '';
+    $tone = abs(crc32($name)) % 5;
+    return '<span class="list-avatar tone-' . $tone . ($extraClass !== '' ? ' ' . h($extraClass) : '') . '" aria-hidden="true"><span>' . h($initials ?: '?') . '</span>' . $img . '</span>';
+}
+
+/** A name cell with its photo first: photo, the name in bold and an optional second line. */
+function person_cell(?string $photo, string $name, string $second = ''): string {
+    return '<div class="person-cell">' . person_avatar($photo, $name) . '<div class="person-text"><strong>' . h($name) . '</strong>'
+        . ($second !== '' ? '<small>' . $second . '</small>' : '') . '</div></div>';
+}
+
+/** One FAQ question and answer as an accordion button and panel (controls.js opens and closes it). */
+function render_faq_item(string $question, string $answer, bool $open = false): string {
+    static $n = 0;
+    $n++;
+    return '<div class="faq-item' . ($open ? ' is-open' : '') . '"><h3 class="faq-q"><button type="button" id="faq-q-' . $n . '" aria-expanded="' . ($open ? 'true' : 'false')
+        . '" aria-controls="faq-a-' . $n . '" data-faq-toggle><span>' . h($question) . '</span><i class="fas fa-chevron-down" aria-hidden="true"></i></button></h3>'
+        . '<div class="faq-a answer" id="faq-a-' . $n . '" role="region" aria-labelledby="faq-q-' . $n . '"' . ($open ? '' : ' hidden') . '>' . nl2br(h($answer)) . '</div></div>';
+}
+
 function brand_css_vars(): string {
     $p = brand_color('brand_color_primary', BRAND_DEFAULT_PRIMARY);
     $a = brand_color('brand_color_accent', BRAND_DEFAULT_ACCENT);

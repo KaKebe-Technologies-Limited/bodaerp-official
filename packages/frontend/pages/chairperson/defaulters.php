@@ -50,13 +50,12 @@ $amountOwed = array_sum(array_column($defaulters, 'annual_tax'));
         <div class="card"><div class="card-body p-0">
             <div class="table-responsive">
                 <table class="table table-hover mb-0" id="defaultersTable">
-                    <thead><tr><th>#</th><th>Rider</th><th>Plate</th><th>Last payment</th><th>Overdue</th><th>Amount</th><th>Status</th><th class="no-export">Action</th></tr></thead>
+                    <thead><tr><th>Rider</th><th>Plate</th><th>Last payment</th><th>Overdue</th><th>Amount</th><th>Status</th><th class="no-export">Action</th></tr></thead>
                     <tbody>
                     <?php foreach ($defaulters as $i => $d): $days = (int) $d['overdue_days'];
                         [$badge, $label] = $days > 90 ? ['bg-danger', 'Critical'] : ($days > 60 ? ['bg-warning text-dark', 'Warning'] : ['bg-secondary', 'Normal']); ?>
                         <tr>
-                            <td><?= $i+1 ?></td>
-                            <td><strong><?= h($d['full_name']) ?></strong></td>
+                            <td><?= person_cell($d['photo_path'], $d['full_name'], h($d['phone'] ?? '')) ?></td>
                             <td><?= h($d['bike_plate']) ?></td>
                             <td><?= $d['last_payment'] ? formatDate($d['last_payment']) : 'Never' ?></td>
                             <td><?= $days ?> days</td>

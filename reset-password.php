@@ -8,23 +8,23 @@ if (is_logged_in()) redirect(dashboard_url_for($_SESSION['role']));
 $token = trim((string) ($_GET['token'] ?? $_POST['token'] ?? ''));
 $welcome = !empty($_GET['welcome']) || !empty($_POST['welcome']);
 $row = $token !== '' ? user_token_check($token, 'password_reset') : null;
-$user = $row ? fetchOne("SELECT id, name, email FROM users WHERE id = ? AND status = 'active' AND deleted_at IS NULL", [$row['user_id']]) : null;
+$user = $row ? fetchOne("SELECT id, name, email, phone FROM users WHERE id = ? AND status = 'active' AND deleted_at IS NULL", [$row['user_id']]) : null;
 
 $errors = [];
 if ($user && $_SERVER['REQUEST_METHOD'] === 'POST') {
     csrf_verify();
     $password = (string) ($_POST['password'] ?? '');
-    $errors = password_problems($password, $user['email'], $user['name']);
+    $errors = password_problems($password, (string) $user['email'], $user['name']);
     if (!$errors && !hash_equals($password, (string) ($_POST['password_confirm'] ?? ''))) $errors[] = 'The two passwords do not match.';
     if (!$errors) {
         if (!user_token_consume((int) $row['id'])) {
             $errors[] = 'This link has just been used. Request a new one.';
         } else {
             set_user_password((int) $user['id'], $password);
-            runQuery("UPDATE users SET email_verified_at = COALESCE(email_verified_at, NOW()) WHERE id = ?", [$user['id']]);
+            if ($user['email']) runQuery("UPDATE users SET email_verified_at = COALESCE(email_verified_at, NOW()) WHERE id = ?", [$user['id']]);
             runQuery("INSERT INTO audit_logs (user_id, user_name_snapshot, action, entity_type, entity_id, details, ip_address) VALUES (?,?,?,?,?,?,?)",
                 [$user['id'], $user['name'], 'PASSWORD_RESET', 'user', (string) $user['id'], $welcome ? 'Password set from welcome link' : 'Password reset completed', client_ip()]);
-            send_template_email('password_changed', $user['email'], ['name' => $user['name'], 'changed_at' => date('j M Y, H:i')]);
+            if ($user['email']) send_template_email('password_changed', $user['email'], ['name' => $user['name'], 'changed_at' => date('j M Y, H:i')]);
             redirect('/login.php?reset=1');
         }
     }
@@ -40,7 +40,7 @@ require __DIR__ . '/packages/frontend/partials/auth-start.php';
                 <p class="auth-links"><a href="<?= BASE_URL ?>/login.php">Back to sign in</a></p>
             <?php else: ?>
                 <h1><?= $welcome ? 'Welcome, ' . h(strtok($user['name'], ' ')) : 'Choose a new password' ?></h1>
-                <p class="sub"><?= $welcome ? 'Set a password for' : 'For' ?> <strong><?= h($user['email']) ?></strong>.</p>
+                <p class="sub"><?= $welcome ? 'Set a password for' : 'For' ?> <strong><?= h($user['email'] ?: ('the phone ending ' . substr((string) $user['phone'], -3))) ?></strong>.</p>
                 <?php if ($errors): ?><div class="notice notice-error" role="alert"><?= implode('<br>', array_map('h', $errors)) ?></div><?php endif; ?>
                 <form method="post" data-loading="Saving">
                     <?= csrf_field() ?>

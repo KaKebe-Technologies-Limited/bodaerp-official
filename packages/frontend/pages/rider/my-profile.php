@@ -58,7 +58,7 @@ portal_start('rider', 'my-profile', t('rider.profile.title', 'My details'), [
             <?php if ($rider['chairperson_name']): ?>
                 <p class="small mb-3"><strong><?= h($rider['chairperson_name']) ?></strong><?php if ($rider['chairperson_phone']): ?><br><a href="tel:<?= h(preg_replace('/[^\d+]/', '', $rider['chairperson_phone'])) ?>"><?= h($rider['chairperson_phone']) ?></a><?php endif; ?></p>
             <?php endif; ?>
-            <a class="btn btn-outline-primary btn-sm" href="<?= BASE_URL ?>/pages/account/settings.php"><?= h(t('rider.profile.request', 'Send a correction request')) ?></a>
+            <a class="btn btn-outline-primary btn-sm" href="<?= BASE_URL ?>/pages/account/settings.php#privacy"><?= h(t('rider.profile.request', 'Send a correction request')) ?></a>
         </div>
     </aside>
 </div>

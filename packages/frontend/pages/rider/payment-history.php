@@ -48,9 +48,9 @@ $hasPaidThisYear = fetchValue(
         <div class="card"><div class="card-body p-0">
             <div class="table-responsive">
                 <table class="table table-hover mb-0" id="myPaymentsTable">
-                    <thead><tr><th>Year</th><th>Amount</th><th>Date paid</th><th>Receipt #</th><th>Method</th><th>Status</th></tr></thead>
+                    <thead><tr><th>Year</th><th>Amount</th><th>Date paid</th><th>Receipt #</th><th>Method</th><th>Status</th><th class="no-export">Receipt</th></tr></thead>
                     <tbody>
-                    <?php if (!$payments): ?><tr><td colspan="6"><div class="empty-state" style="padding:36px 20px;"><i class="fas fa-inbox"></i><h5>No payment history yet</h5></div></td></tr><?php endif; ?>
+                    <?php if (!$payments): ?><tr><td colspan="7"><div class="empty-state" style="padding:36px 20px;"><i class="fas fa-inbox"></i><h5>No payment history yet</h5></div></td></tr><?php endif; ?>
                     <?php foreach ($payments as $p): $sc = ['Confirmed'=>'bg-success','Pending'=>'bg-warning text-dark','Failed'=>'bg-danger']; ?>
                         <tr>
                             <td><?= h($p['fiscal_year']) ?></td>
@@ -59,6 +59,7 @@ $hasPaidThisYear = fetchValue(
                             <td><code><?= h($p['receipt_number']) ?></code></td>
                             <td><?= h($p['payment_method']) ?></td>
                             <td><span class="badge <?= $sc[$p['status']] ?>"><?= h($p['status']) ?></span></td>
+                            <td class="no-export"><?php if ($p['status'] === 'Confirmed' && $p['receipt_number']): ?><a class="btn btn-sm btn-outline-primary" href="<?= BASE_URL ?>/pages/rider/receipt.php?id=<?= (int) $p['id'] ?>" aria-label="Open receipt <?= h($p['receipt_number']) ?>"><i class="fas fa-receipt me-1" aria-hidden="true"></i>Receipt</a><?php endif; ?></td>
                         </tr>
                     <?php endforeach; ?>
                     </tbody>

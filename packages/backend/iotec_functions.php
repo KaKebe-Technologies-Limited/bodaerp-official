@@ -54,7 +54,6 @@ class IotecApiClient
         $response  = curl_exec($ch);
         $httpCode  = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
         $curlError = curl_error($ch);
-        curl_close($ch);
 
         if ($response === false) {
             throw new Exception('ioTec Pay cURL error: ' . $curlError);
@@ -113,6 +112,12 @@ function generateOrderId() {
  * Normalize a Ugandan phone number to local MSISDN format (0XXXXXXXXX)
  * as expected by the ioTec Pay `payer` field.
  */
+/** 'mtn', 'airtel' or null from a 07XXXXXXXX number (UCC numbering: MTN 076/077/078/079, Airtel 070/074/075). */
+function ug_mobile_network(string $local): ?string {
+    $prefix = substr($local, 0, 3);
+    return in_array($prefix, ['076', '077', '078', '079'], true) ? 'mtn' : (in_array($prefix, ['070', '074', '075'], true) ? 'airtel' : null);
+}
+
 function normalizeUgPhone($phone) {
     $digits = preg_replace('/[^0-9]/', '', $phone ?? '');
     if (substr($digits, 0, 3) === '256' && strlen($digits) === 12) {
@@ -149,6 +154,13 @@ function initiateRiderPayment(int $riderId, string $phone, string $channel = 'po
 
     $orderId = generateOrderId();
     $payerPhone = normalizeUgPhone($phone);
+    if (!preg_match('/^07\d{8}$/', $payerPhone)) return ['error' => 'Enter a Ugandan mobile money number, for example 0772 123456.'];
+    // The city council chooses which networks it accepts (Council settings → Mobile money).
+    $network = ug_mobile_network($payerPhone);
+    $accepted = (string) fetchValue("SELECT payment_gateway FROM cities WHERE id = ?", [$rider['city_id']]);
+    if ($accepted === 'MTN MoMo' && $network !== 'mtn') return ['error' => 'Your city council accepts MTN Mobile Money only. Use an MTN number.'];
+    if ($accepted === 'Airtel Money' && $network !== 'airtel') return ['error' => 'Your city council accepts Airtel Money only. Use an Airtel number.'];
+    if ($network === null) return ['error' => 'That number is not on MTN or Airtel, so it cannot pay by mobile money.'];
 
     runQuery(
         "INSERT INTO payments (rider_id, city_id, amount, late_fee, payment_method, channel, receipt_number,

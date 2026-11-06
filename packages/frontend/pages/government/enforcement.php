@@ -41,6 +41,15 @@ $checksByCity = fetchAll("SELECT c.name, COUNT(pc.id) AS checks, COALESCE(SUM(pc
     FROM cities c LEFT JOIN permit_checks pc ON pc.city_id = c.id AND pc.created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
     GROUP BY c.id ORDER BY checks DESC, c.name");
 
+// ID cards per city: counts only.
+$cardsByCity = fetchAll("SELECT c.name, COUNT(r.id) AS riders,
+        COALESCE(SUM(ic.status IN ('printed','collected')), 0) AS printed, COALESCE(SUM(ic.status = 'collected'), 0) AS with_rider,
+        COALESCE(SUM(ic.id IS NULL AND r.id IS NOT NULL), 0) AS no_card,
+        (SELECT COUNT(*) FROM id_cards l WHERE l.city_id = c.id AND l.status IN ('lost','cancelled') AND l.ended_at >= DATE_SUB(NOW(), INTERVAL 12 MONTH)) AS lost_12m
+    FROM cities c LEFT JOIN riders r ON r.city_id = c.id AND r.deleted_at IS NULL
+    LEFT JOIN id_cards ic ON ic.id = (SELECT MAX(x.id) FROM id_cards x WHERE x.rider_id = r.id AND x.status IN ('issued','printed','collected'))
+    GROUP BY c.id ORDER BY c.name");
+
 $agencyLabel = $_SESSION['agency_name'] ?? 'Government Portal';
 ?>
 <!DOCTYPE html>
@@ -75,6 +84,19 @@ $agencyLabel = $_SESSION['agency_name'] ?? 'Government Portal';
                 <tbody><?php foreach ($checksByCity as $row): ?>
                     <tr><td><?= h($row['name']) ?></td><td class="text-end"><?= (int) $row['checks'] ?></td><td class="text-end"><?= (int) $row['not_valid'] ?></td>
                         <td class="text-end"><?= (int) $row['checks'] ? round(100 * (int) $row['not_valid'] / (int) $row['checks']) . '%' : '<span class="text-muted">No checks</span>' ?></td><td class="text-end"><?= (int) $row['impounded'] ?></td></tr>
+                <?php endforeach; ?></tbody>
+            </table></div>
+        </div></div>
+
+        <div class="card mb-4"><div class="card-body">
+            <h2 class="section-title">ID cards by city</h2>
+            <p class="small text-muted">Whether registered riders actually carry a printed card. Lost and cancelled cards stop passing a QR check the moment they are reported.</p>
+            <div class="table-responsive"><table class="table table-sm align-middle mb-0">
+                <thead><tr><th scope="col">City</th><th scope="col" class="text-end">Riders</th><th scope="col" class="text-end">Card printed</th><th scope="col" class="text-end">Card with the rider</th><th scope="col" class="text-end">No valid card</th><th scope="col" class="text-end">Lost or cancelled, 12 months</th></tr></thead>
+                <tbody><?php foreach ($cardsByCity as $row): ?>
+                    <tr><td><?= h($row['name']) ?></td><td class="text-end"><?= number_format((int) $row['riders']) ?></td>
+                        <td class="text-end"><?= number_format((int) $row['printed']) ?><?= (int) $row['riders'] ? ' <small class="text-muted">(' . round(100 * (int) $row['printed'] / (int) $row['riders']) . '%)</small>' : '' ?></td>
+                        <td class="text-end"><?= number_format((int) $row['with_rider']) ?></td><td class="text-end"><?= number_format((int) $row['no_card']) ?></td><td class="text-end"><?= number_format((int) $row['lost_12m']) ?></td></tr>
                 <?php endforeach; ?></tbody>
             </table></div>
         </div></div>

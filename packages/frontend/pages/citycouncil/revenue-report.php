@@ -5,9 +5,12 @@ $active = 'revenue-analytics';
 $cityId = $_SESSION['city_id'];
 $city = fetchOne("SELECT * FROM cities WHERE id = ?", [$cityId]);
 
+$years = array_column(fetchAll("SELECT DISTINCT fiscal_year FROM payments WHERE city_id = ? AND status = 'Confirmed' AND fiscal_year IS NOT NULL ORDER BY fiscal_year DESC", [$cityId]), 'fiscal_year');
+if (!in_array(CURRENT_FISCAL_YEAR, $years, true)) array_unshift($years, CURRENT_FISCAL_YEAR);
+$year = in_array($_GET['year'] ?? '', $years, true) ? $_GET['year'] : CURRENT_FISCAL_YEAR;
 $rows = fetchAll("SELECT s.name, v.rider_count, v.active_count, v.compliance_pct,
-    (SELECT COALESCE(SUM(p.amount),0) FROM payments p WHERE p.rider_id IN (SELECT id FROM riders WHERE stage_id=s.id) AND p.status='Confirmed') AS revenue
-    FROM stages s LEFT JOIN v_stage_stats v ON v.stage_id = s.id WHERE s.city_id = ? ORDER BY revenue DESC", [$cityId]);
+    (SELECT COALESCE(SUM(p.amount),0) FROM payments p JOIN riders pr ON pr.id = p.rider_id WHERE pr.stage_id = s.id AND p.status = 'Confirmed' AND p.fiscal_year = ?) AS revenue
+    FROM stages s LEFT JOIN v_stage_stats v ON v.stage_id = s.id WHERE s.city_id = ? ORDER BY revenue DESC", [$year, $cityId]);
 
 $totalRevenue = array_sum(array_column($rows, 'revenue'));
 $totalRiders = array_sum(array_column($rows, 'rider_count'));
@@ -33,8 +36,10 @@ $totalRiders = array_sum(array_column($rows, 'rider_count'));
         <div class="card mb-4"><div class="card-body d-flex justify-content-between align-items-center flex-wrap gap-2">
             <div>
                 <h5 class="fw-bold mb-0"><?= h($city['name']) ?>: Annual revenue report</h5>
-                <p class="text-muted mb-0">Fiscal year <?= h($city['fiscal_year']) ?> · Generated <?= date('M d, Y') ?></p>
+                <p class="text-muted mb-0">Permit year <?= h($year) ?> (July to June) · Generated <?= date('M d, Y') ?></p>
             </div>
+            <form method="get" class="no-print d-flex align-items-center gap-2"><label class="small text-muted" for="reportYear">Year</label>
+                <select class="form-select form-select-sm" id="reportYear" name="year" data-autosubmit><?php foreach ($years as $y): ?><option<?= $y === $year ? ' selected' : '' ?>><?= h($y) ?></option><?php endforeach; ?></select></form>
             <div class="no-print"><?php $exportTableId='revenueReportTable'; $exportFilename='revenue_report'; $exportTitle=$city['name'].' Revenue Report'; require __DIR__ . '/../../partials/export-toolbar.php'; ?></div>
         </div></div>
 

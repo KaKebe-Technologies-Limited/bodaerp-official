@@ -12,7 +12,9 @@ function current_fiscal_year(?int $ts = null): string {
 }
 define('CURRENT_FISCAL_YEAR', current_fiscal_year());
 
-function formatCurrency($amount, string $currency = 'UGX'): string {
+/** Money in the city's currency: the signed-in user's city unless one is given. */
+function formatCurrency($amount, ?string $currency = null): string {
+    $currency ??= $_SESSION['city_currency'] ?? 'UGX';
     return $currency . ' ' . number_format((float) $amount);
 }
 
@@ -52,6 +54,14 @@ function nextReceiptNumber(int $paymentId): string {
 
 function nextActionCode(int $actionId): string {
     return 'ENF-' . date('Y') . '-' . str_pad((string) $actionId, 3, '0', STR_PAD_LEFT);
+}
+
+/**
+ * One CSV row for a download. Cells that start with = + - @ (or a tab/CR) get a leading quote so a
+ * spreadsheet shows them as text instead of running them as a formula. RFC 4180 quoting, no escape char.
+ */
+function csv_put($out, array $cells): void {
+    fputcsv($out, array_map(fn($v) => is_string($v) && preg_match('/^[=+\-@\t\r]/', $v) ? "'" . $v : $v, $cells), ',', '"', '');
 }
 
 /** JSON for embedding inside a <script> block or an HTML attribute: "<", ">", "&" and quotes are escaped. */

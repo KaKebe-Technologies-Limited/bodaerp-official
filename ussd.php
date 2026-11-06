@@ -9,6 +9,7 @@
 require_once __DIR__ . '/packages/backend/functions.php';
 require_once __DIR__ . '/packages/backend/iotec_functions.php';
 require_once __DIR__ . '/packages/backend/permits.php';
+require_once __DIR__ . '/packages/backend/enforcement.php';
 
 header('Content-Type: text/plain; charset=UTF-8');
 header('Cache-Control: no-store');
@@ -26,6 +27,7 @@ function ussd_mask_name(string $name): string {
 function ussd_rider_line(array $rider): string {
     $due = permit_amount_due($rider);
     $line = 'Permit ' . $rider['id_number'] . ' (' . ussd_mask_name($rider['full_name']) . ")\n";
+    if (rider_suspension((int) $rider['id'])) $line .= "SUSPENDED by the city council\n";
     $line .= $rider['expiry_date'] ? (strtotime($rider['expiry_date']) < strtotime('today') ? 'Expired ' : 'Valid to ') . formatDate($rider['expiry_date']) . "\n" : '';
     $line .= 'Amount: ' . formatCurrency($due['total']) . ($due['late_fee'] > 0 ? ' (incl. late fee ' . formatCurrency($due['late_fee']) . ')' : '');
     return $line;

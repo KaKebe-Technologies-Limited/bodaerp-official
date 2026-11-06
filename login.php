@@ -12,7 +12,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = trim((string) ($_POST['email'] ?? ''));
     $password = (string) ($_POST['password'] ?? '');
     if ($email === '' || $password === '') {
-        $error = 'Enter your email address and password.';
+        $error = 'Enter your email address or phone number, and your password.';
     } else {
         $result = attempt_login($email, $password);
         if ($result['ok'] && !empty($result['needs_code'])) {
@@ -94,10 +94,10 @@ require __DIR__ . '/packages/frontend/partials/auth-start.php';
                 <?= csrf_field() ?>
                 <?php if ($next): ?><input type="hidden" name="next" value="<?= h(BASE_URL . $next) ?>"><?php endif; ?>
                 <div class="login-field">
-                    <label for="email">Email address</label>
+                    <label for="email">Email address or phone number</label>
                     <div class="input-box">
                         <i class="fas fa-user" aria-hidden="true"></i>
-                        <input type="email" id="email" name="email" value="<?= h($email) ?>" placeholder="name@example.com" autocomplete="username" required autofocus>
+                        <input type="text" id="email" name="email" value="<?= h($email) ?>" placeholder="name@example.com or 0772 123456" autocomplete="username" inputmode="email" required autofocus>
                     </div>
                 </div>
                 <div class="login-field">

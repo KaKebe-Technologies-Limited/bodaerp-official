@@ -71,6 +71,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $receipt = record_manual_payment($rider, 'Cash', (int) $_SESSION['user_id']);
             flash('success', "First permit fee recorded, receipt $receipt.");
         }
+        require_once __DIR__ . '/../../../backend/id_cards.php';
+        id_card_ensure($riderId);
+        rider_notify($riderId, 'Registration Complete', "You are registered at {$stage['name']} with permit number $idNumber. Your chairperson will hand you your ID card.");
         if ($email !== null && !empty($_POST['send_invite'])) flash('info', rider_portal_invite($riderId));
         redirect('/pages/chairperson/rider-profile.php?id=' . $riderId . '&new=1');
     }

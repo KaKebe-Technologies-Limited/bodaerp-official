@@ -124,7 +124,7 @@ $transactions = fetchAll("SELECT p.*, r.full_name, s.name AS stage_name FROM pay
     new ApexCharts(document.querySelector('#pieChart'), {
         series: [<?= (int)$city['revenue_split_city'] ?>, <?= (int)$city['revenue_split_association'] ?>, <?= (int)$city['revenue_split_government'] ?>, <?= (int)$city['revenue_split_platform'] ?>],
         chart: { type: 'donut', height: 220 },
-        labels: ['City Council', 'Boda Association', 'Government', 'Kakebe Tech'],
+        labels: ['City Council', 'Boda Association', 'Government', 'Platform'],
         colors: ['#056CFE', '#198754', '#d97706', '#0dcaf0'],
         dataLabels: { enabled: true, formatter: v => Math.round(v) + '%' },
     }).render();

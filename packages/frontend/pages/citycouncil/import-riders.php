@@ -118,7 +118,7 @@ portal_start('citycouncil', 'import-riders', 'Import riders', [
                 <?= csrf_field() ?><input type="hidden" name="action" value="check">
                 <div class="mb-3">
                     <label class="form-label" for="register">CSV or Excel file (.csv, .xlsx), up to <?= IMPORT_MAX_ROWS ?> riders</label>
-                    <input class="form-control" type="file" id="register" name="register" accept=".csv,.xlsx,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" required>
+                    <input class="form-control" type="file" id="register" name="register" data-max-mb="3" accept=".csv,.xlsx,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" required>
                 </div>
                 <button class="btn btn-primary" data-busy-label="Checking">Check the file</button>
             </form>

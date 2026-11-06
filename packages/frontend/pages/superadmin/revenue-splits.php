@@ -149,12 +149,12 @@ $avgGovernment = $cityCount ? round(array_sum(array_column($cities, 'revenue_spl
             <div class="col"><div class="stat-hero-card tone-blue"><div class="stat-hero-icon"><i class="fas fa-landmark"></i></div><div><div class="stat-hero-value"><?= $avgCity ?>%</div><div class="stat-hero-label">Avg. city council</div></div></div></div>
             <div class="col"><div class="stat-hero-card tone-green"><div class="stat-hero-icon"><i class="fas fa-handshake"></i></div><div><div class="stat-hero-value"><?= $avgAssoc ?>%</div><div class="stat-hero-label">Avg. association</div></div></div></div>
             <div class="col"><div class="stat-hero-card tone-gold"><div class="stat-hero-icon"><i class="fas fa-university"></i></div><div><div class="stat-hero-value"><?= $avgGovernment ?>%</div><div class="stat-hero-label">Avg. government</div></div></div></div>
-            <div class="col"><div class="stat-hero-card tone-gold"><div class="stat-hero-icon"><i class="fas fa-microchip"></i></div><div><div class="stat-hero-value"><?= $avgPlatform ?>%</div><div class="stat-hero-label">Avg. Kakebe Tech</div></div></div></div>
+            <div class="col"><div class="stat-hero-card tone-gold"><div class="stat-hero-icon"><i class="fas fa-microchip"></i></div><div><div class="stat-hero-value"><?= $avgPlatform ?>%</div><div class="stat-hero-label">Avg. Platform</div></div></div></div>
         </div>
 
         <div class="alert alert-primary mb-4">
             <i class="fas fa-info-circle me-2"></i>
-            Revenue splits define how each payment is distributed between <strong>City council</strong>, <strong>Boda association</strong>, <strong>Government</strong>, and <strong>Kakebe Tech (platform)</strong>.
+            Revenue splits define how each payment is distributed between <strong>City council</strong>, <strong>Boda association</strong>, <strong>Government</strong>, and <strong>Platform</strong>.
             Drag any slider and the other three <strong>auto-balance</strong> to keep every city at exactly 100%.
         </div>
         <?php if ($errors): ?><div class="alert alert-danger"><?php foreach ($errors as $e) echo h($e); ?></div><?php endif; ?>
@@ -179,7 +179,7 @@ $avgGovernment = $cityCount ? round(array_sum(array_column($cities, 'revenue_spl
                         <div class="split-legend-row"><span class="name"><span class="dot c-city"></span>City council</span><span class="val" id="lbl-city-<?= h($id) ?>"><?= (int)$t['revenue_split_city'] ?>%</span></div>
                         <div class="split-legend-row"><span class="name"><span class="dot c-assoc"></span>Boda association</span><span class="val" id="lbl-assoc-<?= h($id) ?>"><?= (int)$t['revenue_split_association'] ?>%</span></div>
                         <div class="split-legend-row"><span class="name"><span class="dot c-government"></span>Government</span><span class="val" id="lbl-government-<?= h($id) ?>"><?= (int)$t['revenue_split_government'] ?>%</span></div>
-                        <div class="split-legend-row"><span class="name"><span class="dot c-platform"></span>Kakebe Tech</span><span class="val" id="lbl-platform-<?= h($id) ?>"><?= (int)$t['revenue_split_platform'] ?>%</span></div>
+                        <div class="split-legend-row"><span class="name"><span class="dot c-platform"></span>Platform</span><span class="val" id="lbl-platform-<?= h($id) ?>"><?= (int)$t['revenue_split_platform'] ?>%</span></div>
                     </div>
                 </div>
 
@@ -209,7 +209,7 @@ $avgGovernment = $cityCount ? round(array_sum(array_column($cities, 'revenue_spl
                         <input type="range" min="0" max="100" value="<?= (int)$t['revenue_split_government'] ?>" id="government-<?= h($id) ?>" aria-label="Government share for <?= h($t['name']) ?>, percent" data-call-input="onSliderInput" data-call-args="<?= h(js_json([(string) $id, 'government'])) ?>">
                     </div>
                     <div class="split-slider-row row-platform">
-                        <div class="slider-label"><span class="name"><span class="dot" style="background:var(--split-platform);"></span>Kakebe Tech (platform)</span><span class="val" id="platform-val-<?= h($id) ?>"><?= (int)$t['revenue_split_platform'] ?>%</span></div>
+                        <div class="slider-label"><span class="name"><span class="dot" style="background:var(--split-platform);"></span>Platform</span><span class="val" id="platform-val-<?= h($id) ?>"><?= (int)$t['revenue_split_platform'] ?>%</span></div>
                         <input type="range" min="0" max="100" value="<?= (int)$t['revenue_split_platform'] ?>" id="platform-<?= h($id) ?>" aria-label="Platform share for <?= h($t['name']) ?>, percent" data-call-input="onSliderInput" data-call-args="<?= h(js_json([(string) $id, 'platform'])) ?>">
                     </div>
 
@@ -239,7 +239,7 @@ $avgGovernment = $cityCount ? round(array_sum(array_column($cities, 'revenue_spl
     charts['<?= $id ?>'] = new ApexCharts(document.getElementById('chart-<?= $id ?>'), {
         series: [state['<?= $id ?>'].city, state['<?= $id ?>'].assoc, state['<?= $id ?>'].government, state['<?= $id ?>'].platform],
         chart: { type: 'donut', height: 92, width: 92, animations: { enabled: true } },
-        labels: ['City Council', 'Association', 'Government', 'Kakebe Tech'],
+        labels: ['City Council', 'Association', 'Government', 'Platform'],
         colors: ['#0459d4', '#0f7a52', '#001740', '#c21f27'],
         legend: { show: false },
         plotOptions: { pie: { donut: { size: '68%' } } },

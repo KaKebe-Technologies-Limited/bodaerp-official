@@ -14,12 +14,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     csrf_verify();
     $action = (string) ($_POST['action'] ?? '');
 
+    if (in_array($action, ['photo_upload', 'photo_remove'], true) && $me['role'] !== 'rider') {
+        // Staff profile photo: shown in the top bar and beside the name in staff lists. A rider's photo is the one
+        // taken at registration, so riders change it through their chairperson.
+        $old = (string) ($user['avatar_path'] ?? '');
+        $new = null;
+        if ($action === 'photo_upload') {
+            $up = store_upload($_FILES['photo'] ?? [], 'avatars', ['image/jpeg' => 'jpg', 'image/png' => 'png', 'image/webp' => 'webp'], 2 * 1024 * 1024);
+            if (!$up['ok']) { flash('error', $up['error']); redirect('/pages/account/settings.php'); }
+            $new = $up['path'];
+        }
+        runQuery("UPDATE users SET avatar_path = ? WHERE id = ?", [$new, $uid]);
+        if ($old !== '' && str_starts_with($old, '/uploads/avatars/')) delete_upload($old);
+        $_SESSION['avatar_path'] = $new;
+        audit_log('UPDATE', 'user', (string) $uid, $new ? 'Profile photo changed' : 'Profile photo removed');
+        flash('success', $new ? 'Your profile photo is saved.' : 'Your profile photo was removed.');
+        redirect('/pages/account/settings.php');
+    }
     if ($action === 'password' && !rate_limit('pw-change:' . $uid, 5, 900)) {
         flash('error', 'Too many password change attempts. Wait 15 minutes and try again.');
     } elseif ($action === 'password') {
         $current = (string) ($_POST['current_password'] ?? '');
         $new = (string) ($_POST['new_password'] ?? '');
-        $problems = password_problems($new, $user['email'], $user['name']);
+        $problems = password_problems($new, (string) $user['email'], $user['name']);
         if (!password_verify($current, $user['password_hash'])) $problems = ['Your current password is not right.'];
         elseif (!$problems && !hash_equals($new, (string) ($_POST['confirm_password'] ?? ''))) $problems[] = 'The two new passwords do not match.';
         elseif (!$problems && password_verify($new, $user['password_hash'])) $problems[] = 'Choose a password you have not used for this account.';
@@ -29,7 +46,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             session_regenerate_id(true);
             auth_session_register();                 // keep this device signed in; every other device is signed out
             audit_log('PASSWORD_CHANGED', 'user', (string) $uid, 'Changed own password');
-            send_template_email('password_changed', $user['email'], ['name' => $user['name'], 'changed_at' => date('j M Y, H:i')]);
+            if ($user['email']) send_template_email('password_changed', $user['email'], ['name' => $user['name'], 'changed_at' => date('j M Y, H:i')]);
             flash('success', 'Password changed. Other devices signed in to your account have been signed out.');
         }
     } elseif ($action === 'notifications') {
@@ -83,7 +100,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         audit_log('LOGOUT', 'user', (string) $uid, 'Signed out all other devices');
         flash('success', 'All other devices have been signed out.');
     } elseif ($action === 'data_request' && $riderId) {
-        $type = in_array($_POST['type'] ?? '', ['correction', 'deletion'], true) ? $_POST['type'] : 'correction';
+        $type = in_array($_POST['type'] ?? '', ['correction', 'deletion', 'objection'], true) ? $_POST['type'] : 'correction';
         $details = trim((string) ($_POST['details'] ?? ''));
         if (mb_strlen($details) < 10) flash('error', 'Describe what you need in a few words (at least 10 characters).');
         elseif (fetchValue("SELECT COUNT(*) FROM data_requests WHERE user_id = ? AND status = 'open' AND type = ?", [$uid, $type])) flash('error', 'You already have an open request of this kind. We will reply to it first.');
@@ -130,17 +147,34 @@ $platformRequires = in_array($me['role'], ['super_admin', 'city_admin', 'governm
     && (int) fetchValue("SELECT require_2fa FROM platform_settings WHERE id = 1") === 1;
 
 portal_start($sidebar, 'my-account', 'My account', [
-    'subtitle' => 'Password, notifications and security for ' . $user['email'],
+    'subtitle' => 'Password, notifications and security for ' . ($user['email'] ?: $user['phone']),
     'breadcrumbs' => [role_label($me['role']) => dashboard_url_for($me['role']), 'My account' => null],
 ]);
 ?>
 <div class="row g-3">
     <div class="col-lg-6">
+        <?php if ($me['role'] !== 'rider'): ?>
+        <div class="card mb-3"><div class="card-body">
+            <h2 class="h6 fw-bold mb-3"><i class="fas fa-circle-user me-2 text-primary" aria-hidden="true"></i>Profile photo</h2>
+            <div class="d-flex align-items-center gap-3 mb-3">
+                <?= person_avatar($user['avatar_path'] ?? null, $user['name'], 'is-lg') ?>
+                <p class="small text-muted mb-0">Shown in the top bar and beside your name in staff lists, so colleagues recognise who did what. JPG, PNG or WebP, up to 2 MB.</p>
+            </div>
+            <form method="post" enctype="multipart/form-data" class="mb-2"><?= csrf_field() ?><input type="hidden" name="action" value="photo_upload">
+                <label class="form-label" for="profilePhoto">New photo</label>
+                <input type="file" id="profilePhoto" name="photo" accept="image/jpeg,image/png,image/webp" data-max-mb="2" required>
+                <button class="btn btn-primary btn-sm mt-2" data-busy-label="Uploading">Save photo</button>
+            </form>
+            <?php if (!empty($user['avatar_path'])): ?>
+            <form method="post" data-confirm="Remove your profile photo? Your initials are shown instead." data-confirm-ok="Remove photo"><?= csrf_field() ?><input type="hidden" name="action" value="photo_remove"><button class="btn btn-outline-danger btn-sm">Remove photo</button></form>
+            <?php endif; ?>
+        </div></div>
+        <?php endif; ?>
         <div class="card mb-3"><div class="card-body">
             <h2 class="h6 fw-bold mb-3"><i class="fas fa-key me-2 text-primary" aria-hidden="true"></i>Change password</h2>
             <form method="post" autocomplete="off">
                 <?= csrf_field() ?><input type="hidden" name="action" value="password">
-                <input type="text" name="username" value="<?= h($user['email']) ?>" autocomplete="username" hidden>
+                <input type="text" name="username" value="<?= h($user['email'] ?: $user['phone']) ?>" autocomplete="username" hidden>
                 <div class="mb-2"><label class="form-label small fw-semibold" for="cur">Current password</label><input class="form-control" type="password" id="cur" name="current_password" autocomplete="current-password" required></div>
                 <div class="mb-2"><label class="form-label small fw-semibold" for="np">New password</label><input class="form-control" type="password" id="np" name="new_password" minlength="<?= $minLen ?>" autocomplete="new-password" required aria-describedby="npHint"><div class="form-text" id="npHint">At least <?= $minLen ?> characters, with letters and numbers.</div></div>
                 <div class="mb-3"><label class="form-label small fw-semibold" for="cp">New password again</label><input class="form-control" type="password" id="cp" name="confirm_password" autocomplete="new-password" required></div>
@@ -150,9 +184,13 @@ portal_start($sidebar, 'my-account', 'My account', [
 
         <div class="card mb-3"><div class="card-body">
             <h2 class="h6 fw-bold mb-3"><i class="fas fa-envelope me-2 text-primary" aria-hidden="true"></i>Email address</h2>
+            <?php if (!$user['email']): ?>
+            <p class="mb-2">No email address on this account. You sign in with your phone number <?= h($user['phone']) ?>, and password links come by SMS.</p>
+            <?php else: ?>
             <p class="mb-2"><?= h($user['email']) ?>
                 <?= $user['email_verified_at'] ? '<span class="badge bg-success ms-1">Confirmed</span>' : '<span class="badge bg-warning text-dark ms-1">Not confirmed</span>' ?></p>
-            <?php if (!$user['email_verified_at']): ?>
+            <?php endif; ?>
+            <?php if ($user['email'] && !$user['email_verified_at']): ?>
                 <form method="post"><?= csrf_field() ?><input type="hidden" name="action" value="verify_email"><button class="btn btn-outline-primary btn-sm" data-busy-label="Sending">Send confirmation email</button></form>
             <?php endif; ?>
             <p class="small text-muted mt-2 mb-0">To change your email address, ask <?= $me['role'] === 'rider' ? 'your stage chairperson' : 'the BodaERP administrator' ?>.</p>
@@ -169,7 +207,7 @@ portal_start($sidebar, 'my-account', 'My account', [
                 <p class="small text-muted mb-0">Text messages are not set up on this site yet, so the number cannot be confirmed.</p>
             <?php elseif ($confirmingPhone): ?>
                 <form method="post" class="d-flex gap-2 align-items-end flex-wrap"><?= csrf_field() ?><input type="hidden" name="action" value="phone_confirm">
-                    <div><label class="form-label small fw-semibold" for="pcode">Code from the text message</label><input class="form-control" id="pcode" name="code" inputmode="numeric" autocomplete="one-time-code" pattern="\d{6}" maxlength="6" required></div>
+                    <div><label class="form-label small fw-semibold" for="pcode">Code from the text message</label><input class="form-control" id="pcode" name="code" inputmode="numeric" autocomplete="one-time-code" pattern="\d{6}" data-pattern-message="Enter the 6 digits from the message." maxlength="6" required></div>
                     <button class="btn btn-primary" data-busy-label="Checking">Confirm number</button>
                 </form>
             <?php else: ?>
@@ -209,7 +247,7 @@ portal_start($sidebar, 'my-account', 'My account', [
             <form method="post"><?= csrf_field() ?><input type="hidden" name="action" value="two_factor">
                 <fieldset class="mb-3"><legend class="form-label small fw-semibold">Send my codes by</legend>
                     <div class="form-check"><input class="form-check-input" type="radio" name="channel" id="ch-sms" value="sms"<?= $user['two_factor_channel'] === 'sms' ? ' checked' : '' ?><?= $smsOn && $phoneConfirmed ? '' : ' disabled' ?>><label class="form-check-label" for="ch-sms">Text message<?= $phoneConfirmed ? ' to the number ending ' . h(sms_phone_hint($user['phone'])) : ' (confirm your mobile number first)' ?></label></div>
-                    <div class="form-check"><input class="form-check-input" type="radio" name="channel" id="ch-email" value="email"<?= $user['two_factor_channel'] !== 'sms' ? ' checked' : '' ?><?= $smtp ? '' : ' disabled' ?>><label class="form-check-label" for="ch-email">Email to <?= h($user['email']) ?></label></div>
+                    <div class="form-check"><input class="form-check-input" type="radio" name="channel" id="ch-email" value="email"<?= $user['two_factor_channel'] !== 'sms' ? ' checked' : '' ?><?= $smtp && $user['email'] ? '' : ' disabled' ?>><label class="form-check-label" for="ch-email">Email to <?= h($user['email']) ?></label></div>
                 </fieldset>
                 <?php if ((int) $user['two_factor_enabled'] || $platformRequires): ?>
                     <p class="mb-2"><span class="badge bg-success">On</span><?= $platformRequires && !(int) $user['two_factor_enabled'] ? ' <span class="small text-muted">because your role requires it</span>' : '' ?></p>
@@ -235,14 +273,14 @@ portal_start($sidebar, 'my-account', 'My account', [
         </div></div>
 
         <?php if ($riderId): ?>
-        <div class="card"><div class="card-body">
+        <div class="card" id="privacy"><div class="card-body">
             <h2 class="h6 fw-bold mb-2"><i class="fas fa-user-lock me-2 text-primary" aria-hidden="true"></i>Privacy and your data</h2>
-            <p class="small text-muted">Under Uganda's Data Protection and Privacy Act you can get a copy of your data, ask for corrections, or ask for data to be deleted. Read the <a href="<?= BASE_URL ?>/p/privacy-policy">privacy policy</a>.</p>
+            <p class="small text-muted">Under Uganda's Data Protection and Privacy Act you can get a copy of your data, ask for corrections, object to how it is used, or ask for data to be deleted. Read the <a href="<?= BASE_URL ?>/p/privacy-policy">privacy policy</a>.</p>
             <a class="btn btn-outline-primary btn-sm mb-3" href="?download=1"><i class="fas fa-download me-1"></i>Download my data (JSON)</a>
             <form method="post">
                 <?= csrf_field() ?><input type="hidden" name="action" value="data_request">
-                <div class="mb-2"><label class="form-label small fw-semibold" for="rtype">Request</label><select class="form-select form-select-sm" id="rtype" name="type"><option value="correction">Correct my details</option><option value="deletion">Delete my data</option></select></div>
-                <div class="mb-2"><label class="form-label small fw-semibold" for="rdet">What should change?</label><textarea class="form-control form-control-sm" id="rdet" name="details" rows="3" maxlength="3000" required></textarea></div>
+                <div class="mb-2"><label class="form-label small fw-semibold" for="rtype">Request</label><select class="form-select form-select-sm" id="rtype" name="type"><option value="correction">Correct my details</option><option value="objection">Object to how my data is used</option><option value="deletion">Delete my data</option></select></div>
+                <div class="mb-2"><label class="form-label small fw-semibold" for="rdet">Tell us what you need</label><textarea class="form-control form-control-sm" id="rdet" name="details" rows="3" maxlength="3000" required></textarea></div>
                 <button class="btn btn-primary btn-sm" data-busy-label="Sending">Send request</button>
             </form>
             <?php if ($requests): ?>

@@ -62,6 +62,59 @@
         });
     });
 
+    // Home page hero slider. Changes every data-interval seconds while nobody is using it. Hovering or focusing
+    // it holds the current slide; using the arrows, the arrow keys or a swipe hands control to the visitor and the
+    // automatic change stops for the rest of the visit. Reduced-motion devices never change by themselves.
+    var hero = document.querySelector('[data-hero]');
+    if (hero) {
+        var slides = hero.querySelectorAll('.hero-slide');
+        var live = hero.querySelector('.hero-slides');
+        var seconds = parseInt(hero.getAttribute('data-interval'), 10) || 0;
+        var visitorInControl = window.matchMedia('(prefers-reduced-motion: reduce)').matches || !seconds;
+        var current = 0, timer = 0, held = false;
+        function show(index) {
+            index = (index + slides.length) % slides.length;
+            slides.forEach(function (slide, i) {
+                var on = i === index;
+                slide.classList.toggle('is-active', on);
+                if (on) { slide.removeAttribute('aria-hidden'); slide.inert = false; }
+                else { slide.setAttribute('aria-hidden', 'true'); slide.inert = true; }
+                var img = slide.querySelector('img[loading="lazy"]');
+                if (on && img) img.loading = 'eager';
+            });
+            current = index;
+        }
+        function schedule() {
+            clearTimeout(timer);
+            var playing = !visitorInControl && !held && slides.length > 1 && !document.hidden;
+            if (live) live.setAttribute('aria-live', playing ? 'off' : 'polite');
+            if (playing) timer = setTimeout(function () { show(current + 1); schedule(); }, seconds * 1000);
+        }
+        function step(delta) { visitorInControl = true; show(current + delta); schedule(); }
+        var prev = hero.querySelector('[data-hero-prev]'), next = hero.querySelector('[data-hero-next]');
+        if (prev) prev.addEventListener('click', function () { step(-1); });
+        if (next) next.addEventListener('click', function () { step(1); });
+        hero.addEventListener('mouseenter', function () { held = true; schedule(); });
+        hero.addEventListener('mouseleave', function () { held = hero.contains(document.activeElement); schedule(); });
+        hero.addEventListener('focusin', function () { held = true; schedule(); });
+        hero.addEventListener('focusout', function (e) { if (!hero.contains(e.relatedTarget)) { held = hero.matches(':hover'); schedule(); } });
+        hero.addEventListener('keydown', function (e) {
+            if (e.target.closest('a, input')) return;
+            if (e.key === 'ArrowRight') { e.preventDefault(); step(1); }
+            if (e.key === 'ArrowLeft') { e.preventDefault(); step(-1); }
+        });
+        var touchX = null;
+        hero.addEventListener('touchstart', function (e) { touchX = e.touches[0].clientX; }, { passive: true });
+        hero.addEventListener('touchend', function (e) {
+            if (touchX === null) return;
+            var dx = e.changedTouches[0].clientX - touchX;
+            touchX = null;
+            if (Math.abs(dx) > 50) step(dx < 0 ? 1 : -1);
+        });
+        document.addEventListener('visibilitychange', schedule);
+        schedule();
+    }
+
     var faqSearch = document.querySelector('[data-faq-search]');
     if (faqSearch) {
         var faqItems = document.querySelectorAll('.faq-item');

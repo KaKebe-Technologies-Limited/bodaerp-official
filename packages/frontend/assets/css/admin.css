@@ -85,6 +85,9 @@
 }
 .dash-banner a.dash-meta { text-decoration: underline; opacity: 1; font-weight: 600; }
 
+/* Portal headings are dark on white; a banner is coloured, so its heading keeps the banner's white. */
+.content-area .dash-banner :is(h1, h2, h3, h4, h5, h6) { color: inherit; }
+
 .dash-banner.theme-blue { background: var(--primary-blue-solid); }
 .dash-banner.theme-dark { background: var(--dark-black-solid); }
 .dash-banner.theme-green { background: #15803d; }

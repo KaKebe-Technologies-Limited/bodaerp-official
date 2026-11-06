@@ -33,7 +33,7 @@ $canRenderChrome = function_exists('menu_items') && $status !== 500;
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex">
     <title><?= htmlspecialchars($title) ?></title>
     <link rel="icon" href="<?= htmlspecialchars($home) ?>assets/images/favicon.ico" sizes="any">
-    <link rel="stylesheet" href="<?= htmlspecialchars($home) ?>assets/vendor/inter/inter.css">
+    <link rel="stylesheet" href="<?= htmlspecialchars($home) ?>assets/vendor/outfit/outfit.css">
     <link rel="stylesheet" href="<?= htmlspecialchars($home) ?>assets/css/public.css">
 <?php endif; ?>
 </head>

@@ -15,6 +15,11 @@ $monthlyRows = fetchAll("SELECT DATE_FORMAT(p.paid_at,'%Y-%m') ym, SUM(p.amount)
     WHERE p.status='Confirmed' AND p.paid_at >= DATE_SUB(CURDATE(), INTERVAL 11 MONTH) AND p.rider_id IN (SELECT id FROM riders WHERE stage_id=?)
     GROUP BY ym", [$stageId]);
 $monthlyByYm = array_column($monthlyRows, 'total', 'ym');
+$monthlyCounts = array_column(fetchAll("SELECT DATE_FORMAT(p.paid_at,'%Y-%m') ym, COUNT(*) n FROM payments p
+    WHERE p.status='Confirmed' AND p.paid_at >= DATE_SUB(CURDATE(), INTERVAL 11 MONTH) AND p.rider_id IN (SELECT id FROM riders WHERE stage_id=?)
+    GROUP BY ym", [$stageId]), 'n', 'ym');
+$owing = fetchAll("SELECT full_name, id_number, bike_plate, phone, status, expiry_date FROM riders
+    WHERE stage_id = ? AND deleted_at IS NULL AND status IN ('expired','pending') ORDER BY status, expiry_date", [$stageId]);
 $chartLabels = []; $chartValues = [];
 for ($i = 11; $i >= 0; $i--) {
     $ym = date('Y-m', strtotime("-$i months"));
@@ -41,7 +46,8 @@ for ($i = 11; $i >= 0; $i--) {
                     <h4><?= h($stage['name']) ?>: Performance report</h4>
                     <p>A snapshot of riders, compliance, and revenue for your stage.</p>
                 </div>
-                <span class="dash-meta">Generated <?= date('M d, Y') ?></span>
+                <div class="d-flex align-items-center gap-2"><span class="dash-meta">Generated <?= date('M d, Y') ?></span>
+                    <button type="button" class="btn btn-light btn-sm no-print" data-print><i class="fas fa-print me-1" aria-hidden="true"></i>Print report</button></div>
             </div>
         </div>
 
@@ -55,6 +61,33 @@ for ($i = 11; $i >= 0; $i--) {
         <div class="card"><div class="card-body">
             <h6 class="fw-bold mb-3">Revenue trend (last 12 months)</h6>
             <div id="stageReportChart" style="height: 250px;"></div>
+        </div></div>
+
+        <div class="card mt-4"><div class="card-body">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+                <h2 class="section-title mb-0">Money collected by month</h2>
+                <?php $exportTableId = 'stageMonthly'; $exportFilename = 'stage_report_' . date('Y_m'); $exportTitle = ($stage['name'] ?? 'Stage') . ': money collected by month'; require __DIR__ . '/../../partials/export-toolbar.php'; ?>
+            </div>
+            <div class="table-responsive"><table class="table table-sm align-middle" id="stageMonthly">
+                <thead><tr><th>Month</th><th class="text-end">Payments</th><th class="text-end">Amount</th></tr></thead>
+                <tbody><?php for ($i = 11; $i >= 0; $i--): $ym = date('Y-m', strtotime("first day of -$i months")); ?>
+                    <tr><td><?= date('F Y', strtotime($ym . '-01')) ?></td><td class="text-end"><?= (int) ($monthlyCounts[$ym] ?? 0) ?></td><td class="text-end"><?= h(formatCurrency((float) ($monthlyByYm[$ym] ?? 0))) ?></td></tr>
+                <?php endfor; ?></tbody>
+            </table></div>
+        </div></div>
+
+        <div class="card mt-4"><div class="card-body">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+                <h2 class="section-title mb-0">Riders who still owe (<?= count($owing) ?>)</h2>
+                <?php $exportTableId = 'stageOwing'; $exportFilename = 'stage_riders_owing_' . date('Y_m_d'); $exportTitle = ($stage['name'] ?? 'Stage') . ': riders who still owe'; require __DIR__ . '/../../partials/export-toolbar.php'; ?>
+            </div>
+            <div class="table-responsive"><table class="table table-sm align-middle" id="stageOwing">
+                <thead><tr><th>Rider</th><th>Permit number</th><th>Plate</th><th>Phone</th><th>Status</th><th>Expired on</th></tr></thead>
+                <tbody><?php foreach ($owing as $o): ?>
+                    <tr><td><?= h($o['full_name']) ?></td><td><?= h($o['id_number']) ?></td><td><?= h($o['bike_plate']) ?></td><td><?= h($o['phone']) ?></td><td><?= $o['status'] === 'pending' ? 'Not paid yet' : 'Expired' ?></td><td><?= $o['expiry_date'] ? formatDate($o['expiry_date']) : '–' ?></td></tr>
+                <?php endforeach; ?>
+                <?php if (!$owing): ?><tr><td colspan="6" class="text-muted">Every rider at the stage is paid up.</td></tr><?php endif; ?></tbody>
+            </table></div>
         </div></div>
     </div>
 </div>

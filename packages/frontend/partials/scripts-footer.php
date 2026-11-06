@@ -14,4 +14,5 @@ $toasts = flash_take();
 <script src="<?= BASE_URL ?>/assets/vendor/jspdf/jspdf.umd.min.js"></script>
 <script src="<?= BASE_URL ?>/assets/vendor/jspdf/jspdf.plugin.autotable.min.js"></script>
 <script src="<?= BASE_URL ?>/assets/js/table-tools.js?v=<?= @filemtime(__DIR__ . '/../assets/js/table-tools.js') ?: 1 ?>"></script>
+<script src="<?= BASE_URL ?>/assets/js/controls.js?v=<?= @filemtime(__DIR__ . '/../assets/js/controls.js') ?: 1 ?>"></script>
 <script src="<?= BASE_URL ?>/assets/js/main.js?v=<?= @filemtime(__DIR__ . '/../assets/js/main.js') ?: 1 ?>"></script>

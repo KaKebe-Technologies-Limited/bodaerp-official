@@ -6,6 +6,7 @@
         </div>
     </div>
 </main>
+<script src="<?= BASE_URL ?>/assets/js/controls.js?v=<?= @filemtime(__DIR__ . '/../assets/js/controls.js') ?: 1 ?>"></script>
 <script src="<?= BASE_URL ?>/assets/js/public.js?v=<?= @filemtime(__DIR__ . '/../assets/js/public.js') ?: 1 ?>"></script>
 </body>
 </html>

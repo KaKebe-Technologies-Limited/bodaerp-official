@@ -38,10 +38,7 @@ $currentPath = '/faq.php';
                 </div>
                 <div class="faq-list">
                     <?php foreach ($faqs as $i => $f): ?>
-                    <details class="faq-item"<?= $i === 0 ? ' open' : '' ?>>
-                        <summary><?= h($f['title']) ?></summary>
-                        <div class="answer"><?= nl2br(h($f['body'])) ?></div>
-                    </details>
+                    <?= render_faq_item($f['title'], $f['body'], $i === 0) ?>
                     <?php endforeach; ?>
                     <p class="text-muted text-center" data-faq-empty hidden>No question matches that search. <a href="<?= BASE_URL ?>/contact.php">Ask us directly</a>.</p>
                 </div>

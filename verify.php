@@ -5,6 +5,8 @@
 // Signed-in chairpersons and city staff can also record the check (outcome, note, optional phone location);
 // those records feed Roadside checks for the city and the government enforcement view.
 require_once __DIR__ . '/packages/backend/site.php';
+require_once __DIR__ . '/packages/backend/id_cards.php';
+require_once __DIR__ . '/packages/backend/enforcement.php';
 
 const CHECK_ROLES = ['chairperson', 'city_admin', 'super_admin'];
 const CHECK_OUTCOMES = ['ok' => 'All in order', 'warned' => 'Warned the rider', 'impounded' => 'Motorcycle impounded', 'other' => 'Other (see note)'];
@@ -33,28 +35,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $officer) {
 
 $token = trim((string) ($_GET['t'] ?? ''));
 $code = strtoupper(trim((string) ($_GET['code'] ?? '')));
-$rider = null; $full = false; $limited = false; $searched = $token !== '' || $code !== '';
+$rider = null; $oldCard = null; $full = false; $limited = false; $searched = $token !== '' || $code !== '';
 
 if ($searched && !rate_limit('verify:' . client_ip(), 60, 600)) {
     $limited = true;
 } elseif ($token !== '' && preg_match('/^[a-f0-9]{20}$/', $token)) {
-    $rider = fetchOne("SELECT r.id_number, r.full_name, r.photo_path, r.status, r.expiry_date, r.member_since, r.bike_plate,
+    $rider = fetchOne("SELECT r.id, r.id_number, r.full_name, r.photo_path, r.status, r.expiry_date, r.member_since, r.bike_plate,
         s.name AS stage_name, c.name AS city_name
         FROM riders r LEFT JOIN stages s ON s.id = r.stage_id LEFT JOIN cities c ON c.id = r.city_id
         WHERE r.verify_token = ? AND r.deleted_at IS NULL", [$token]);
     $full = (bool) $rider;
+    // A replaced, lost or cancelled card still carries its old token: say so instead of "no permit found".
+    $oldCard = $rider ? null : id_card_by_old_token($token);
 } elseif ($code !== '' && preg_match('/^[A-Z0-9-]{4,40}$/', $code)) {
-    $rider = fetchOne("SELECT r.id_number, r.full_name, r.status, r.expiry_date, s.name AS stage_name, c.name AS city_name
+    $rider = fetchOne("SELECT r.id, r.id_number, r.full_name, r.status, r.expiry_date, s.name AS stage_name, c.name AS city_name
         FROM riders r LEFT JOIN stages s ON s.id = r.stage_id LEFT JOIN cities c ON c.id = r.city_id
         WHERE r.id_number = ? AND r.deleted_at IS NULL", [$code]);
 }
 
 $status = $rider['status'] ?? null;
 if ($rider && $status === 'active' && $rider['expiry_date'] && $rider['expiry_date'] < date('Y-m-d')) $status = 'expired';
+if ($rider && rider_suspension((int) $rider['id'])) $status = 'suspended';
 $statusMeta = [
     'active'  => ['Permit valid', '#15803d', 'fa-circle-check'],
     'expired' => ['Permit expired: not compliant', '#b91c1c', 'fa-circle-xmark'],
     'pending' => ['Registered, permit not yet paid', '#b45309', 'fa-clock'],
+    'suspended' => ['Permit suspended by the city council: not allowed to ride', '#b91c1c', 'fa-ban'],
 ];
 $maskName = function (string $name): string {
     $parts = preg_split('/\s+/', trim($name)) ?: [];
@@ -84,6 +90,16 @@ $currentPath = '/verify.php';
                 <div class="col-lg-5 order-lg-2">
                     <?php if ($limited): ?>
                         <div class="notice notice-error" role="alert">Too many checks from this connection. Wait ten minutes and try again.</div>
+                    <?php elseif ($oldCard): ?>
+                        <div class="verify-card" aria-live="polite">
+                            <div class="top">
+                                <i class="fas fa-ban fa-3x mb-2" style="color:#b91c1c" aria-hidden="true"></i>
+                                <h2 class="h5 fw-bold">This card is no longer valid</h2>
+                                <p class="text-muted mb-2">Card <?= h($oldCard['serial']) ?> of <?= h($maskName($oldCard['full_name'])) ?> (<?= h($oldCard['city_name'] ?? '') ?>)
+                                    was <?= $oldCard['status'] === 'lost' ? 'reported lost' : ($oldCard['status'] === 'cancelled' ? 'cancelled' : 'replaced') ?> on <?= formatDate($oldCard['ended_at']) ?>.</p>
+                                <p class="mb-0"><?= $oldCard['current_serial'] ? 'Ask the rider for their current card (' . h($oldCard['current_serial']) . ') and scan that one.' : 'The rider has no valid card at the moment.' ?></p>
+                            </div>
+                        </div>
                     <?php elseif ($searched && !$rider): ?>
                         <div class="verify-card">
                             <div class="top">
@@ -142,7 +158,7 @@ $currentPath = '/verify.php';
                         <h2 class="mb-3">Enter a permit number</h2>
                         <div class="field">
                             <label for="code">Permit number</label>
-                            <input id="code" name="code" required maxlength="40" pattern="[A-Za-z0-9-]{4,40}" placeholder="For example BODA-LIR-000123" value="<?= h($code) ?>" autocapitalize="characters">
+                            <input id="code" name="code" required maxlength="40" pattern="[A-Za-z0-9\-]{4,40}" data-pattern-message="Permit numbers use letters, digits and dashes, for example BODA-LIR-000123." placeholder="For example BODA-LIR-000123" value="<?= h($code) ?>" autocapitalize="characters">
                             <div class="hint">Printed under the rider's name on the ID card.</div>
                         </div>
                         <button class="btn-brand" type="submit"><i class="fas fa-magnifying-glass" aria-hidden="true"></i> Check permit</button>

@@ -101,7 +101,7 @@ if ($filterRole !== '') { $sql .= " AND u.role = ?"; $params[] = $filterRole; }
 $filterStatus = in_array($_GET['status'] ?? '', ['active', 'suspended'], true) ? $_GET['status'] : '';
 if ($filterStatus !== '') { $sql .= " AND u.status = ?"; $params[] = $filterStatus; }
 $pg = paginate((int) fetchValue("SELECT COUNT(*) $sql", $params), 25);
-$users = fetchAll("SELECT u.id, u.name, u.email, u.phone, u.role, u.city_id, u.stage_id, u.agency_name, u.status, u.created_at, u.last_login_at,
+$users = fetchAll("SELECT u.id, u.name, u.email, u.phone, u.avatar_path, u.role, u.city_id, u.stage_id, u.agency_name, u.status, u.created_at, u.last_login_at,
     u.email_verified_at, u.two_factor_enabled, u.password_changed_at, c.name AS city_name, s.name AS stage_name $sql ORDER BY "
     . sort_sql(['name' => 'u.name', 'role' => 'u.role', 'created' => 'u.id', 'login' => 'u.last_login_at'], 'created') . " LIMIT {$pg['per_page']} OFFSET {$pg['offset']}", $params);
 $stages = fetchAll("SELECT id, city_id, name FROM stages ORDER BY name");
@@ -181,7 +181,7 @@ $adminUsersAll    = (int) fetchValue("SELECT COUNT(*) FROM users WHERE deleted_a
                             <tr>
                                 <td>
                                     <div class="d-flex align-items-center gap-2">
-                                        <img src="<?= BASE_URL ?>/assets/images/avatar-placeholder.png" width="34" height="34" class="rounded-circle border" alt="">
+                                        <?= person_avatar($u['avatar_path'] ?? null, $u['name']) ?>
                                         <div><strong style="font-size:0.85rem;"><?= h($u['name']) ?></strong><br><small class="text-muted"><?= h($u['email']) ?></small>
                                             <?= $u['email_verified_at'] ? '' : ' <span class="badge bg-light text-dark border" title="Email not confirmed">unconfirmed</span>' ?><?= (int) $u['two_factor_enabled'] ? ' <span class="badge bg-light text-success border">2-step</span>' : '' ?><?= $u['password_changed_at'] || $u['last_login_at'] ? '' : ' <span class="badge bg-light text-warning border" title="The person has not set a password yet">invite not accepted</span>' ?></div>
                                     </div>

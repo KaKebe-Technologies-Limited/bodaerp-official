@@ -8,10 +8,8 @@ const UPLOAD_IMAGE_TYPES = ['image/jpeg' => 'jpg', 'image/png' => 'png', 'image/
 const UPLOAD_DOCUMENT_TYPES = ['application/pdf' => 'pdf'];
 
 function upload_detect_mime(string $tmpPath): string {
-    if (function_exists('finfo_open')) {
-        $f = finfo_open(FILEINFO_MIME_TYPE);
-        $mime = $f ? (string) finfo_file($f, $tmpPath) : '';
-        if ($f) finfo_close($f);
+    if (class_exists('finfo')) {
+        $mime = (string) (new finfo(FILEINFO_MIME_TYPE))->file($tmpPath);
         if ($mime !== '') return $mime;
     }
     $img = @getimagesize($tmpPath);
@@ -77,6 +75,28 @@ function store_upload(array $file, string $folder, array $allowed = UPLOAD_IMAGE
     return ['ok' => true, 'path' => '/uploads/' . $relDir . '/' . $name, 'mime' => $mime, 'size' => $size, 'width' => $width, 'height' => $height];
 }
 
+/**
+ * Stores image bytes made in the browser (a drawn signature), with the same checks as store_upload(): real
+ * content type, size limit, a readable image, a random name.
+ */
+function store_generated_image(string $bytes, string $folder, array $allowed = UPLOAD_IMAGE_TYPES, int $maxBytes = 2097152): array {
+    $size = strlen($bytes);
+    if ($size === 0 || $size > $maxBytes) return ['ok' => false, 'error' => 'The image must be smaller than ' . round($maxBytes / 1048576, 1) . ' MB.'];
+    $mime = (string) (new finfo(FILEINFO_MIME_TYPE))->buffer($bytes);
+    if (!isset($allowed[$mime])) return ['ok' => false, 'error' => 'That image type is not allowed.'];
+    $info = @getimagesizefromstring($bytes);
+    if (!$info) return ['ok' => false, 'error' => 'The image is damaged.'];
+    $folder = trim(preg_replace('#[^a-z0-9/_-]#i', '', $folder), '/');
+    $relDir = $folder . '/' . date('Y/m');
+    $absDir = upload_path($relDir);
+    if (!ensure_dir($absDir)) return ['ok' => false, 'error' => 'The upload folder is not writable.'];
+    upload_protect_folder(upload_path());
+    $name = bin2hex(random_bytes(12)) . '.' . $allowed[$mime];
+    if (file_put_contents($absDir . '/' . $name, $bytes) !== $size) return ['ok' => false, 'error' => 'The server could not save the image.'];
+    @chmod($absDir . '/' . $name, 0644);
+    return ['ok' => true, 'path' => '/uploads/' . $relDir . '/' . $name, 'mime' => $mime, 'size' => $size, 'width' => $info[0], 'height' => $info[1]];
+}
+
 /** Deletes a stored upload given its site path (/uploads/...). Refuses anything outside the upload folder. */
 function delete_upload(?string $sitePath): bool {
     $abs = upload_resolve($sitePath);
@@ -114,10 +134,10 @@ function media_url(?string $stored, string $fallback = '/assets/images/avatar-pl
     return BASE_URL . '/' . ltrim($p, '/');
 }
 
-/** Whether the signed-in user may load this rider photo (see serve_upload.php). */
+/** Whether the signed-in user may load this rider photo or card signature (see serve_upload.php). */
 function rider_photo_allowed(string $path): bool {
     if (!function_exists('is_logged_in') || !is_logged_in()) return false;
-    $rider = fetchOne("SELECT id, city_id, stage_id, user_id FROM riders WHERE photo_path IN (?, ?) LIMIT 1", [$path, BASE_URL . $path]);
+    $rider = fetchOne("SELECT id, city_id, stage_id, user_id FROM riders WHERE photo_path IN (?, ?) OR signature_path IN (?, ?) LIMIT 1", [$path, BASE_URL . $path, $path, BASE_URL . $path]);
     if (!$rider) return ($_SESSION['role'] ?? '') === 'super_admin';
     return match ($_SESSION['role'] ?? '') {
         'super_admin' => true,

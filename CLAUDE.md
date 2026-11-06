@@ -24,7 +24,16 @@ OVERALL: 79% complete. 21% remaining until public launch
 | Documentation | 5 of 6 | 83% |
 | **Total** | **154 of 185** | **83% raw; 79% weighted by launch risk (what is left is mostly owner actions, see BLOCKING)** |
 
+### NEXT (owner, 2026-11-06, in this order)
+1. Deploy bodaerp.site to the Kakebe VPS (`ssh vps`): steps and status in docs/DEPLOYMENT.md, section "Kakebe VPS".
+2. Round 6, the full plan in docs/ROUND6_PLAN.md (notifications for every role, notices, stages and chairpersons by
+   city admins, chairperson search/add/move without delete, transfers, removal and restore, renewal requests with a
+   view-only rider card, complaints for everyone including the public, pop-up permit check by number or plate,
+   reports, monitoring, README with every role). Update its status table as phases finish.
+
 ### BLOCKING PUBLIC LAUNCH
+0. Owner review of rounds 4 and 5 (2026-11-06, committed and pushed at the owner's request; visual sign-off still open): homepage slider and copy, portal redesign, own form controls (ROUND 4); ID cards, photo columns, phone portal accounts, 23 copy-promised features, upgrades (ROUND 5).
+0b. ApexCharts licence: kept on 4.7.0, the last MIT release. 5.x and later need a paid licence for a platform used by other organisations; upgrade only if the owner buys one.
 1. Owner review of round 2 (built and verified 2026-11-01, committed 2026-11-05 in 03a0cb8 at the owner's request): login, theme, portal shell, sidebars, government data fixes, home sections, AI-tell sweep. Still needs the owner's visual sign-off.
 2. SMTP not configured on the live server: password reset, invites, receipts and 2FA need it (docs/DEPLOYMENT.md → Email).
 3. Mobile-money (ioTec) never tested end to end, even in test mode. `IOTEC_MODE=test` until then; IPN callback URL must point at this site.
@@ -49,6 +58,32 @@ OVERALL: 79% complete. 21% remaining until public launch
 8. [x] (2026-11-06) SMS through EgoSMS: receipts, failed payments, renewal reminders (2 per permit), overdue notices, chairperson/city reminders (1 per rider per day), handover results, sign-in codes. `sms.php`, Super Admin → SMS.
 
 ---
+
+## ROUND 5 (2026-11-06 owner request, built and verified, committed and pushed 2026-11-06 at the owner's request)
+
+Owner: sidebar dropdowns stay open independently; rider photo as the first column in every rider list; build every feature the public copy promises; full ID card pages in all portals, cleaner and shaped like a real government ID, staff can edit print fields, riders cannot; upgrade everything; then deploy bodaerp.site to the VPS (`ssh vps`), today on Kakebe's Hostinger shared hosting.
+
+Built and verified (smoke 156, flows 139, access 440, portability clean, 0 advisories; Playwright all 5 roles; card rebuild checked in Playwright: card page, signature pad, enlarge, A4 sheet, rider without photo):
+1. Sidebar groups open independently; `person_cell()`/`person_avatar()` photo column; staff profile photos (`uploads/avatars`, private); city logo upload.
+2. ID cards: `id_cards` table + `packages/backend/id_cards.php`, partials `id-card*.php`, `id-card.css/js`; staff print-field editor with live preview (`id_cards.print_data`, name limited to registered words, audited diff); riders read-only; chairperson + city pages (single, list, print sheet). Rebuilt the same day on the owner's photos of the new national ID (migration `350000_id_card_layout`): front = emblem + heading + national-colour rule, photo with the city name (LIRA, GULU, KAMPALA: `id_card_city_word()`, also in the corner badge; the code stays in the permit number) and permit digits under it, surname / given / other names beside sex, birth, plate, NIN, issue and expiry, the holder's signature (the only one), ghost photo (only when there is a photo; otherwise the signature line widens), card number on the edge; back = tinted panel (city, stage, route, home, make, next of kin, kin's phone, rider since), QR (decoded with zxing from a print-resolution render), property statement and conditions one sentence per line (never wraps; `id-card.js` shrinks a long line), MRZ band. No barcode (owner). Security print is an inline SVG (`id_card_pattern_svg()`). Signature: drawn in a pad on the staff card page or uploaded (`riders.signature_path`, private like photos, `store_generated_image()`); no officer signatory any more.
+   Document pages (staff card page for chairperson + city, rider card, 3 receipts, A4 sheet) use `.doc-layout` (portal-shell.css): `action_rail()` (admin_ui.php) as a small menu down the left instead of a button row, forms in the middle, the card pinned on the right (sticky, both sides stacked at real size); below 1280px the menu is a strip above, below 768px it all stacks.
+3. All 23 copy-promised gaps built: receipts page (`partials/receipt.php`), portal by phone number (SMS invite + reset, migration `340000_phone_portal`, `users.email` nullable), full rider edit for city/super admin with audit diffs (`rider_records.php`), anonymise from data requests, objection requests, enforcement suspension affects status/verify/USSD + rider appeals, revenue fiscal-year filter, stage report export, audit purge after 12 months, unused settings removed, contact channels.
+4. Upgrades: Docker dev stack PHP 8.5 + MariaDB 11.8 by default (`PHP_VERSION=8.2` / `MARIADB_VERSION=10.4` in `.env` reproduce XAMPP), Mailpit 1.33; PHP 8.5 deprecations removed (`curl_close`, `finfo_close`, `fputcsv` escape via `csv_put()`); Bootstrap 5.3.8, Font Awesome 7.3.1 (every icon in code and DB checked), CKEditor 49.1.0 (all 53 plugins present), ApexCharts 4.7.0 (see blocker 0b). jsPDF, AutoTable, Outfit, qrcodejs already latest.
+
+Found on the way: gap register #49-51.
+
+## ROUND 4 (2026-11-06 owner request, built and verified, committed and pushed 2026-11-06 at the owner's request)
+
+Owner, in order: "all the browser defaults confirm dialogs dropdowns etc fix all to use system style ... work more on the homepage starting with full standard size hero section with multiple hero slide download real image ... very neat and clean footer ... use image for bg in some sections"; then "remove ... the boda boda permit and compliance badge and anything similar, ... in the footer remove the check permit button, align the copyright text in the center ... footer 4 column ... with social links ... the admin portals and rider portals too need redesigning esp the sidebar items, every single thing under the main sidebar item should be a subitem WITH DROPDOWN ... benchmark from goodname finance project ... center the nav bar items but leave sign in or the avatar in the right corner and logo in the left. remove the pause button and the slide numbering ... abolish anything that mentions where this system was built from, rewrite every wording ... importance, why, how it works ... for who and why them".
+
+Built and verified (tests + Playwright, one window, 66 pages of all roles clean):
+1. Own controls for every browser-drawn surface: `assets/js/controls.js` + `assets/css/controls.css` (loaded by public, sign-in and portal shells). Dialog service `BodaUI.confirm/showText` (no `confirm()`/`prompt()` anywhere; a missing controls.js refuses instead of proceeding), listbox for every `<select>` (filter above 10 options, 200-row cap), calendar date field (dd/mm/yyyy), slider, colour swatches, numeric text fields, file drop zone (`data-max-mb`), suggestion box for `list=`, search clear button, tooltips for `title=`/`data-tip`, FAQ accordion (`render_faq_item()`), inline validation on every form (`noValidate`), styled scrollbars/checkboxes/autofill. Confirm copy names the record; deleting a city needs the name typed (`data-confirm-typed`); bulk forms use `{count}`/`{action}`. Proof: `audit/PROOF_NATIVE.md`.
+2. Homepage: full-height hero slider from `content_items` group `home_slide` (photo, title, text, button; Super Admin, Pages & content, "Home: hero slides"), arrows only, autoplay every `home_slider_interval` s that holds on hover/focus and stops for good once the visitor uses arrows/keys/swipe, never on reduced motion. "Why it matters" photo band (`home_why`, new tab), steps, who it is for (photo on one third), features, permit check band and closing band on photos (`home_*_image` settings). 9 real photos from Wikimedia Commons (CC BY-SA 4.0 / CC0) in `assets/images/home/` as WebP with 960px phone versions; credits on `/p/photo-credits` (footer link) as the licences require.
+3. Public header: logo left, menu centred, account right; no tagline badge anywhere (`site_tagline_short` removed). Footer: 4 columns (brand + social, Product, Company, Contact), legal links, copyright and photo credit centred.
+4. Copy rewritten (migration `2026_11_06_200000_public_copy`, only where text is still the old default): why it matters, how it works, who it is for and why them; nothing about where the system is made. Legal pages, the copyright line and the email footer still name Kakebe Technologies Limited as the legal operator (left on purpose). Portal chart labels "Kakebe Tech" became "Platform".
+5. Portals redesigned on the Goodname Finance staff portal: Outfit font (self-hosted `vendor/outfit`, replaces Inter), navy sidebar + navy top bar as one frame, groups as dropdowns (one open at a time, current group open, single-page groups are links, badges roll up to a dot), fold to an icon rail (remembered), top bar shows scope / group / page, page header with red accent bar, floating cards that lift, uppercase table headers with an accent edge on row hover, 10px buttons that press in, links dark with a red underline instead of browser blue.
+
+Found on the way: gap register #45-48.
 
 ## ROUND 3 (2026-11-05 owner request, done 2026-11-06)
 
@@ -104,11 +139,12 @@ What was built:
 
 - **Stack: PHP 8.1+ · MySQL/MariaDB (mysqli) · plain JavaScript.** No PDO (owner, 2026-10-31: keep the mysqli helpers), no Node/npm, no Composer, no build step.
 - **Docker is optional and dev-only** (owner, 2026-10-31). `docker-compose.yml` + `docker/` serve Developer A; XAMPP and production never use them.
-- **CKEditor 5, GPL licence, free plugins only** (owner, 2026-10-31). v48.5.2 self-hosted browser build committed in `packages/frontend/assets/vendor/ckeditor5/` (licenseKey `'GPL'`). Note: GPL obligations apply if BodaERP is distributed.
+- **CKEditor 5, GPL licence, free plugins only** (owner, 2026-10-31). v49.1.0 self-hosted browser build committed in `packages/frontend/assets/vendor/ckeditor5/` (licenseKey `'GPL'`). Note: GPL obligations apply if BodaERP is distributed.
 - **No public sign-up** (owner, 2026-10-31). Riders get an account when their chairperson registers them with an email (invite link); staff accounts from Super Admin → All Users.
 - **Nobody imports SQL by hand.** Migrations + schema snapshot apply themselves.
 - **Secrets only in `.env`.** Environment values (DB, SMTP, ioTec, paths) in `.env`; everything editable (text, menus, emails, branding, flags) in the database.
-- **JavaScript stays shared and plain:** `main.js` (portals), `public.js` (public site), `editor.js` (CKEditor), `table-tools.js`. Use `data-*` attributes (`data-confirm`, `data-autosubmit`, `data-print`, `data-copy`, `data-copy-from`, `data-check-all`, `data-preview-target`, `data-fallback-src`, `data-hide-broken`), never inline handlers. To call a page function use `data-call` / `data-call-input` / `data-call-submit` with `data-call-args` (JSON via `h(js_json([...]))`), and add its name to `PAGE_ACTIONS` in `main.js`.
+- **JavaScript stays shared and plain:** `controls.js` (form controls, dialogs, tooltips, validation; every page), `main.js` (portals), `public.js` (public site), `editor.js` (CKEditor), `table-tools.js`. Never call `alert()`, `confirm()` or `prompt()`: use `BodaUI.confirm()` or `data-confirm`.
+- **Portal look follows the Goodname Finance staff portal** (owner, 2026-11-06): Outfit, navy sidebar + top bar, dropdown groups, accent page header. No badges/eyebrow labels on the public site, no slide numbers or pause button on the hero, no text about where the system is made. Use `data-*` attributes (`data-confirm`, `data-autosubmit`, `data-print`, `data-copy`, `data-copy-from`, `data-check-all`, `data-preview-target`, `data-fallback-src`, `data-hide-broken`), never inline handlers. To call a page function use `data-call` / `data-call-input` / `data-call-submit` with `data-call-args` (JSON via `h(js_json([...]))`), and add its name to `PAGE_ACTIONS` in `main.js`.
 - Two-step sign-in is enforced only when SMTP is configured (otherwise admins would be locked out).
 - Roles are fixed in code (`ROLE_LABELS` in auth.php); there is no role/permission editor.
 - Views `v_stage_stats` / `v_city_stats` must stay views.
@@ -191,6 +227,13 @@ Data flow: page → `require_role()` (auth.php) → `fetch*/runQuery` (db_helper
 | 42 | Enforcement codes from COUNT(*)+1: repeated after a deletion (UNIQUE column, save failed) and raced | Medium | fixed + test in flows.php |
 | 43 | Collect payments showed the city base fee as the amount, not what the rider owes | Low | fixed (amount follows the selected rider, late fee included) |
 | 44 | `get_setting(...) ?? 'default'` fallbacks never applied (get_setting returns a string) | Low | fixed |
+| 45 | Enforcement form saved any `type`/`status` string and read `amount` without a guard (warning when the field is absent) | Low | fixed + test in flows.php |
+| 46 | `.gitignore` line `vendor/` (meant for Composer) also matched `packages/frontend/assets/vendor/`: Bootstrap, Font Awesome, CKEditor, ApexCharts, jsPDF, QR code and fonts were never in git or on origin, so a fresh clone (XAMPP, live server) had no styles, editor or charts | Critical | fixed (`/vendor/`); the folder goes in with the next commit |
+| 47 | `pattern="[A-Za-z0-9-]{4,40}"` (permit number) and `[a-z0-9-]*` (page slug) are invalid in the v-flag regex mode browsers now use, so the check was silently skipped | Low | fixed (`\-`) |
+| 48 | main.js fell back to `window.confirm()` without Bootstrap and to `window.prompt()` when the clipboard was refused | Low | fixed (dialog service, refuses when missing) |
+| 49 | On PHP 8.5 `finfo_close()` printed a deprecation into the media-upload JSON, so uploads failed | Medium | fixed + test in flows.php (`new finfo()`) |
+| 50 | Round 4 portal heading/link colours made dashboard banner titles and the "items need your attention" link dark on navy (5 pages) | Medium | fixed + verified in browser, all 5 roles |
+| 51 | Revenue-split legends drew two of four dots as badges holding a "●" character | Low | fixed (`.legend-dot`, 3 dashboards) |
 
 ## COMPLETED TASKS (2026-10-31, uncommitted)
 

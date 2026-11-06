@@ -20,6 +20,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($sc + $sa + $sg + $sp !== 100) {
         $errors[] = 'Default revenue split must total 100%.';
     } else {
+        // Name, operator and support contacts are the site-wide settings every page and email reads.
+        foreach (['site_name' => $name ?: 'BodaERP', 'operator_name' => $operator, 'contact_email' => $email, 'contact_phone' => $phone] as $key => $value) {
+            runQuery("UPDATE settings SET value = ? WHERE `key` = ?", [$value, $key])->close();
+        }
+        settings_all(true);
         runQuery("UPDATE platform_settings SET platform_name=?,operator_name=?,support_email=?,support_phone=?,
                   default_split_city=?,default_split_association=?,default_split_government=?,default_split_platform=?,require_2fa=?,maintenance_mode=? WHERE id=1",
             [$name,$operator,$email,$phone,$sc,$sa,$sg,$sp,$req2fa,$maint]);
@@ -29,6 +34,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $settings = fetchOne("SELECT * FROM platform_settings WHERE id = 1");
+$settings['platform_name'] = get_setting('site_name', 'BodaERP');
+$settings['operator_name'] = get_setting('operator_name');
+$settings['support_email'] = get_setting('contact_email');
+$settings['support_phone'] = get_setting('contact_phone');
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -55,7 +64,7 @@ $settings = fetchOne("SELECT * FROM platform_settings WHERE id = 1");
                 <div class="card-body">
                     <div class="d-flex align-items-center gap-3 mb-3">
                         <div class="icon-badge blue"><i class="fas fa-building"></i></div>
-                        <div><h6 class="fw-bold mb-0">General</h6><small class="text-muted">Platform identity and contact details</small></div>
+                        <div><h6 class="fw-bold mb-0">General</h6><small class="text-muted">Used on every page, in emails and on the contact page (the same values as in Text &amp; branding)</small></div>
                     </div>
                     <div class="row g-3">
                         <div class="col-md-6"><label for="f-platform-name" class="form-label fw-semibold">Platform name</label><input id="f-platform-name" type="text" class="form-control" name="platform_name" value="<?= h($settings['platform_name']) ?>"></div>
@@ -76,7 +85,7 @@ $settings = fetchOne("SELECT * FROM platform_settings WHERE id = 1");
                         <div class="col-md-3"><label for="defSplitCity" class="small text-muted">City council %</label><input type="number" class="form-control" name="default_split_city" id="defSplitCity" value="<?= (int)$settings['default_split_city'] ?>" min="0" max="100" data-call-input="updateDefaultSplitTotal"></div>
                         <div class="col-md-3"><label for="defSplitAssoc" class="small text-muted">Boda association %</label><input type="number" class="form-control" name="default_split_assoc" id="defSplitAssoc" value="<?= (int)$settings['default_split_association'] ?>" min="0" max="100" data-call-input="updateDefaultSplitTotal"></div>
                         <div class="col-md-3"><label for="defSplitGov" class="small text-muted">Government %</label><input type="number" class="form-control" name="default_split_government" id="defSplitGov" value="<?= (int)$settings['default_split_government'] ?>" min="0" max="100" data-call-input="updateDefaultSplitTotal"></div>
-                        <div class="col-md-3"><label for="defSplitPlatform" class="small text-muted">Kakebe Tech (platform) %</label><input type="number" class="form-control" name="default_split_platform" id="defSplitPlatform" value="<?= (int)$settings['default_split_platform'] ?>" min="0" max="100" data-call-input="updateDefaultSplitTotal"></div>
+                        <div class="col-md-3"><label for="defSplitPlatform" class="small text-muted">Platform %</label><input type="number" class="form-control" name="default_split_platform" id="defSplitPlatform" value="<?= (int)$settings['default_split_platform'] ?>" min="0" max="100" data-call-input="updateDefaultSplitTotal"></div>
                     </div>
                     <div class="mt-2">Total: <span id="defSplitTotal" class="fw-bold" style="color:#198754;">100%</span></div>
                 </div>
@@ -90,7 +99,7 @@ $settings = fetchOne("SELECT * FROM platform_settings WHERE id = 1");
                     </div>
                     <div class="form-check form-switch mb-2">
                         <input class="form-check-input" type="checkbox" name="require_2fa" id="require2fa" <?= $settings['require_2fa'] ? 'checked' : '' ?>>
-                        <label class="form-check-label" for="require2fa">Require 2FA for city admins</label>
+                        <label class="form-check-label" for="require2fa">Require sign-in codes for super admins, city admins and government users</label>
                     </div>
                     <div class="form-check form-switch">
                         <input class="form-check-input" type="checkbox" name="maintenance_mode" id="maintenanceMode" <?= $settings['maintenance_mode'] ? 'checked' : '' ?>>

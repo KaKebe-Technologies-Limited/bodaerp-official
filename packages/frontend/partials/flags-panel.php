@@ -2,7 +2,8 @@
 // Shared "Data Integrity Monitor" panel.
 // Expects (set by the including page):
 //   $flagScopeCity  ?string  - lock to one city (City Council) or null for all
-//   $flagCanReview  bool     - show review / scan controls (Super Admin only)
+//   $flagCanReview  bool     - show review controls (Super Admin, and city admins for their own city)
+//   $flagCanScan    bool     - show the "Run scan now" button (default: same as $flagCanReview)
 //   $flagPageUrl    string   - absolute URL of the including page
 //   $flagScanResult ?array   - result of a scan just run by this request
 //   $flagMaskPersonal bool   - hide phone numbers, NINs and birth dates in flag text (government viewers)
@@ -85,7 +86,7 @@ $ruleLabels = array_map(fn($r) => $r[0], $rules);
         </div>
         <div class="text-end">
             <span class="dash-meta"><?= $lastRun ? 'Last scan ' . h(date('M d, H:i', strtotime($lastRun['started_at']))) . ' · ' . h($lastRun['triggered_by']) : 'No scan yet' ?></span>
-            <?php if (!empty($flagCanReview)): ?>
+            <?php if (!empty($flagCanReview) && ($flagCanScan ?? true)): ?>
                 <form method="post" class="d-inline ms-2">
                     <?= csrf_field() ?><input type="hidden" name="action" value="scan">
                     <button class="btn btn-light btn-sm fw-bold" type="submit"><i class="fas fa-sync-alt me-1"></i>Run scan now</button>

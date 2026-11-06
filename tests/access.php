@@ -50,6 +50,7 @@ $saved = [
     'enforcement_actions' => array_filter([$otherCityAction]),
 ];
 $counts = fn() => [
+    'id_cards' => (int) fetchValue("SELECT COUNT(*) FROM id_cards"),
     'payments' => (int) fetchValue("SELECT COUNT(*) FROM payments"),
     'notifications' => (int) fetchValue("SELECT COUNT(*) FROM notifications"),
     'enforcement' => (int) fetchValue("SELECT COUNT(*) FROM enforcement_actions"),
@@ -217,6 +218,62 @@ foreach (glob(__DIR__ . '/../packages/frontend/pages/government/*.php') as $f) {
     $r = http("$base/pages/government/" . basename($f), $gv, ['csrf_token' => csrf(http("$base/pages/government/" . basename($f), $gv)['body']), 'action' => 'delete', 'id' => 1]);
     $t->ok($r['code'] !== 500, 'government POST to ' . basename($f) . ' changes nothing', 'HTTP ' . $r['code']);
 }
+// 7. ID cards: staff manage cards only in their own scope, riders only report their own card lost.
+$cardState = fn(int $riderId) => json_encode([fetchValue("SELECT CONCAT(verify_token, '|', COALESCE(signature_path, '')) FROM riders WHERE id = ?", [$riderId]),
+    fetchAll("SELECT id, status, print_data, ended_at FROM id_cards WHERE rider_id = ? ORDER BY id", [$riderId])]);
+$ch = $jars['chairperson']; $cc = $jars['city_admin']; $rd = $jars['rider'];
+$ownRider = (int) fetchValue("SELECT id FROM riders WHERE stage_id = ? AND deleted_at IS NULL ORDER BY id LIMIT 1", [$chair['stage_id']]);
+$ownPage = http("$base/pages/chairperson/id-preview.php?id=$ownRider", $ch)['body'];
+$token = csrf($ownPage);
+$otherBefore = $cardState((int) $otherStageRider['id']);
+$signImg = imagecreatetruecolor(240, 80);
+imagefill($signImg, 0, 0, imagecolorallocate($signImg, 255, 255, 255));
+imageline($signImg, 10, 60, 230, 20, imagecolorallocate($signImg, 0, 0, 0));
+ob_start(); imagepng($signImg); $signPng = 'data:image/png;base64,' . base64_encode((string) ob_get_clean());
+foreach (['lost', 'issue', 'design', 'printed', 'signature', 'signature_remove'] as $act) {
+    http("$base/pages/chairperson/id-preview.php?id={$otherStageRider['id']}", $ch, ['csrf_token' => $token, 'card_action' => $act, 'reason' => 'damaged', 'name' => 'X', 'signature_drawn' => $signPng]);
+}
+$t->ok($cardState((int) $otherStageRider['id']) === $otherBefore, 'a chairperson cannot change the card of a rider at another stage');
+$ownBefore = $cardState($ownRider);
+$r = http("$base/pages/chairperson/id-preview.php?id=$ownRider", $ch, ['csrf_token' => $token, 'card_action' => 'cancel', 'note' => 'access test']);
+$t->ok($r['code'] === 403 && $cardState($ownRider) === $ownBefore, 'a chairperson cannot cancel a card (city staff only)', 'HTTP ' . $r['code']);
+http("$base/pages/chairperson/id-preview.php?id=$ownRider", $ch, ['csrf_token' => $token, 'card_action' => 'design', 'name' => 'SOMEONE ELSE',
+    'photo_y' => 30, 'photo_zoom' => 100, 'show_nin' => 1, 'show_dob' => 1]);
+$ownCard = fetchOne("SELECT print_data FROM id_cards WHERE rider_id = ? AND status IN ('issued','printed','collected') ORDER BY version DESC LIMIT 1", [$ownRider]);
+$t->ok(!str_contains((string) ($ownCard['print_data'] ?? ''), 'SOMEONE ELSE'), 'the name on a card cannot be changed to a name the rider is not registered under');
+foreach (json_decode($ownBefore, true)[1] as $c) runQuery("UPDATE id_cards SET print_data = ?, edited_by = NULL, edited_at = NULL WHERE id = ?", [$c['print_data'], $c['id']]);
+$sheet = http("$base/pages/chairperson/id-card-sheet.php?ids[]={$otherStageRider['id']}", $ch)['body'];
+$t->ok(!str_contains($sheet, h($otherStageRider['full_name'])) && !str_contains($sheet, (string) $otherStageRider['id_number']), 'the A4 sheet leaves out riders from another stage');
+$cityBefore = $cardState((int) $otherCityRider['id']);
+$cpage = http("$base/pages/citycouncil/id-cards.php", $cc)['body'];
+http("$base/pages/citycouncil/id-card.php?id={$otherCityRider['id']}", $cc, ['csrf_token' => csrf($cpage), 'card_action' => 'cancel', 'note' => 'access test']);
+http("$base/pages/citycouncil/id-cards.php", $cc, ['csrf_token' => csrf($cpage), 'ids' => [$otherCityRider['id']]]);
+$t->ok($cardState((int) $otherCityRider['id']) === $cityBefore, 'a city admin cannot cancel or mark printed a card in another city');
+$t->ok(!str_contains(http("$base/pages/citycouncil/id-card-sheet.php?ids[]={$otherCityRider['id']}", $cc)['body'], (string) $otherCityRider['id_number']), 'the city A4 sheet leaves out riders from another city');
+$mineBefore = $cardState((int) $me['id']);
+$rpage = http("$base/pages/rider/my-id-card.php", $rd)['body'];
+foreach (['design', 'issue', 'printed', 'collected', 'cancel', 'signature', 'signature_remove'] as $act) http("$base/pages/rider/my-id-card.php", $rd, ['csrf_token' => csrf($rpage), 'card_action' => $act, 'name' => 'X', 'reason' => 'lost', 'signature_drawn' => $signPng]);
+$t->ok($cardState((int) $me['id']) === $mineBefore, 'a rider cannot edit, reissue, sign or mark their own card');
+$t->ok(!str_contains($rpage, 'data-sign-pad'), 'the rider card page has no signature box');
+$t->ok(!str_contains($rpage, 'data-card-editor') && !str_contains($rpage, 'name="card_action" value="design"'), 'the rider card page has no card editor');
+$r = http("$base/pages/chairperson/id-preview.php?id={$me['id']}", $rd, ['csrf_token' => csrf($rpage), 'card_action' => 'signature', 'signature_drawn' => $signPng]);
+$r = http("$base/pages/chairperson/id-preview.php?id={$me['id']}", $rd, ['csrf_token' => csrf($rpage), 'card_action' => 'design', 'name' => 'X']);
+$t->ok($cardState((int) $me['id']) === $mineBefore, 'a rider posting to the chairperson card page changes nothing', 'HTTP ' . $r['code']);
+foreach (['chairperson/id-preview.php?id=' . $me['id'], 'citycouncil/id-card.php?id=' . $me['id'], 'chairperson/id-card-sheet.php?ids[]=' . $me['id']] as $path) {
+    $body = http("$base/pages/$path", $jars['government'])['body'];
+    $t->ok(!str_contains($body, 'data-qr='), "government cannot open $path");
+}
+
+// 8. Receipts: each role opens only receipts in its own scope.
+$payOther = fetchOne("SELECT p.id, p.receipt_number FROM payments p JOIN riders r ON r.id = p.rider_id WHERE p.status = 'Confirmed' AND p.receipt_number IS NOT NULL AND r.id <> ? AND r.stage_id <> ? AND r.city_id <> ? ORDER BY p.id DESC LIMIT 1",
+    [$me['id'], $chair['stage_id'], $council['city_id']]);
+if ($payOther) {
+    foreach (['rider' => 'rider', 'chairperson' => 'chairperson', 'city_admin' => 'citycouncil'] as $role => $dir) {
+        $body = http("$base/pages/$dir/receipt.php?id={$payOther['id']}", $jars[$role])['body'];
+        $t->ok(!str_contains($body, (string) $payOther['receipt_number']), "$role cannot open a receipt outside their scope");
+    }
+}
+
 $t->ok($counts() == $before, 'no record counts changed during the whole run', json_encode(array_diff_assoc($counts(), $before)));
 
 // Put back anything a failed wall may have changed. The first snapshot of a row is the true original.

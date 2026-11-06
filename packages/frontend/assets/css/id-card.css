@@ -1,0 +1,152 @@
+/* Permit card at ISO ID-1 size (85.6 x 54 mm), laid out like the Ugandan national ID and drawn in millimetres and
+   points so the screen preview and the printed card match. One template (partials/id-card.php) for every portal and
+   the A4 sheet. Every block has a fixed place, so hiding a field never leaves a hole: the columns spread what is left.
+   The accent colour comes from the id_card_colour setting through --card-colour. */
+.id-card {
+    --accent: var(--card-colour, #b01c24);
+    --ink: #13233d; --muted: #56627a; --line: #c9d1dc;
+    --rose: color-mix(in srgb, var(--accent) 13%, #fff);
+    --sky: #e3eefb; --sand: #fbf1d9;
+    width: 85.6mm; height: 54mm; position: relative; overflow: hidden; border-radius: 3.18mm;
+    color: var(--ink); font-family: 'Outfit Variable', 'Outfit', Arial, sans-serif; line-height: 1.1;
+    box-shadow: 0 0 0 .2mm rgba(19, 35, 61, .14), 0 10px 28px rgba(0, 23, 64, .16);
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+}
+.id-card * { box-sizing: border-box; }
+.id-card > * { position: absolute; z-index: 1; }
+.id-card dl, .id-card dd, .id-card p { margin: 0; }
+
+/* Security print: tinted ground, fine waves and a rosette (id_card_pattern_svg()). */
+.idc-front { background: linear-gradient(118deg, var(--rose) 0%, #fff 30%, var(--sand) 52%, #fdfcf8 66%, var(--sky) 100%); }
+.idc-back { background: linear-gradient(100deg, #fdfcf8 0%, #fff 55%, var(--sky) 100%); }
+.id-card > .idc-pattern { inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
+.idc-waves path { fill: none; stroke: color-mix(in srgb, var(--accent) 26%, #6d8fc8); stroke-width: .9; opacity: .2; }
+.idc-rosette ellipse { fill: none; stroke: var(--accent); stroke-width: .8; opacity: .17; }
+
+.idc-head { top: 0; left: 0; right: 0; height: 11mm; display: grid; grid-template-columns: 9mm 1fr auto; align-items: center; gap: 2mm; padding: 1.2mm 3mm .8mm; }
+.idc-emblem { width: 9mm; height: 9mm; object-fit: contain; }
+.idc-head-text { min-width: 0; }
+.idc-country { font-size: 4.6pt; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+.idc-issuer { font-size: 8.4pt; font-weight: 800; letter-spacing: .02em; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #0d1b33; }
+.idc-doc { font-size: 5.4pt; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.idc-code { justify-self: end; font-size: 6.4pt; font-weight: 800; letter-spacing: .08em; color: #fff; background: var(--accent); border-radius: 1mm; padding: .7mm 1.3mm; }
+/* National colours as a thin rule under the heading. */
+.idc-ribbon { top: 11mm; left: 3mm; right: 3mm; height: .9mm; display: flex; flex-direction: column; }
+.idc-ribbon i { flex: 1; }
+.idc-ribbon i:nth-child(1) { background: #111; }
+.idc-ribbon i:nth-child(2) { background: #f4c20d; }
+.idc-ribbon i:nth-child(3) { background: #d21034; }
+
+.idc-photo-col { left: 3mm; top: 13.2mm; width: 20mm; bottom: 2.2mm; display: flex; flex-direction: column; gap: 1mm; }
+.idc-photo { width: 20mm; height: 26mm; overflow: hidden; background: #e8ecf1; border-radius: .9mm; position: relative; box-shadow: 0 0 0 .2mm rgba(19, 35, 61, .2); }
+.idc-photo img { width: 100%; height: 100%; object-fit: cover; object-position: 50% var(--photo-y, 30%); transform: scale(var(--photo-zoom, 1)); transform-origin: 50% var(--photo-y, 30%); display: block; filter: saturate(.92); }
+.idc-photo-missing { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1mm; color: #8a94a6;
+    background: repeating-linear-gradient(45deg, #eef1f4 0 1mm, #e3e7ed 1mm 2mm); }
+.idc-photo-missing i { font-size: 12pt; }
+.idc-photo-missing span { font-size: 4.6pt; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: #b91c1c; }
+/* Under the photo: the city code in large outlined letters and the permit digits, as the NID mark on the national card. */
+.idc-mark { flex: 1; display: flex; align-items: center; gap: 1mm; min-height: 0; }
+.idc-mark b { font-size: 15pt; font-weight: 900; letter-spacing: .02em; line-height: 1; color: color-mix(in srgb, #3a4a66 55%, transparent);
+    -webkit-text-stroke: .15mm #1f2c44; }
+.idc-mark span { font-size: 5pt; font-weight: 700; color: var(--muted); letter-spacing: .05em; writing-mode: vertical-rl; transform: rotate(180deg); }
+
+.idc-fields { top: 13.2mm; left: 25.8mm; width: 54mm; height: 26.4mm; display: grid; grid-template-columns: 29mm 1fr; gap: 0 2mm; }
+.idc-col { display: flex; flex-direction: column; justify-content: space-between; min-width: 0; }
+.idc-f { min-width: 0; }
+.idc-f[hidden] { display: none; }
+.idc-f dt { font-size: 3.8pt; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin: 0 0 .15mm; }
+.idc-f dd { font-size: 6.6pt; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #0d1b33; }
+.idc-f dd.idc-permit { font-family: 'Courier New', monospace; font-size: 7pt; color: var(--accent); }
+.idc-f dd.idc-plate, .idc-f dd.idc-mono { font-family: 'Courier New', monospace; font-weight: 800; }
+.idc-f dd.idc-expiry { color: var(--accent); }
+
+/* No z-index here, so an uploaded signature on white paper blends into the card (multiply) instead of showing a white box. */
+.idc-sign { left: 25.8mm; top: 40.4mm; width: 42mm; height: 11.4mm; display: flex; flex-direction: column; z-index: auto; }
+.idc-sign-label { font-size: 3.8pt; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+.idc-sign-box { flex: 1; border-bottom: .2mm solid rgba(19, 35, 61, .55); display: flex; align-items: flex-end; padding-bottom: .3mm; min-height: 0; }
+.idc-sign-box img { max-width: 100%; max-height: 100%; object-fit: contain; object-position: left bottom; mix-blend-mode: multiply; }
+
+.idc-ghost { left: 70mm; top: 39.6mm; width: 9.6mm; height: 12.2mm; overflow: hidden; border-radius: .6mm; opacity: .3; filter: grayscale(1) contrast(1.15); }
+.idc-ghost img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 30%; }
+/* No photo, no ghost: the signature line takes its place. */
+.idc-front.no-photo .idc-sign { width: 53.4mm; }
+.idc-edge { right: 1.2mm; top: 13.2mm; bottom: 2.2mm; writing-mode: vertical-rl; transform: rotate(180deg); text-align: left;
+    font-family: 'Courier New', monospace; font-size: 6pt; font-weight: 800; letter-spacing: .08em; color: #0d1b33; white-space: nowrap; overflow: hidden; }
+
+/* Back: who and where (tinted panel) with the QR check beside it, a barcode of the card number, the
+   property statement, and the machine-readable zone on the bottom band. */
+.idc-panel { left: 3mm; top: 3mm; width: 55.4mm; height: 23mm; display: grid; grid-template-columns: 1fr 1fr; gap: 0 2.2mm; padding: 1.3mm 2mm;
+    border-radius: 1.2mm; background: linear-gradient(100deg, var(--rose), color-mix(in srgb, var(--rose) 40%, var(--sky)) 55%, var(--sky)); }
+.idc-panel .idc-col { justify-content: space-around; }
+.idc-panel .idc-f { display: grid; grid-template-columns: 8.6mm 1fr; align-items: baseline; gap: .6mm; }
+.idc-panel .idc-f dt { font-size: 3.4pt; margin: 0; }
+.idc-panel .idc-f dd { font-size: 5.2pt; line-height: 1.05; white-space: normal; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow-wrap: anywhere; }
+.idc-qr { right: 3mm; top: 2.6mm; width: 22mm; display: flex; flex-direction: column; align-items: center; gap: .5mm; }
+.idc-back .qr-wrap { width: 21.6mm; height: 21.6mm; padding: .9mm; background: #fff; border-radius: .6mm; box-shadow: 0 0 0 .2mm var(--line); }
+.idc-back .qr-wrap img, .idc-back .qr-wrap canvas { width: 100% !important; height: 100% !important; display: block; }
+.idc-qr span { font-size: 3.6pt; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+.idc-terms { left: 3mm; right: 3mm; top: 27.4mm; height: 12.6mm; display: flex; flex-direction: column; justify-content: center; gap: .45mm; text-align: center; }
+/* One sentence per line: never wraps; id-card.js lowers the size of a line that is too long for the card. */
+.idc-terms p { font-size: 3.9pt; line-height: 1.3; color: var(--ink); white-space: nowrap; overflow: hidden; }
+.idc-terms .idc-statement { font-weight: 700; }
+.idc-mrz { left: 0; right: 0; bottom: 0; height: 13.6mm; padding: 1.5mm 2.8mm 0; background: linear-gradient(90deg, var(--rose), color-mix(in srgb, var(--rose) 55%, #fff));
+    font-family: 'OCR B', 'OCR-B', 'Courier New', monospace; font-size: 8pt; font-weight: 700; letter-spacing: .93mm; line-height: 3.45mm; color: #111; white-space: pre; overflow: hidden; }
+
+.id-card.is-void[data-void]::after { content: attr(data-void); position: absolute; inset: 0; display: grid; place-items: center; z-index: 6; font-size: 16pt; font-weight: 900;
+    letter-spacing: 4px; color: rgba(185, 28, 28, .85); transform: rotate(-14deg); pointer-events: none; text-transform: uppercase; }
+
+.id-pair { display: flex; flex-wrap: wrap; gap: 24px; justify-content: center; align-items: flex-start; }
+/* In the pinned preview column of a card page the two sides sit one above the other. */
+.doc-preview .id-pair { flex-direction: column; flex-wrap: nowrap; align-items: center; gap: 14px; }
+.doc-preview .id-side { gap: 4px; }
+.id-side { position: relative; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.id-side-label { font-size: .72rem; font-weight: 700; color: var(--text-muted, #5f6b7a); text-transform: uppercase; letter-spacing: .06em; }
+.id-zoom-btn { position: absolute; top: -4px; right: 0; background: rgba(0, 23, 64, .6); color: #fff; border: 0; width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; font-size: .75rem; cursor: pointer; z-index: 7; }
+.id-zoom-btn:hover, .id-zoom-btn:focus-visible { background: var(--card-colour, #b01c24); }
+
+
+/* Enlarged view: the same card scaled, so what you see is exactly what prints. */
+.id-zoom-layer { position: fixed; inset: 0; z-index: 2000; background: rgba(0, 12, 32, .92); display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 28px; overflow: auto; padding: 64px 16px 40px; }
+.id-zoom-layer[hidden] { display: none; }
+.id-zoom-layer .id-zoom-close { position: fixed; top: 16px; right: 16px; width: 40px; height: 40px; border-radius: 50%; border: 0; background: #fff; color: #001740; font-size: 1.1rem; }
+.id-zoom-wrap { width: calc(85.6mm * var(--zoom, 2.2)); height: calc(54mm * var(--zoom, 2.2)); position: relative; flex: 0 0 auto; }
+.id-zoom-wrap .id-card { transform: scale(var(--zoom, 2.2)); transform-origin: top left; position: absolute; top: 0; left: 0; margin: 0; }
+
+/* A4 sheet: 2 x 5 cards per page, fronts then backs with the columns swapped for long-edge double-sided printing. */
+.id-sheet-page { width: 210mm; min-height: 297mm; margin: 0 auto 24px; background: #fff; padding: 12mm 15mm; display: grid; grid-template-columns: repeat(2, 85.6mm); grid-auto-rows: 54mm; gap: 4mm 6mm; justify-content: center; align-content: start; box-shadow: 0 6px 24px rgba(0, 23, 64, .12); }
+.id-sheet-page .id-pair { display: contents; }
+.id-sheet-page .id-side { display: block; }
+.id-sheet-page .id-side-label { display: none; }
+.id-sheet-page .id-card { box-shadow: 0 0 0 .2mm #c4ccd8; }
+.id-sheet-heading { width: 210mm; margin: 0 auto 8px; display: flex; justify-content: space-between; font-size: .82rem; color: var(--text-muted, #5f6b7a); }
+
+/* Card editor and signature box beside the preview (staff only). */
+.sign-pad { position: relative; border: 1px dashed #9aa6b8; border-radius: 10px; background: #fff; overflow: hidden; }
+.sign-pad canvas { display: block; width: 100%; aspect-ratio: 720 / 220; touch-action: none; cursor: crosshair; }
+.sign-pad::after { content: ''; position: absolute; left: 6%; right: 6%; bottom: 22%; border-bottom: 1px solid #c3cbd7; pointer-events: none; }
+.sign-pad-hint { position: absolute; left: 6%; bottom: 25%; font-size: .78rem; color: #8a94a6; pointer-events: none; }
+.sign-pad-hint[hidden] { display: none; }
+.sign-current { border: 1px solid var(--border-color, #dfe4ea); border-radius: 10px; padding: 8px 12px; background: #fff; }
+.sign-current img { max-height: 56px; max-width: 100%; display: block; }
+.card-edit-form .form-range { width: 100%; }
+.card-edit-form .form-text { font-size: .76rem; }
+
+@media print {
+    body.printing-card { background: #fff !important; }
+    body.printing-card .sidebar, body.printing-card .top-header, body.printing-card .no-print, body.printing-card .page-head,
+    body.printing-card .flash-row, body.printing-card .id-zoom-btn, body.printing-card .id-side-label { display: none !important; }
+    body.printing-card .main-content, body.printing-card .content-area { margin: 0 !important; padding: 0 !important; }
+    body.printing-card .layout-thirds, body.printing-card .doc-layout { display: block; }
+    body.printing-card .doc-preview { position: static; max-height: none; overflow: visible; }
+    body.printing-card .card, body.printing-card .card-body { border: 0 !important; box-shadow: none !important; padding: 0 !important; margin: 0 !important; background: none !important; }
+    body.printing-card .id-pair { display: block; }
+    body.printing-card .id-side { display: block; page-break-after: always; break-after: page; }
+    body.printing-card .id-side:last-child { page-break-after: auto; break-after: auto; }
+    body.printing-card .id-card { margin: 0 !important; box-shadow: none !important; border-radius: 0 !important; zoom: 1 !important; }
+    body.print-front .id-side-back, body.print-back .id-side-front { display: none !important; }
+    body.printing-card .id-card.is-void[data-void]::after { display: none; }
+
+    body.printing-sheet .sidebar, body.printing-sheet .top-header, body.printing-sheet .no-print, body.printing-sheet .page-head, body.printing-sheet .flash-row, body.printing-sheet .id-sheet-heading { display: none !important; }
+    body.printing-sheet .main-content, body.printing-sheet .content-area { margin: 0 !important; padding: 0 !important; }
+    body.printing-sheet .id-sheet-page { box-shadow: none; margin: 0; page-break-after: always; break-after: page; }
+}

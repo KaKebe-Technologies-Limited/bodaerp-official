@@ -83,7 +83,7 @@ $field = function (string $name, string $label, string $type = 'text', bool $req
                             <div class="notice notice-success" role="status"><?= h(get_setting('msg_contact_sent', 'Thank you. Your message has been sent.')) ?></div>
                             <a class="btn-ghost" href="<?= BASE_URL ?>/contact.php">Send another message</a>
                         <?php elseif (!$enabled): ?>
-                            <div class="notice notice-info">The contact form is switched off at the moment. Please use the email address or phone number on this page.</div>
+                            <div class="notice notice-info">The contact form is switched off at the moment.<?php $reach = array_filter([get_setting('contact_email') ? 'the email address' : '', $phone ? 'the phone number' : '', get_setting('contact_whatsapp') ? 'WhatsApp' : '']); ?><?= $reach ? ' Please use ' . h(implode(' or ', $reach)) . ' shown on this page.' : ' Please try again later.' ?></div>
                         <?php else: ?>
                             <h2 class="mb-3">Send a message</h2>
                             <?php if (isset($errors['form'])): ?><div class="notice notice-error" role="alert"><?= h($errors['form']) ?></div>

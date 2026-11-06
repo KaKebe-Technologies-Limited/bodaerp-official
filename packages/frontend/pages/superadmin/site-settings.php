@@ -96,17 +96,17 @@ portal_start('superadmin', 'site-settings', 'Site text & branding', [
                             <?php if ($s['value_type'] === 'textarea'): ?>
                                 <textarea class="form-control" id="<?= h($id) ?>" name="<?= $name ?>" rows="3"><?= h($s['value']) ?></textarea>
                             <?php elseif ($s['value_type'] === 'color'): ?>
-                                <div class="d-flex gap-2"><input type="color" class="form-control form-control-color" value="<?= h($s['value']) ?>" aria-label="Pick colour" data-color-for="<?= h($id) ?>"><input class="form-control" id="<?= h($id) ?>" name="<?= $name ?>" value="<?= h($s['value']) ?>" pattern="#[0-9a-fA-F]{6}" style="max-width:9rem"></div>
+                                <div class="d-flex gap-2"><input type="color" class="form-control form-control-color" value="<?= h($s['value']) ?>" aria-label="Pick colour" data-color-for="<?= h($id) ?>"><input class="form-control" id="<?= h($id) ?>" name="<?= $name ?>" value="<?= h($s['value']) ?>" pattern="#[0-9a-fA-F]{6}" data-pattern-message="Use a colour code like #056CFE: a # and six letters or digits." style="max-width:9rem"></div>
                             <?php elseif ($s['value_type'] === 'image'): ?>
                                 <div class="d-flex align-items-center gap-3">
                                     <img src="<?= h(media_url($s['value'], '/assets/images/logo.png')) ?>" alt="" width="48" height="48" class="border rounded" style="object-fit:contain">
                                     <div class="flex-grow-1">
                                         <input class="form-control mb-1" id="<?= h($id) ?>" name="<?= $name ?>" value="<?= h($s['value']) ?>">
-                                        <input class="form-control form-control-sm" type="file" name="f[<?= h($s['key']) ?>]" accept="image/png,image/jpeg,image/webp" aria-label="Upload a new image">
+                                        <input class="form-control form-control-sm" type="file" name="f[<?= h($s['key']) ?>]" accept="image/png,image/jpeg,image/webp" data-max-mb="2" aria-label="Upload a new image">
                                     </div>
                                 </div>
                             <?php else: ?>
-                                <input class="form-control" id="<?= h($id) ?>" name="<?= $name ?>" value="<?= h($s['value']) ?>"<?= $s['value_type'] === 'number' ? ' inputmode="numeric" pattern="\d+"' : '' ?>>
+                                <input class="form-control" id="<?= h($id) ?>" name="<?= $name ?>" value="<?= h($s['value']) ?>"<?= $s['value_type'] === 'number' ? ' inputmode="numeric" pattern="\d+" data-pattern-message="Enter a whole number, for example 30."' : '' ?>>
                             <?php endif; ?>
                         <?php endif; ?>
                         <div class="form-text"><code><?= h($s['key']) ?></code></div>

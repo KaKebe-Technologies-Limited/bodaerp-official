@@ -12,7 +12,7 @@ $initials = $signedIn ? mb_strtoupper(implode('', array_map(fn($w) => mb_substr(
     <div class="container bar">
         <a class="brand-mark" href="<?= BASE_URL ?>/">
             <img src="<?= h(brand_logo_url()) ?>" alt="" width="40" height="40">
-            <span class="brand-text"><span class="brand-word"><span class="b1"><?= h($nameA) ?></span><span class="b2"><?= h($nameB) ?></span></span><small><?= h(get_setting('site_tagline_short', 'Boda-boda permits and compliance')) ?></small></span>
+            <span class="brand-word"><span class="b1"><?= h($nameA) ?></span><span class="b2"><?= h($nameB) ?></span></span>
         </a>
         <nav class="site-nav" id="siteNav" aria-label="Main">
             <?php foreach (menu_items('header') as $menuItem): $href = site_link($menuItem['url']); ?>

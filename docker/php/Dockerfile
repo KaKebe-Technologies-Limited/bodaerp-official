@@ -1,6 +1,7 @@
-# Developer A (Linux) only. Mirrors XAMPP 8.2.12: PHP 8.2 + Apache with mod_rewrite and the
-# same extensions XAMPP enables by default. Production and XAMPP never use this file.
-FROM php:8.2-apache
+# Developer A (Linux) only. PHP + Apache with mod_rewrite and the extensions XAMPP enables by
+# default. PHP_VERSION comes from .env (8.5 unless set; 8.2 reproduces XAMPP 8.2.12).
+ARG PHP_VERSION=8.5
+FROM php:${PHP_VERSION}-apache
 
 RUN apt-get update \
  && apt-get install -y --no-install-recommends libpng-dev libjpeg62-turbo-dev libfreetype6-dev libzip-dev libicu-dev mariadb-client \

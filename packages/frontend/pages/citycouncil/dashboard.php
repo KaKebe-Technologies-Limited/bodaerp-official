@@ -74,8 +74,8 @@ for ($i = 11; $i >= 0; $i--) {
                         <div class="mt-3">
                             <div class="d-flex justify-content-between align-items-center py-1"><span><span class="legend-dot bg-primary me-2"></span> City council</span><span class="fw-bold"><?= (int)$city['revenue_split_city'] ?>%</span></div>
                             <div class="d-flex justify-content-between align-items-center py-1"><span><span class="legend-dot bg-success me-2"></span> Boda association</span><span class="fw-bold"><?= (int)$city['revenue_split_association'] ?>%</span></div>
-                            <div class="d-flex justify-content-between align-items-center py-1"><span><span class="badge me-2" style="background:#b45309;">●</span> Government</span><span class="fw-bold"><?= (int)$city['revenue_split_government'] ?>%</span></div>
-                            <div class="d-flex justify-content-between align-items-center py-1"><span><span class="legend-dot bg-info me-2"></span> Kakebe Tech</span><span class="fw-bold"><?= (int)$city['revenue_split_platform'] ?>%</span></div>
+                            <div class="d-flex justify-content-between align-items-center py-1"><span><span class="legend-dot me-2" style="background:#b45309;"></span> Government</span><span class="fw-bold"><?= (int)$city['revenue_split_government'] ?>%</span></div>
+                            <div class="d-flex justify-content-between align-items-center py-1"><span><span class="legend-dot bg-info me-2"></span> Platform</span><span class="fw-bold"><?= (int)$city['revenue_split_platform'] ?>%</span></div>
                         </div>
                     </div>
                 </div>
@@ -110,7 +110,7 @@ for ($i = 11; $i >= 0; $i--) {
     new ApexCharts(document.querySelector('#pieChart'), {
         series: [<?= (int)$city['revenue_split_city'] ?>, <?= (int)$city['revenue_split_association'] ?>, <?= (int)$city['revenue_split_government'] ?>, <?= (int)$city['revenue_split_platform'] ?>],
         chart: { type: 'donut', height: 200, animations: { enabled: true } },
-        labels: ['City Council', 'Boda Association', 'Government', 'Kakebe Tech'],
+        labels: ['City Council', 'Boda Association', 'Government', 'Platform'],
         colors: ['#056CFE', '#198754', '#d97706', '#0dcaf0'],
         legend: { show: false },
         plotOptions: { pie: { donut: { size: '70%', labels: { show: true, total: { show: true, label: 'Total Split', formatter: () => '100%' } } } } },

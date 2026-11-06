@@ -35,9 +35,9 @@ if (isset($_GET['export'])) {
     header("Content-Disposition: attachment; filename=\"$filename.csv\"");
     $out = fopen('php://output', 'w');
     fwrite($out, "\xEF\xBB\xBF");
-    fputcsv($out, ['Receipt #', 'Rider', 'Stage', 'Amount', 'Date', 'Method', 'Status']);
+    csv_put($out, ['Receipt #', 'Rider', 'Stage', 'Amount', 'Date', 'Method', 'Status']);
     foreach ($exportRows as $t) {
-        fputcsv($out, [$t['receipt_number'], $t['full_name'], $t['stage_name'], $t['amount'], formatDate($t['paid_at']), $t['payment_method'], $t['status']]);
+        csv_put($out, [$t['receipt_number'], $t['full_name'], $t['stage_name'], $t['amount'], formatDate($t['paid_at']), $t['payment_method'], $t['status']]);
     }
     fclose($out);
     exit;
@@ -116,7 +116,7 @@ $stages = fetchAll("SELECT id, name FROM stages WHERE city_id = ? ORDER BY name"
                         <?php if (!$transactions): ?><tr><td colspan="7"><div class="empty-state" style="padding:36px 20px;"><i class="fas fa-inbox"></i><h5>No transactions found</h5></div></td></tr><?php endif; ?>
                         <?php foreach ($transactions as $t): $sc = ['Confirmed'=>'bg-success','Pending'=>'bg-warning text-dark','Failed'=>'bg-danger']; ?>
                             <tr>
-                                <td><code><?= h($t['receipt_number']) ?></code></td>
+                                <td><?php if ($t['status'] === 'Confirmed' && $t['receipt_number']): ?><a href="<?= BASE_URL ?>/pages/citycouncil/receipt.php?id=<?= (int) $t['id'] ?>" title="Open the receipt"><code><?= h($t['receipt_number']) ?></code></a><?php else: ?><code><?= h($t['receipt_number']) ?></code><?php endif; ?></td>
                                 <td><?= h($t['full_name']) ?></td>
                                 <td><?= h($t['stage_name']) ?></td>
                                 <td><?= h(formatCurrency($t['amount'])) ?></td>

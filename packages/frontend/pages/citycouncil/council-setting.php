@@ -9,12 +9,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     csrf_verify();
     $fee = (float) ($_POST['annual_fee'] ?? 0);
     $currency = $_POST['currency'] ?? 'UGX';
-    $fiscal = trim($_POST['fiscal_year'] ?? '2026/2027');
+    $fiscal = CURRENT_FISCAL_YEAR;
     $sc = (int) ($_POST['split_city'] ?? 0);
     $sa = (int) ($_POST['split_assoc'] ?? 0);
     $sg = (int) ($_POST['split_government'] ?? 0);
     $sp = (int) ($_POST['split_platform'] ?? 0);
-    $gateway = $_POST['payment_gateway'] ?? 'MTN MoMo';
+    $gateway = in_array($_POST['payment_gateway'] ?? '', ['MTN MoMo', 'Airtel Money', 'Both'], true) ? $_POST['payment_gateway'] : 'Both';
     $target = (int) ($_POST['compliance_target'] ?? 70);
     $grace = (int) ($_POST['grace_period_days'] ?? 30);
     $reminder = (int) ($_POST['reminder_days'] ?? 14);
@@ -75,12 +75,8 @@ $totalRiders = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE city_id = ? A
                                 <option value="TZS" <?= $city['currency']==='TZS'?'selected':'' ?>>TZS - Tanzanian shilling</option>
                             </select>
                         </div>
-                        <div class="mb-3"><label for="f-fiscal-year" class="form-label fw-semibold">Fiscal year</label>
-                            <select id="f-fiscal-year" class="form-select" name="fiscal_year">
-                                <?php foreach (['2025/2026','2026/2027','2027/2028'] as $fy): ?>
-                                    <option value="<?= $fy ?>" <?= $city['fiscal_year']===$fy?'selected':'' ?>><?= $fy ?></option>
-                                <?php endforeach; ?>
-                            </select>
+                        <div class="mb-3"><span class="form-label fw-semibold d-block">Permit year</span>
+                            <p class="mb-0"><?= h(CURRENT_FISCAL_YEAR) ?> <span class="text-muted small">(July to June, Uganda's fiscal year; it moves on by itself on 1 July)</span></p>
                         </div>
                     </div></div>
                 </div>
@@ -94,16 +90,17 @@ $totalRiders = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE city_id = ? A
                                 <div class="col-3"><label for="csSplitCity" class="small text-muted">City council</label><div class="input-group"><input type="number" class="form-control" name="split_city" id="csSplitCity" value="<?= (int)$city['revenue_split_city'] ?>" data-call-input="updateCsSplitTotal"><span class="input-group-text">%</span></div></div>
                                 <div class="col-3"><label for="csSplitAssoc" class="small text-muted">Boda assoc.</label><div class="input-group"><input type="number" class="form-control" name="split_assoc" id="csSplitAssoc" value="<?= (int)$city['revenue_split_association'] ?>" data-call-input="updateCsSplitTotal"><span class="input-group-text">%</span></div></div>
                                 <div class="col-3"><label for="csSplitGov" class="small text-muted">Government</label><div class="input-group"><input type="number" class="form-control" name="split_government" id="csSplitGov" value="<?= (int)$city['revenue_split_government'] ?>" data-call-input="updateCsSplitTotal"><span class="input-group-text">%</span></div></div>
-                                <div class="col-3"><label for="csSplitPlatform" class="small text-muted">Kakebe Tech</label><div class="input-group"><input type="number" class="form-control" name="split_platform" id="csSplitPlatform" value="<?= (int)$city['revenue_split_platform'] ?>" data-call-input="updateCsSplitTotal"><span class="input-group-text">%</span></div></div>
+                                <div class="col-3"><label for="csSplitPlatform" class="small text-muted">Platform</label><div class="input-group"><input type="number" class="form-control" name="split_platform" id="csSplitPlatform" value="<?= (int)$city['revenue_split_platform'] ?>" data-call-input="updateCsSplitTotal"><span class="input-group-text">%</span></div></div>
                             </div>
                             <small class="text-muted">Total: <span id="csSplitTotal" class="fw-bold" style="color:#198754;">100%</span>: must equal 100%</small>
                         </div>
-                        <div class="mb-3"><label for="f-payment-gateway" class="form-label fw-semibold">Payment gateway</label>
+                        <div class="mb-3"><label for="f-payment-gateway" class="form-label fw-semibold">Mobile money riders may pay with</label>
                             <select id="f-payment-gateway" class="form-select" name="payment_gateway">
-                                <option value="MTN MoMo" <?= $city['payment_gateway']==='MTN MoMo'?'selected':'' ?>>MTN MoMo API</option>
-                                <option value="Airtel Money" <?= $city['payment_gateway']==='Airtel Money'?'selected':'' ?>>Airtel Money API</option>
-                                <option value="Both" <?= $city['payment_gateway']==='Both'?'selected':'' ?>>Both</option>
+                                <option value="MTN MoMo" <?= $city['payment_gateway']==='MTN MoMo'?'selected':'' ?>>MTN Mobile Money only</option>
+                                <option value="Airtel Money" <?= $city['payment_gateway']==='Airtel Money'?'selected':'' ?>>Airtel Money only</option>
+                                <option value="Both" <?= $city['payment_gateway']==='Both'?'selected':'' ?>>MTN and Airtel</option>
                             </select>
+                            <small class="text-muted">A rider paying from a number on another network is told which network to use.</small>
                         </div>
                     </div></div>
                 </div>

@@ -1,10 +1,11 @@
 <?php
 // Sidebar menu for every portal, one entry per role. partials/sidebar.php renders it.
-// Item: key => [file, icon, label, badge]; key matches the page's $active value.
+// Group: label => items, with the group's icon in 'icons'. A group with one item is a plain link; a group with more
+// opens as a dropdown of its pages. Item: key => [file, icon, label, badge]; key matches the page's $active value.
 // Badge: null, or [count, tone] where tone is 'info' | 'danger' | 'warning'. Counts of 0 are hidden.
 require_once __DIR__ . '/anomaly_engine.php';
 
-/** @return array{folder:string, scope:string, groups:array<string, array<string, array>>} */
+/** @return array{folder:string, scope:string, icons:array<string,string>, groups:array<string, array<string, array>>} */
 function portal_nav(string $role): array {
     switch ($role) {
         case 'super_admin':
@@ -12,6 +13,7 @@ function portal_nav(string $role): array {
             return [
                 'folder' => 'superadmin',
                 'scope' => 'Platform administration',
+                'icons' => ['Overview' => 'fa-gauge-high', 'Cities & people' => 'fa-city', 'Messages' => 'fa-envelope', 'Website' => 'fa-globe', 'System' => 'fa-gear'],
                 'groups' => [
                     'Overview' => [
                         'dashboard'        => ['dashboard.php', 'fa-gauge-high', 'Platform overview', null],
@@ -50,6 +52,7 @@ function portal_nav(string $role): array {
             return [
                 'folder' => 'citycouncil',
                 'scope' => $_SESSION['city_name'] ?? 'City council',
+                'icons' => ['Overview' => 'fa-gauge-high', 'Riders & stages' => 'fa-users', 'Money' => 'fa-wallet', 'Compliance' => 'fa-shield-halved', 'Settings' => 'fa-gear'],
                 'groups' => [
                     'Overview' => [
                         'dashboard' => ['dashboard.php', 'fa-gauge-high', 'Dashboard', null],
@@ -57,6 +60,7 @@ function portal_nav(string $role): array {
                     'Riders & stages' => [
                         'city-riders'       => ['city-riders.php', 'fa-users', 'Riders', null],
                         'import-riders'     => ['import-riders.php', 'fa-file-import', 'Import riders', null],
+                        'id-cards'          => ['id-cards.php', 'fa-id-card', 'ID cards', null],
                         'all-stages'        => ['all-stages.php', 'fa-location-dot', 'Stages', null],
                         'stage-management'  => ['stage-management.php', 'fa-sitemap', 'Manage stages', null],
                         'stage-performance' => ['stage-performance.php', 'fa-ranking-star', 'Stage performance', null],
@@ -71,7 +75,8 @@ function portal_nav(string $role): array {
                         'compliance-monitoring' => ['compliance-monitoring.php', 'fa-circle-check', 'Compliance', null],
                         'city-defaulters'       => ['city-defaulters.php', 'fa-triangle-exclamation', 'Defaulters',
                             [(int) fetchValue("SELECT COUNT(*) FROM riders WHERE city_id = ? AND status = 'expired'", [$cityId]), 'danger']],
-                        'enforcement-actions'   => ['enforcement-actions.php', 'fa-gavel', 'Enforcement', null],
+                        'enforcement-actions'   => ['enforcement-actions.php', 'fa-gavel', 'Enforcement',
+                            [(int) fetchValue("SELECT COUNT(*) FROM enforcement_actions WHERE city_id = ? AND appeal_status = 'open'", [$cityId]), 'warning']],
                         'permit-checks'         => ['permit-checks.php', 'fa-qrcode', 'Roadside checks', null],
                         'data-flags'            => ['data-flags.php', 'fa-shield-halved', 'Data checks', [anomaly_open_count('high', $cityId), 'danger']],
                     ],
@@ -87,6 +92,7 @@ function portal_nav(string $role): array {
             return [
                 'folder' => 'chairperson',
                 'scope' => trim($stage . ($stage && !empty($_SESSION['city_name']) ? ', ' : '') . ($_SESSION['city_name'] ?? '')) ?: 'Stage',
+                'icons' => ['Overview' => 'fa-gauge-high', 'Riders' => 'fa-users', 'Money' => 'fa-wallet', 'Compliance' => 'fa-shield-halved', 'Stage' => 'fa-location-dot'],
                 'groups' => [
                     'Overview' => [
                         'dashboard' => ['dashboard.php', 'fa-gauge-high', 'Dashboard', null],
@@ -94,6 +100,8 @@ function portal_nav(string $role): array {
                     'Riders' => [
                         'my-riders'      => ['my-riders.php', 'fa-users', 'My riders', null],
                         'register-rider' => ['register-rider.php', 'fa-user-plus', 'Register a rider', null],
+                        'id-cards'       => ['id-cards.php', 'fa-id-card', 'ID cards',
+                            [(int) fetchValue("SELECT COUNT(*) FROM id_cards WHERE stage_id = ? AND status = 'issued'", [$stageId]), 'warning']],
                     ],
                     'Money' => [
                         'collect-payments' => ['collect-payments.php', 'fa-money-bill-wave', 'Collect payments', null],
@@ -117,6 +125,7 @@ function portal_nav(string $role): array {
             return [
                 'folder' => 'rider',
                 'scope' => $_SESSION['city_name'] ?? 'Rider',
+                'icons' => [t('nav.rider.group_overview', 'Overview') => 'fa-gauge-high', t('nav.rider.group_permit', 'My permit') => 'fa-id-card', t('nav.rider.group_me', 'Me') => 'fa-user'],
                 'groups' => [
                     t('nav.rider.group_overview', 'Overview') => [
                         'dashboard'     => ['dashboard.php', 'fa-gauge-high', t('nav.rider.dashboard', 'Dashboard'), null],
@@ -127,6 +136,8 @@ function portal_nav(string $role): array {
                         'my-id-card'      => ['my-id-card.php', 'fa-id-card', t('nav.rider.id_card', 'ID card'), null],
                         'renewal-status'  => ['renewal-status.php', 'fa-rotate', t('nav.rider.renewal', 'Renewal'), null],
                         'payment-history' => ['payment-history.php', 'fa-receipt', t('nav.rider.payments', 'Payments & receipts'), null],
+                        'enforcement'     => ['enforcement.php', 'fa-gavel', t('nav.rider.enforcement', 'Enforcement records'),
+                            [(int) fetchValue("SELECT COUNT(*) FROM enforcement_actions WHERE rider_id = ? AND status = 'pending'", [(int) ($_SESSION['rider_id'] ?? 0)]), 'danger']],
                     ],
                     t('nav.rider.group_me', 'Me') => [
                         'my-profile' => ['my-profile.php', 'fa-user', t('nav.rider.details', 'My details'), null],
@@ -138,6 +149,7 @@ function portal_nav(string $role): array {
             return [
                 'folder' => 'government',
                 'scope' => $_SESSION['agency_name'] ?? 'Government (read only)',
+                'icons' => ['Overview' => 'fa-earth-africa', 'Compliance' => 'fa-shield-halved', 'Reports' => 'fa-file-lines'],
                 'groups' => [
                     'Overview' => [
                         'dashboard'  => ['dashboard.php', 'fa-earth-africa', 'National overview', null],
@@ -154,5 +166,5 @@ function portal_nav(string $role): array {
                 ],
             ];
     }
-    return ['folder' => '', 'scope' => '', 'groups' => []];
+    return ['folder' => '', 'scope' => '', 'icons' => [], 'groups' => []];
 }

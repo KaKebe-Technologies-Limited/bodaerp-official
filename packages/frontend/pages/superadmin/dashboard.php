@@ -113,8 +113,8 @@ $roleColors = ['super_admin' => 'primary', 'city_admin' => 'success', 'chairpers
                     <div class="mt-2">
                         <div class="d-flex justify-content-between align-items-center py-1"><span><span class="legend-dot bg-primary me-2"></span>City councils</span><span class="fw-bold small">UGX <?= number_format(round($splitCityTotal)) ?></span></div>
                         <div class="d-flex justify-content-between align-items-center py-1"><span><span class="legend-dot bg-success me-2"></span>Associations</span><span class="fw-bold small">UGX <?= number_format(round($splitAssocTotal)) ?></span></div>
-                        <div class="d-flex justify-content-between align-items-center py-1"><span><span class="badge me-2" style="background:#b45309;">●</span>Government</span><span class="fw-bold small">UGX <?= number_format(round($splitGovTotal)) ?></span></div>
-                        <div class="d-flex justify-content-between align-items-center py-1"><span><span class="badge bg-info text-dark me-2">●</span>Kakebe Tech</span><span class="fw-bold small">UGX <?= number_format(round($splitPlatformTotal)) ?></span></div>
+                        <div class="d-flex justify-content-between align-items-center py-1"><span><span class="legend-dot me-2" style="background:#b45309;"></span>Government</span><span class="fw-bold small">UGX <?= number_format(round($splitGovTotal)) ?></span></div>
+                        <div class="d-flex justify-content-between align-items-center py-1"><span><span class="legend-dot bg-info me-2"></span>Platform</span><span class="fw-bold small">UGX <?= number_format(round($splitPlatformTotal)) ?></span></div>
                     </div>
                 </div></div>
             </div>
@@ -240,7 +240,7 @@ $roleColors = ['super_admin' => 'primary', 'city_admin' => 'success', 'chairpers
     new ApexCharts(document.querySelector('#splitChart'), {
         series: [<?= round($splitCityTotal) ?>, <?= round($splitAssocTotal) ?>, <?= round($splitGovTotal) ?>, <?= round($splitPlatformTotal) ?>],
         chart: { type: 'donut', height: 200 },
-        labels: ['City Councils', 'Associations', 'Government', 'Kakebe Tech'],
+        labels: ['City Councils', 'Associations', 'Government', 'Platform'],
         colors: ['#056CFE', '#198754', '#d97706', '#0dcaf0'],
         legend: { show: false },
         plotOptions: { pie: { donut: { size: '70%', labels: { show: true, total: { show: true, label: 'Total Revenue', formatter: () => 'UGX ' + <?= round($totalRevenue / 1000000, 1) ?> + 'M' } } } } },

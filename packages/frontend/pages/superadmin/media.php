@@ -72,7 +72,7 @@ portal_start('superadmin', 'media', 'Media library', [
 <div class="card mb-3"><div class="card-body">
     <form method="post" enctype="multipart/form-data" class="row g-2 align-items-end">
         <?= csrf_field() ?><input type="hidden" name="action" value="upload">
-        <div class="col-md-8"><label class="form-label fw-semibold" for="files">Upload files</label><input class="form-control" type="file" id="files" name="files[]" multiple required accept="image/jpeg,image/png,image/webp,image/gif,application/pdf"><div class="form-text">JPG, PNG, WebP, GIF or PDF, up to 5 MB each. You can also drag images straight into any page editor.</div></div>
+        <div class="col-md-8"><label class="form-label fw-semibold" for="files">Upload files</label><input class="form-control" type="file" id="files" name="files[]" multiple required accept="image/jpeg,image/png,image/webp,image/gif,application/pdf" data-max-mb="5"><div class="form-text">JPG, PNG, WebP, GIF or PDF, up to 5 MB each. You can also drag images straight into any page editor.</div></div>
         <div class="col-md-4"><button class="btn btn-primary w-100" data-busy-label="Uploading"><i class="fas fa-upload me-1"></i>Upload</button></div>
     </form>
 </div></div>

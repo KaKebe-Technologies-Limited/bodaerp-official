@@ -79,12 +79,12 @@ $expiringSoon = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE stage_id = ?
             <div class="card-body p-0">
                 <div class="table-responsive">
                     <table class="table table-hover mb-0" id="myRidersTable">
-                        <thead><tr><th>#</th><th>Rider</th><th>Plate</th><th>Phone</th><th>Status</th><th>Expiry</th><th class="no-export">Action</th></tr></thead>
+                        <thead><tr><th>Rider</th><th>Permit number</th><th>Plate</th><th>Phone</th><th>Status</th><th>Expiry</th><th class="no-export">Action</th></tr></thead>
                         <tbody>
                         <?php foreach ($riders as $i => $r): $sc = ['active'=>'bg-success','expired'=>'bg-danger','pending'=>'bg-warning text-dark']; ?>
                             <tr>
-                                <td><?= $i+1 ?></td>
-                                <td><strong><?= h($r['full_name']) ?></strong></td>
+                                <td><?= person_cell($r['photo_path'], $r['full_name']) ?></td>
+                                <td><code><?= h($r['id_number']) ?></code></td>
                                 <td><?= h($r['bike_plate']) ?></td>
                                 <td><?= h($r['phone']) ?></td>
                                 <td><span class="badge <?= $sc[$r['status']] ?>"><span class="status-dot <?= h($r['status']) ?>"></span><?= ucfirst($r['status']) ?></span></td>
@@ -92,7 +92,7 @@ $expiringSoon = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE stage_id = ?
                                 <td class="no-export">
                                     <a href="<?= BASE_URL ?>/pages/chairperson/rider-profile.php?id=<?= (int)$r['id'] ?>" class="btn btn-sm btn-outline-primary" aria-label="View <?= h($r['full_name']) ?>" title="View"><i class="fas fa-eye" aria-hidden="true"></i></a>
                                     <a href="<?= BASE_URL ?>/pages/chairperson/edit-rider.php?id=<?= (int)$r['id'] ?>" class="btn btn-sm btn-outline-warning" aria-label="Edit <?= h($r['full_name']) ?>" title="Edit"><i class="fas fa-edit" aria-hidden="true"></i></a>
-                                    <form method="post" class="d-inline" data-confirm="Delete this rider? This cannot be undone.">
+                                    <form method="post" class="d-inline" data-confirm="Delete <?= h($r['full_name']) ?> (<?= h($r['bike_plate']) ?>)? Their permit, payments and portal account are removed. This cannot be undone." data-confirm-ok="Delete rider">
                                         <?= csrf_field() ?><input type="hidden" name="action" value="delete"><input type="hidden" name="id" value="<?= (int)$r['id'] ?>">
                                         <button type="submit" class="btn btn-sm btn-outline-danger" aria-label="Delete <?= h($r['full_name']) ?>" title="Delete"><i class="fas fa-trash" aria-hidden="true"></i></button>
                                     </form>

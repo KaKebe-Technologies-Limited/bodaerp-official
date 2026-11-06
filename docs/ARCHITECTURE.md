@@ -87,7 +87,7 @@ To add it to the menu, add one line to the `$nav` array in `partials/sidebar-cha
 ### JavaScript rules ("clean JS")
 
 - **Plain JavaScript only.** No Node, npm, bundler or framework. Libraries are committed, unchanged, in
-  `packages/frontend/assets/vendor/` (Bootstrap 5.3.3, Font Awesome 6.5.2, ApexCharts 3.54.0, jsPDF 4.2.1 +
+  `packages/frontend/assets/vendor/` (Bootstrap 5.3.8, Font Awesome 7.3.1, ApexCharts 4.7.0, jsPDF 4.2.1 +
   AutoTable 5.0.9, qrcodejs 1.0.0, Inter, CKEditor 5), so pages work with no internet. Versions are listed in
   `vendor/VERSIONS.json`; `tests/check_dependencies.php` checks them for advisories.
 - **Content Security Policy:** scripts run only from this site or from inline blocks carrying

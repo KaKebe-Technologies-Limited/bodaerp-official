@@ -19,9 +19,48 @@ if (!window.__bodaMainLoaded) document.addEventListener('DOMContentLoaded', func
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape' && sidebar && sidebar.classList.contains('open')) { setDrawer(false); if (toggleBtn) toggleBtn.focus(); }
     });
-    document.querySelectorAll('.sidebar-menu a').forEach(link => {
+    document.querySelectorAll('.nav-tree a').forEach(link => {
         link.addEventListener('click', () => { if (window.innerWidth < 992) setDrawer(false); });
     });
+    const closeBtn = document.querySelector('[data-sidebar-close]');
+    if (closeBtn) closeBtn.addEventListener('click', () => { setDrawer(false); if (toggleBtn) toggleBtn.focus(); });
+
+    // Sidebar groups: each dropdown stays open until its own button closes it (owner, 2026-11-06), and the
+    // open set is remembered between pages. A folded sidebar unfolds first, then opens the group.
+    const root = document.documentElement;
+    const foldBtn = document.querySelector('[data-sidebar-fold]');
+    const setFolded = (folded) => {
+        root.classList.toggle('sidebar-folded', folded);
+        if (foldBtn) {
+            foldBtn.setAttribute('aria-pressed', folded ? 'true' : 'false');
+            foldBtn.setAttribute('aria-label', folded ? 'Show the menu with labels' : 'Fold the menu to icons');
+        }
+        try { localStorage.setItem('bodaerp-sidebar-folded', folded ? '1' : ''); } catch (storageError) { console.warn('Menu choice not saved', storageError); }
+    };
+    if (foldBtn) {
+        setFolded(root.classList.contains('sidebar-folded'));
+        foldBtn.addEventListener('click', () => setFolded(!root.classList.contains('sidebar-folded')));
+    }
+    const groups = document.querySelectorAll('[data-nav-group]');
+    const openGroup = (btn, open) => {
+        const list = document.getElementById(btn.getAttribute('aria-controls'));
+        btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+        btn.closest('.nav-node').classList.toggle('is-open', open);
+        if (list) list.hidden = !open;
+    };
+    const openKey = 'bodaerp-nav-open';
+    let remembered = [];
+    try { remembered = JSON.parse(localStorage.getItem(openKey) || '[]'); } catch (storageError) { console.warn('Menu state not readable', storageError); }
+    const saveOpen = () => {
+        const ids = Array.from(groups).filter(g => g.getAttribute('aria-expanded') === 'true').map(g => g.getAttribute('aria-controls'));
+        try { localStorage.setItem(openKey, JSON.stringify(ids)); } catch (storageError) { console.warn('Menu state not saved', storageError); }
+    };
+    groups.forEach(g => { if (remembered.indexOf(g.getAttribute('aria-controls')) !== -1) openGroup(g, true); });
+    groups.forEach(btn => btn.addEventListener('click', () => {
+        if (root.classList.contains('sidebar-folded') && window.innerWidth >= 992) { setFolded(false); openGroup(btn, true); saveOpen(); return; }
+        openGroup(btn, btn.getAttribute('aria-expanded') !== 'true');
+        saveOpen();
+    }));
 
     document.querySelectorAll('.alert-success:not([data-keep]), .alert-info[data-autohide]').forEach(alert => {
         setTimeout(() => {
@@ -30,9 +69,6 @@ if (!window.__bodaMainLoaded) document.addEventListener('DOMContentLoaded', func
             setTimeout(() => alert.remove(), 500);
         }, 6000);
     });
-
-    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-    tooltipTriggerList.map(el => new bootstrap.Tooltip(el));
 
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         anchor.addEventListener('click', function(e) {
@@ -121,7 +157,7 @@ function createToastContainer() {
 }
 
 // Shared behaviours, driven by data attributes rather than inline handlers:
-//   <form data-confirm="Delete this rider?" data-confirm-ok="Delete">  branded confirm dialog
+//   <form data-confirm="Delete Jane Akello?" data-confirm-ok="Delete" data-confirm-title="..." data-confirm-typed="DELETE">  confirm dialog (controls.js)
 //   <select data-autosubmit>                                           submits its form on change
 //   <button data-print>                                                prints the page
 //   <input type="checkbox" data-check-all="ids[]">                     ticks every ids[] checkbox in the form
@@ -190,34 +226,10 @@ function createToastContainer() {
         }
     });
 
-    let modalEl = null;
-    function confirmDialog(message, okLabel, danger) {
-        return new Promise(resolve => {
-            if (!window.bootstrap) { resolve(window.confirm(message)); return; }
-            if (!modalEl) {
-                modalEl = document.createElement('div');
-                modalEl.className = 'modal fade';
-                modalEl.tabIndex = -1;
-                modalEl.setAttribute('aria-hidden', 'true');
-                modalEl.innerHTML = '<div class="modal-dialog modal-dialog-centered"><div class="modal-content">'
-                    + '<div class="modal-header"><h2 class="modal-title fs-6 fw-bold">Please confirm</h2><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div>'
-                    + '<div class="modal-body"><p class="mb-0" data-confirm-text></p></div>'
-                    + '<div class="modal-footer"><button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button><button type="button" class="btn" data-confirm-ok></button></div>'
-                    + '</div></div>';
-                document.body.appendChild(modalEl);
-            }
-            modalEl.querySelector('[data-confirm-text]').textContent = message;
-            const ok = modalEl.querySelector('[data-confirm-ok]');
-            ok.textContent = okLabel || 'Continue';
-            ok.className = 'btn ' + (danger ? 'btn-danger' : 'btn-primary');
-            const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
-            let answered = false;
-            const onOk = () => { answered = true; modal.hide(); };
-            ok.addEventListener('click', onOk, { once: true });
-            modalEl.addEventListener('hidden.bs.modal', () => { ok.removeEventListener('click', onOk); resolve(answered); }, { once: true });
-            modal.show();
-            setTimeout(() => ok.focus(), 200);
-        });
+    // One dialog for the whole platform (controls.js). If it failed to load, the action does not go ahead.
+    function confirmDialog(message, okLabel, danger, extra) {
+        if (!window.BodaUI) { console.error('controls.js is missing: confirmation refused for', message); return Promise.resolve(false); }
+        return window.BodaUI.confirm(Object.assign({ message: message, okLabel: okLabel, tone: danger ? 'danger' : 'default' }, extra || {}));
     }
     window.bodaConfirm = confirmDialog;
 
@@ -226,11 +238,22 @@ function createToastContainer() {
         if (!(form instanceof HTMLFormElement)) return;
         const submitAction = form.getAttribute('data-call-submit');
         if (submitAction && runPageAction(submitAction, form) === false) { e.preventDefault(); return; }
-        const message = form.getAttribute('data-confirm');
+        let message = form.getAttribute('data-confirm');
         if (message && form.dataset.confirmed !== '1') {
             e.preventDefault();
+            // Bulk forms: {count} is the number of ticked rows, {action} the chosen bulk action.
+            if (message.indexOf('{count}') !== -1) {
+                const ticked = form.querySelectorAll('input[type="checkbox"]:checked:not([data-check-all])').length;
+                if (!ticked) { confirmDialog('Tick at least one row in the list, then choose the action again.', 'OK', false, { title: 'Nothing is selected' }); return; }
+                const bulk = form.querySelector('select[name="bulk"], select[name="bulk_action"], select[name="op"]');
+                const chosen = bulk && bulk.selectedOptions[0] ? bulk.selectedOptions[0].textContent.trim() : 'this action';
+                message = message.replace('{count}', String(ticked)).replace('{action}', chosen);
+            }
             const danger = /delete|remove|suspend|revoke|reset|discard/i.test(message);
-            confirmDialog(message, form.getAttribute('data-confirm-ok') || (danger ? 'Yes, continue' : 'Continue'), danger).then(yes => {
+            confirmDialog(message, form.getAttribute('data-confirm-ok') || (danger ? 'Yes, continue' : 'Continue'), danger, {
+                title: form.getAttribute('data-confirm-title') || undefined,
+                typed: form.getAttribute('data-confirm-typed') || undefined
+            }).then(yes => {
                 if (!yes) return;
                 form.dataset.confirmed = '1';
                 if (e.submitter && e.submitter.name) {
@@ -296,8 +319,9 @@ function createToastContainer() {
             const copySource = document.getElementById(copyBtn.getAttribute('data-copy-from') || '');
             const text = copySource ? copySource.textContent.trim() : copyBtn.getAttribute('data-copy');
             const done = () => { const old = copyBtn.innerHTML; copyBtn.innerHTML = '<i class="fas fa-check me-1" aria-hidden="true"></i>Copied'; setTimeout(() => { copyBtn.innerHTML = old; }, 1600); };
-            if (navigator.clipboard) navigator.clipboard.writeText(text).then(done, () => window.prompt('Copy this link:', text));
-            else window.prompt('Copy this link:', text);
+            const manualCopy = () => window.BodaUI && window.BodaUI.showText({ title: 'Copy this text', message: 'Your browser did not allow automatic copying. Select the text and copy it.', text: text });
+            if (navigator.clipboard) navigator.clipboard.writeText(text).then(done, (err) => { console.warn('Clipboard refused', err); manualCopy(); });
+            else manualCopy();
             return;
         }
         const logout = e.target.closest('[data-logout]');

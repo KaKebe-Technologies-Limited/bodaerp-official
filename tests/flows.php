@@ -165,6 +165,18 @@ if (!empty($up['url'])) {
 }
 @unlink($fakeImage); @unlink($png);
 
+// 9b. Home hero slides (Super Admin -> Pages & content): a javascript: button link is refused, a normal slide saves and shows
+$slidePage = http("$base/pages/superadmin/content.php?tab=home_slide", $admin);
+$slideTitle = "Flowtest slide $tag";
+http("$base/pages/superadmin/content.php?tab=home_slide", $admin, ['csrf_token' => csrf($slidePage['body']), 'action' => 'save_item', 'group_code' => 'home_slide', 'id' => '0',
+    'title' => $slideTitle, 'body' => 'Slide text', 'image' => '/assets/images/home/lira-sunset.webp', 'link_label' => 'Go', 'link_url' => 'javascript:alert(1)', 'sort_order' => '99', 'is_active' => '1']);
+$t->ok(!fetchOne("SELECT id FROM content_items WHERE title = ?", [$slideTitle]), 'a hero slide with a javascript: button link is refused');
+http("$base/pages/superadmin/content.php?tab=home_slide", $admin, ['csrf_token' => csrf(http("$base/pages/superadmin/content.php?tab=home_slide", $admin)['body']), 'action' => 'save_item', 'group_code' => 'home_slide', 'id' => '0',
+    'title' => $slideTitle, 'body' => 'Slide text', 'image' => '/assets/images/home/lira-sunset.webp', 'link_label' => 'Go', 'link_url' => '/faq.php', 'sort_order' => '99', 'is_active' => '1']);
+$saved = fetchOne("SELECT id, image, link_url FROM content_items WHERE title = ?", [$slideTitle]);
+$t->ok($saved && $saved['link_url'] === '/faq.php' && str_contains(http("$base/", test_jar())['body'], htmlspecialchars($slideTitle)), 'a new hero slide saves with its photo and button and appears on the home page', json_encode($saved));
+runQuery("DELETE FROM content_items WHERE title = ?", [$slideTitle]);
+
 // 10. Chairperson registers a rider with photo and email → rider + portal account + invite → rider sets password and signs in
 $jpg = tempnam(sys_get_temp_dir(), 'ph') . '.png';
 file_put_contents($jpg, base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+ip1sAAAAASUVORK5CYII='));
@@ -410,6 +422,10 @@ if ($cityJar) {
     }
     $t->ok($codes[0] && $codes[1] && $codes[0]['action_code'] !== $codes[1]['action_code'] && preg_match('/^ENF-\d{4}-\d{3,}$/', $codes[1]['action_code']),
         'a new enforcement action gets a fresh ENF code even right after one was deleted', json_encode($codes));
+    $page = http("$base/pages/citycouncil/enforcement-actions.php", $cityJar);
+    $bad = http("$base/pages/citycouncil/enforcement-actions.php", $cityJar, ['csrf_token' => csrf($page['body']), 'rider_id' => $handRider['id'], 'type' => 'arrest', 'description' => "flowtest $tag bad", 'status' => 'whatever']);
+    $t->ok(!fetchOne("SELECT id FROM enforcement_actions WHERE description = ?", ["flowtest $tag bad"]) && str_contains($bad['body'], 'Choose an action type'),
+        'an enforcement action with a type or status outside the list (and no amount field) is refused with a message');
     runQuery("DELETE FROM enforcement_actions WHERE description LIKE ?", ["flowtest $tag%"]);
 }
 
@@ -444,6 +460,111 @@ $check = fetchOne("SELECT * FROM permit_checks WHERE rider_id = ? ORDER BY id DE
 $t->ok($check && $check['outcome'] === 'warned' && (float) $check['latitude'] === 2.2499, 'the check is saved with its outcome and location', json_encode($check));
 $t->ok(!str_contains(http("$base/verify.php?t=$vt", test_jar())['body'], 'Record this check'), 'visitors do not see the check form');
 
+// ID cards: reprint keeps the QR code, a lost card stops it, the old QR then says "no longer valid"
+$cardUrl = "$base/pages/chairperson/id-preview.php?id=$testRider";
+$page = http($cardUrl, $chair);
+$t->ok($page['code'] === 200 && str_contains($page['body'], 'Card history'), 'the chairperson card page opens with its history');
+$tokenBefore = (string) fetchValue("SELECT verify_token FROM riders WHERE id = ?", [$testRider]);
+http($cardUrl, $chair, ['csrf_token' => csrf($page['body']), 'card_action' => 'issue', 'reason' => 'reprint', 'note' => 'flowtest']);
+$live = fetchAll("SELECT * FROM id_cards WHERE rider_id = ? AND status IN ('issued','printed','collected')", [$testRider]);
+$t->ok(count($live) === 1 && fetchValue("SELECT verify_token FROM riders WHERE id = ?", [$testRider]) === $tokenBefore && $live[0]['verify_token'] === $tokenBefore,
+    'a reprint makes a new card version, keeps one valid card and the same QR code', json_encode($live));
+http($cardUrl, $chair, ['csrf_token' => csrf(http($cardUrl, $chair)['body']), 'card_action' => 'collected']);
+$t->ok(fetchValue("SELECT status FROM id_cards WHERE rider_id = ? ORDER BY version DESC LIMIT 1", [$testRider]) === 'collected', 'handing the card over marks it collected');
+http($cardUrl, $chair, ['csrf_token' => csrf(http($cardUrl, $chair)['body']), 'card_action' => 'lost', 'note' => 'flowtest']);
+$tokenAfter = (string) fetchValue("SELECT verify_token FROM riders WHERE id = ?", [$testRider]);
+$t->ok($tokenAfter !== $tokenBefore && !fetchValue("SELECT COUNT(*) FROM id_cards WHERE rider_id = ? AND status IN ('issued','printed','collected')", [$testRider]),
+    'a lost card leaves no valid card and gives the rider a new QR token');
+$old = http("$base/verify.php?t=$tokenBefore", test_jar())['body'];
+$t->ok(str_contains($old, 'This card is no longer valid') && str_contains($old, 'reported lost') && !str_contains($old, 'FLOW TEST RIDER'), 'scanning the lost card says it is no longer valid, with a masked name');
+http($cardUrl, $chair, ['csrf_token' => csrf(http($cardUrl, $chair)['body']), 'card_action' => 'issue', 'reason' => 'lost']);
+$t->ok(str_contains(http("$base/verify.php?t=" . fetchValue("SELECT verify_token FROM riders WHERE id = ?", [$testRider]), test_jar())['body'], 'Permit'), 'the new card verifies');
+$signImg = imagecreatetruecolor(300, 90);
+imagefill($signImg, 0, 0, imagecolorallocate($signImg, 255, 255, 255));
+imageline($signImg, 12, 70, 288, 18, imagecolorallocate($signImg, 0, 0, 0));
+ob_start(); imagepng($signImg); $signPng = 'data:image/png;base64,' . base64_encode((string) ob_get_clean());
+http($cardUrl, $chair, ['csrf_token' => csrf(http($cardUrl, $chair)['body']), 'card_action' => 'signature', 'signature_drawn' => $signPng]);
+$signPath = (string) fetchValue("SELECT signature_path FROM riders WHERE id = ?", [$testRider]);
+$cardPage = http($cardUrl, $chair)['body'];
+$t->ok($signPath !== "" && str_contains($cardPage, h($signPath) . "\""), 'a signature drawn on the card page is kept with the rider and printed on the card');
+$t->ok(http($base . $signPath, $chair)['code'] === 200 && http($base . $signPath, test_jar())['code'] !== 200, 'the signature image is served to staff of the stage, not to visitors');
+http($cardUrl, $chair, ['csrf_token' => csrf($cardPage), 'card_action' => 'signature', 'signature_drawn' => 'data:image/png;base64,iVBORw0KGgo=']);
+$t->ok((string) fetchValue("SELECT signature_path FROM riders WHERE id = ?", [$testRider]) === $signPath, 'a broken signature image is refused and the old one is kept');
+http($cardUrl, $chair, ['csrf_token' => csrf(http($cardUrl, $chair)['body']), 'card_action' => 'signature_remove']);
+$t->ok(fetchValue("SELECT signature_path FROM riders WHERE id = ?", [$testRider]) === null && http($base . $signPath, $chair)['code'] !== 200, 'removing the signature clears it and deletes the file');
+$t->ok(http("$base/pages/chairperson/id-cards.php?show=to_print", $chair)['code'] === 200,'the card register opens filtered to cards waiting to be printed');
+$otherCity = (int) fetchValue("SELECT id FROM riders WHERE city_id <> (SELECT city_id FROM riders WHERE id = ?) AND deleted_at IS NULL LIMIT 1", [$testRider]);
+$t->ok(http("$base/pages/chairperson/id-preview.php?id=$otherCity", $chair)['code'] === 302, 'a chairperson cannot open the card of a rider from another stage');
+
+// Enforcement: a pending suspension suspends the permit at the roadside; an upheld appeal lifts it
+$riderCity = (string) fetchValue("SELECT city_id FROM riders WHERE id = ?", [$testRider]);
+runQuery("INSERT INTO enforcement_actions (action_code, rider_id, city_id, stage_id, plate, type, description, action_date, status, appeal_text, appeal_at, appeal_status)
+    VALUES (?, ?, ?, NULL, 'FLOW', 'suspension', 'flowtest suspension', CURDATE(), 'pending', 'flowtest appeal text long enough', NOW(), 'open')", ['EF-' . substr(md5($tag), 0, 10), $testRider, $riderCity]);
+$suspId = (int) db()->insert_id;
+$vt = (string) fetchValue("SELECT verify_token FROM riders WHERE id = ?", [$testRider]);
+$t->ok(str_contains(http("$base/verify.php?t=$vt", test_jar())['body'], 'Permit suspended'), 'a pending suspension shows the permit as suspended on a QR check');
+if ($riderCity === (string) fetchValue("SELECT city_id FROM users WHERE email = 'council@liracityuganda.go.ug'") && !empty($cityJar)) {
+    $enfPage = http("$base/pages/citycouncil/enforcement-actions.php", $cityJar)['body'];
+    $t->ok(str_contains($enfPage, 'waiting for an answer') && str_contains($enfPage, 'flowtest appeal text'), 'the city sees the appeal waiting on its Enforcement page');
+    http("$base/pages/citycouncil/enforcement-actions.php", $cityJar, ['csrf_token' => csrf($enfPage), 'action' => 'appeal_answer', 'id' => $suspId, 'decision' => 'upheld', 'response' => 'flowtest accepted']);
+    $t->ok(fetchValue("SELECT status FROM enforcement_actions WHERE id = ?", [$suspId]) === 'closed' && !str_contains(http("$base/verify.php?t=$vt", test_jar())['body'], 'Permit suspended'),
+        'accepting the appeal closes the action and lifts the suspension');
+}
+
+// Rider record correction: every field, old and new values in the audit log; chairpersons cannot set the status
+$before = fetchOne("SELECT * FROM riders WHERE id = ?", [$testRider]);
+$editUrl = "$base/pages/chairperson/edit-rider.php?id=$testRider";
+$form = ['full_name' => $before['full_name'], 'nin' => 'CM9' . strtoupper(substr(md5($tag), 0, 11)), 'date_of_birth' => '1990-04-02', 'gender' => 'Female', 'marital_status' => 'Single',
+    'phone' => preg_replace('/^\+256/', '', (string) $before['phone']), 'email' => '', 'physical_address' => 'Flowtest Lane 4', 'next_of_kin_name' => 'Flow Kin',
+    'next_of_kin_contact' => '772000111', 'bike_plate' => $before['bike_plate'], 'bike_model' => 'Bajaj', 'route' => '', 'status' => 'active', 'expiry_date' => '2099-01-01'];
+http($editUrl, $chair, ['csrf_token' => csrf(http($editUrl, $chair)['body'])] + $form);
+$after = fetchOne("SELECT * FROM riders WHERE id = ?", [$testRider]);
+$t->ok($after['physical_address'] === 'Flowtest Lane 4' && $after['date_of_birth'] === '1990-04-02' && $after['next_of_kin_contact'] === '+256772000111', 'a chairperson corrects birth date, address and next of kin', json_encode([$after['physical_address'], $after['date_of_birth'], $after['next_of_kin_contact']]));
+$t->ok($after['status'] === $before['status'] && (string) $after['expiry_date'] === (string) $before['expiry_date'], 'a chairperson cannot change the permit status or expiry by posting them');
+$log = (string) fetchValue("SELECT details FROM audit_logs WHERE entity_type = 'rider' AND entity_id = ? ORDER BY id DESC LIMIT 1", [$before['id_number']]);
+$t->ok(str_contains($log, 'address: ') && str_contains($log, '-> Flowtest Lane 4'), 'the audit log keeps the old and new value of each changed field', $log);
+$http = http($editUrl, $chair, ['csrf_token' => csrf(http($editUrl, $chair)['body'])] + ['nin' => 'SHORT'] + $form);
+$t->ok(str_contains($http['body'], '14 letters and digits'), 'a malformed NIN is refused');
+require_once __DIR__ . '/../packages/backend/rider_records.php';
+runQuery("INSERT INTO riders (city_id, stage_id, id_number, verify_token, full_name, nin, phone, email, bike_plate, status, member_since, annual_tax)
+    VALUES (?, ?, ?, ?, 'FLOW ERASE ME', 'CM00000000ERAS', '+256700000999', ?, 'ERASE 1', 'pending', CURDATE(), 0)",
+    [$before['city_id'], $before['stage_id'], 'FLOW-ERASE-' . substr(md5($tag), 0, 6), bin2hex(random_bytes(10)), "$tag-erase@example.com"]);
+$eraseId = (int) db()->insert_id; $created['riders'][] = $eraseId;
+$_SESSION['user_id'] = null;
+rider_anonymise($eraseId, 0, 'flowtest');
+$gone = fetchOne("SELECT full_name, nin, phone, email, deleted_at FROM riders WHERE id = ?", [$eraseId]);
+$t->ok(str_starts_with($gone['full_name'], 'REMOVED RIDER') && $gone['nin'] === null && $gone['phone'] === '' && $gone['email'] === null && $gone['deleted_at'] !== null,
+    'removing personal data erases name, NIN, phone and email and keeps the record for the accounts', json_encode($gone));
+
+// Riders with only a phone number: the chairperson sends an SMS link, the rider sets a password and signs in by phone
+$phoneOnly = '+2567' . str_pad((string) random_int(0, 99999999), 8, '0', STR_PAD_LEFT);
+runQuery("INSERT INTO riders (city_id, stage_id, id_number, verify_token, full_name, nin, phone, bike_plate, status, member_since, annual_tax)
+    VALUES (?, ?, ?, ?, 'FLOW PHONE RIDER', NULL, ?, 'PHONE 1', 'pending', CURDATE(), 0)", [$before['city_id'], $before['stage_id'], 'FLOW-PH-' . substr(md5($tag), 0, 6), bin2hex(random_bytes(10)), $phoneOnly]);
+$phoneRider = (int) db()->insert_id; $created['riders'][] = $phoneRider;
+$profile = "$base/pages/chairperson/rider-profile.php?id=$phoneRider";
+$smsBefore = glob(storage_path('sms') . '/*.txt') ?: [];
+http($profile, $chair, ['csrf_token' => csrf(http($profile, $chair)['body']), 'action' => 'invite']);
+$phoneUser = fetchOne("SELECT u.id, u.email, u.phone FROM riders r JOIN users u ON u.id = r.user_id WHERE r.id = ?", [$phoneRider]);
+if ($phoneUser) $created['users'][] = (int) $phoneUser['id'];
+$t->ok($phoneUser && $phoneUser['email'] === null && $phoneUser['phone'] === $phoneOnly, 'a rider without email gets a portal account tied to their phone', json_encode($phoneUser));
+$newSms = array_diff(glob(storage_path('sms') . '/*.txt') ?: [], $smsBefore);
+$smsText = '';
+foreach ($newSms as $file) { $body = (string) file_get_contents($file); if (str_contains($body, substr($phoneOnly, 1))) $smsText = $body; @unlink($file); }
+if (!sms_ready()) {
+    $t->ok(preg_match('/token=([a-f0-9]{24}\.[a-f0-9]{64})/', $smsText, $tm) === 1, 'the set-password link goes to the rider by SMS', $smsText);
+    if (!empty($tm[1])) {
+        $resetUrl = "$base/reset-password.php?welcome=1&token={$tm[1]}";
+        $jarR = test_jar();
+        $resetResp = http($resetUrl, $jarR, ['csrf_token' => csrf(http($resetUrl, $jarR)['body']), 'token' => $tm[1], 'welcome' => 1, 'password' => 'Lane-Kite-2026!x', 'password_confirm' => 'Lane-Kite-2026!x']);
+        $why = '';
+        $setAt = fetchValue("SELECT password_changed_at FROM users WHERE id = ?", [(int) ($phoneUser['id'] ?? 0)]);
+        $t->ok($setAt !== null, 'the SMS link sets the password', substr(preg_replace('/\s+/', ' ', strip_tags((string) ($resetResp['body'] ?? ''))), 0, 400) . ' | ' . $smsText . (preg_match('/notice-error[^>]*>([^<]+)/', (string) ($resetResp['body'] ?? ''), $em) ? $em[1] : 'HTTP ' . ($resetResp['code'] ?? '?') . ' ' . ($resetResp['redirect'] ?? '')));
+        $pj = test_login($base, '0' . substr($phoneOnly, 4), 'Lane-Kite-2026!x', $why);
+        $t->ok((bool) $pj, 'the rider signs in with their phone number (0772... form) and the new password', $why);
+        if ($pj) $t->ok(str_contains(http("$base/pages/account/settings.php", $pj)['body'], 'No email address on this account'), 'the account page explains sign-in by phone');
+    }
+}
+
 // Rider import: problems per row, nothing saved until confirmed
 $csv = tempnam(sys_get_temp_dir(), 'imp');
 $stageName = (string) fetchValue("SELECT name FROM stages WHERE id = ?", [$stage['id']]);
@@ -458,7 +579,7 @@ unlink($csv);
 // Remove everything this run created, so the suite can run again on the same database.
 foreach ($created['riders'] as $id) {
     runQuery("DELETE h FROM cash_handovers h JOIN payments p ON p.handover_id = h.id WHERE p.rider_id = ?", [$id]);
-    foreach (['notifications', 'payments', 'permit_checks'] as $tbl) runQuery("DELETE FROM $tbl WHERE rider_id = ?", [$id]);
+    foreach (['notifications', 'payments', 'permit_checks', 'id_cards', 'enforcement_actions'] as $tbl) runQuery("DELETE FROM $tbl WHERE rider_id = ?", [$id]);
     runQuery("DELETE FROM riders WHERE id = ?", [$id]);
 }
 runQuery("DELETE FROM rate_limits WHERE bucket LIKE 'dup-check:%' OR bucket LIKE 'permit-check:%' OR bucket LIKE 'reminder-sms:%'");

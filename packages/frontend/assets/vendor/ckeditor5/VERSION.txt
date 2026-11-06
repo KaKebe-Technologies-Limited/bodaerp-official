@@ -1,0 +1,4 @@
+CKEditor 5 v49.1.0, self-hosted browser (UMD) build from the npm package "ckeditor5".
+Licence: GPL-2.0-or-later (licenseKey "GPL"); see LICENSE.md. Only open-source plugins are used.
+Upgrade: download https://registry.npmjs.org/ckeditor5/-/ckeditor5-<version>.tgz, copy
+package/dist/browser/ckeditor5.umd.js and ckeditor5.css here, update the version in editor.js.

@@ -44,6 +44,8 @@ function payment_confirm(int $paymentId, string $actorLabel = 'System (ioTec Pay
         $db->rollback();
         throw $e;
     }
+    require_once __DIR__ . '/id_cards.php';
+    id_card_sync_unprinted((int) $payment['rider_id']);
 
     $rider = fetchOne("SELECT r.full_name, r.id_number, r.email, r.expiry_date, r.city_id, u.email AS account_email, u.notify_email
         FROM riders r LEFT JOIN users u ON u.id = r.user_id WHERE r.id = ?", [$payment['rider_id']]);
@@ -94,4 +96,22 @@ function record_manual_payment(array $rider, string $method, ?int $collectedBy):
     $paymentId = (int) db()->insert_id;
     payment_confirm($paymentId, $_SESSION['name'] ?? 'Chairperson');
     return nextReceiptNumber($paymentId);
+}
+
+/**
+ * One confirmed payment with what its receipt prints, limited to the signed-in user's scope:
+ * a rider sees only their own, a chairperson their stage, a city admin their city.
+ */
+function receipt_load(int $paymentId): ?array {
+    $scope = match ($_SESSION['role'] ?? '') {
+        'rider'       => ['r.id = ?', (int) ($_SESSION['rider_id'] ?? 0)],
+        'chairperson' => ['r.stage_id = ?', (int) ($_SESSION['stage_id'] ?? 0)],
+        'city_admin'  => ['r.city_id = ?', (string) ($_SESSION['city_id'] ?? '')],
+        'super_admin' => ['1 = ?', 1],
+        default       => null,
+    };
+    if (!$scope) return null;
+    return fetchOne("SELECT p.*, r.full_name, r.id_number, r.bike_plate, r.expiry_date, s.name AS stage_name, c.name AS city_name, c.logo_path AS city_logo, u.name AS collector_name
+        FROM payments p JOIN riders r ON r.id = p.rider_id LEFT JOIN stages s ON s.id = r.stage_id LEFT JOIN cities c ON c.id = r.city_id LEFT JOIN users u ON u.id = p.collected_by
+        WHERE p.id = ? AND p.status = 'Confirmed' AND p.receipt_number IS NOT NULL AND {$scope[0]}", [$paymentId, $scope[1]]);
 }

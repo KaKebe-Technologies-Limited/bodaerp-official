@@ -190,6 +190,8 @@ function import_commit(array $ready, string $cityId, int $userId, string $fileNa
         }
         runQuery("UPDATE rider_imports SET rows_created = ?, rows_skipped = ? WHERE id = ?", [$created, max(0, $totalRows - $created), $importId])->close();
         $db->commit();
+        require_once __DIR__ . '/id_cards.php';
+        foreach (fetchAll("SELECT id FROM riders WHERE import_id = ?", [$importId]) as $imported) id_card_ensure((int) $imported['id']);
         return $importId;
     } catch (Throwable $e) {
         $db->rollback();

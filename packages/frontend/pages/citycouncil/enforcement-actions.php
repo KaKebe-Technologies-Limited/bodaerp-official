@@ -1,15 +1,22 @@
 <?php
 require_once __DIR__ . '/../../../backend/auth.php';
+require_once __DIR__ . '/../../../backend/enforcement.php';
 require_role(['city_admin']);
 $active = 'enforcement-actions';
 $cityId = $_SESSION['city_id'];
+const ENFORCEMENT_TYPES = ['warning', 'fine', 'suspension', 'impound'];
+const ENFORCEMENT_STATUSES = ['pending', 'resolved', 'closed'];
 
 $errors = [];
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     csrf_verify();
     $action = $_POST['action'] ?? 'save';
 
-    if ($action === 'delete') {
+    if ($action === 'appeal_answer') {
+        $ok = enforcement_answer_appeal((int) ($_POST['id'] ?? 0), (string) $cityId, (string) ($_POST['decision'] ?? ''), (string) ($_POST['response'] ?? ''), (int) $_SESSION['user_id']);
+        flash($ok ? 'success' : 'error', $ok ? 'The appeal is answered and the rider was told.' : 'Choose accept or reject and write the answer for the rider.');
+        redirect('/pages/citycouncil/enforcement-actions.php');
+    } elseif ($action === 'delete') {
         $id = (int) ($_POST['id'] ?? 0);
         runQuery("DELETE FROM enforcement_actions WHERE id = ? AND city_id = ?", [$id, $cityId]);
         audit_log('DELETE', 'enforcement_action', (string) $id, 'Enforcement action deleted');
@@ -17,12 +24,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         $editId = (int) ($_POST['edit_id'] ?? 0);
         $riderId = (int) ($_POST['rider_id'] ?? 0);
-        $type = $_POST['type'] ?? 'warning';
-        $amount = $_POST['amount'] !== '' ? (float) $_POST['amount'] : null;
+        $type = (string) ($_POST['type'] ?? 'warning');
+        $amountRaw = trim((string) ($_POST['amount'] ?? ''));
+        $amount = $amountRaw !== '' ? (float) $amountRaw : null;
         $desc = trim($_POST['description'] ?? '');
-        $status = $_POST['status'] ?? 'pending';
+        $status = (string) ($_POST['status'] ?? 'pending');
 
         if (!$riderId || $desc === '') $errors[] = 'Rider and description are required.';
+        if (!in_array($type, ENFORCEMENT_TYPES, true)) $errors[] = 'Choose an action type from the list.';
+        if (!in_array($status, ENFORCEMENT_STATUSES, true)) $errors[] = 'Choose a status from the list.';
+        if ($amountRaw !== '' && (!is_numeric($amountRaw) || $amount < 0)) $errors[] = 'The amount must be a number of zero or more.';
 
         if (!$errors) {
             $rider = fetchOne("SELECT stage_id, bike_plate FROM riders WHERE id = ? AND city_id = ?", [$riderId, $cityId]);
@@ -59,6 +70,8 @@ if ($stageFilter) { $where .= " AND e.stage_id = :stage"; $params['stage'] = $st
 $actions = fetchAll("SELECT e.*, r.full_name, s.name AS stage_name FROM enforcement_actions e
     LEFT JOIN riders r ON r.id = e.rider_id LEFT JOIN stages s ON s.id = e.stage_id
     $where ORDER BY e.action_date DESC, e.id DESC", $params);
+$appeals = fetchAll("SELECT e.*, r.full_name FROM enforcement_actions e LEFT JOIN riders r ON r.id = e.rider_id
+    WHERE e.city_id = ? AND e.appeal_status = 'open' ORDER BY e.appeal_at", [$cityId]);
 $riders = fetchAll("SELECT id, full_name, bike_plate FROM riders WHERE city_id = ? AND deleted_at IS NULL ORDER BY full_name LIMIT 500", [$cityId]);
 $stagesList = fetchAll("SELECT id, name FROM stages WHERE city_id = ? ORDER BY name", [$cityId]);
 
@@ -92,6 +105,28 @@ $actionsById = array_column($actions, null, 'id');
     $pageTitle = 'Enforcement actions';
     $pageSubtitle = '';
     require __DIR__ . '/../../partials/topheader.php'; ?>
+    <?php if ($appeals): ?>
+    <div class="content-area pb-0">
+        <div class="card border-warning"><div class="card-body">
+            <h2 class="section-title"><i class="fas fa-scale-balanced me-2 text-warning" aria-hidden="true"></i><?= count($appeals) ?> appeal<?= count($appeals) === 1 ? '' : 's' ?> waiting for an answer</h2>
+            <?php foreach ($appeals as $ap): ?>
+            <div class="border rounded-3 p-3 mb-3">
+                <div class="d-flex flex-wrap justify-content-between gap-2"><strong><?= h($ap['full_name'] ?? 'Unknown rider') ?> · <code><?= h($ap['action_code']) ?></code> · <?= h(ENFORCEMENT_LABELS[$ap['type']] ?? $ap['type']) ?></strong><small class="text-muted">Appealed <?= formatDate($ap['appeal_at']) ?></small></div>
+                <p class="small text-muted mb-1">Action: <?= h($ap['description']) ?></p>
+                <p class="small mb-2"><strong>Rider's appeal:</strong> <?= nl2br(h($ap['appeal_text'])) ?></p>
+                <form method="post" class="row g-2 align-items-end">
+                    <?= csrf_field() ?><input type="hidden" name="action" value="appeal_answer"><input type="hidden" name="id" value="<?= (int) $ap['id'] ?>">
+                    <div class="col-md-3"><label class="form-label small" for="dec<?= (int) $ap['id'] ?>">Decision</label>
+                        <select class="form-select form-select-sm" id="dec<?= (int) $ap['id'] ?>" name="decision" required><option value="">Choose</option><option value="upheld">Accept: close the action</option><option value="rejected">Reject: the action stands</option></select></div>
+                    <div class="col-md-7"><label class="form-label small" for="resp<?= (int) $ap['id'] ?>">Answer for the rider</label>
+                        <input type="text" class="form-control form-control-sm" id="resp<?= (int) $ap['id'] ?>" name="response" maxlength="1000" required></div>
+                    <div class="col-md-2"><button class="btn btn-primary btn-sm w-100">Send answer</button></div>
+                </form>
+            </div>
+            <?php endforeach; ?>
+        </div></div>
+    </div>
+    <?php endif; ?>
 
     <div class="content-area">
         <?php if ($errors): ?><div class="alert alert-danger"><?php foreach ($errors as $e) echo h($e); ?></div><?php endif; ?>
@@ -115,13 +150,13 @@ $actionsById = array_column($actions, null, 'id');
                     <div class="col-md-3">
                         <select aria-label="Filter by type" class="form-select" name="type" data-autosubmit>
                             <option value="">All Types</option>
-                            <?php foreach (['warning','fine','suspension','impound'] as $t): ?><option value="<?= $t ?>" <?= $typeFilter===$t?'selected':'' ?>><?= ucfirst($t) ?></option><?php endforeach; ?>
+                            <?php foreach (ENFORCEMENT_TYPES as $t): ?><option value="<?= $t ?>" <?= $typeFilter===$t?'selected':'' ?>><?= ucfirst($t) ?></option><?php endforeach; ?>
                         </select>
                     </div>
                     <div class="col-md-3">
                         <select aria-label="Filter by status" class="form-select" name="status" data-autosubmit>
                             <option value="">All Status</option>
-                            <?php foreach (['pending','resolved','closed'] as $s): ?><option value="<?= $s ?>" <?= $statusFilter===$s?'selected':'' ?>><?= ucfirst($s) ?></option><?php endforeach; ?>
+                            <?php foreach (ENFORCEMENT_STATUSES as $s): ?><option value="<?= $s ?>" <?= $statusFilter===$s?'selected':'' ?>><?= ucfirst($s) ?></option><?php endforeach; ?>
                         </select>
                     </div>
                     <div class="col-md-3">
@@ -156,10 +191,10 @@ $actionsById = array_column($actions, null, 'id');
                                 <td><?= h($a['stage_name']) ?></td>
                                 <td><span class="badge <?= $typeBadge ?>"><?= ucfirst($a['type']) ?></span></td>
                                 <td><?= formatDate($a['action_date']) ?></td>
-                                <td><span class="badge <?= $statusBadge ?>"><?= ucfirst($a['status']) ?></span></td>
+                                <td><span class="badge <?= $statusBadge ?>"><?= ucfirst($a['status']) ?></span><?php if ($a['appeal_status']): ?><br><small class="text-<?= $a['appeal_status'] === 'open' ? 'warning-emphasis' : 'muted' ?>">Appeal <?= $a['appeal_status'] === 'open' ? 'waiting' : ($a['appeal_status'] === 'upheld' ? 'accepted' : 'rejected') ?></small><?php endif; ?></td>
                                 <td class="no-export">
                                     <button class="btn btn-sm btn-outline-warning" data-call="openEdit" data-call-args="<?= h(js_json([(int) $a['id']])) ?>" aria-label="Edit action <?= h($a['action_code']) ?>" title="Edit"><i class="fas fa-edit" aria-hidden="true"></i></button>
-                                    <form method="post" class="d-inline" data-confirm="Delete this action?">
+                                    <form method="post" class="d-inline" data-confirm="Delete enforcement action <?= h($a['action_code']) ?> for <?= h($a['full_name'] ?? 'this rider') ?>? It disappears from the city's records and reports." data-confirm-ok="Delete action">
                                         <?= csrf_field() ?><input type="hidden" name="action" value="delete"><input type="hidden" name="id" value="<?= (int) $a['id'] ?>">
                                         <button type="submit" class="btn btn-sm btn-outline-danger" aria-label="Delete action <?= h($a['action_code']) ?>" title="Delete"><i class="fas fa-trash" aria-hidden="true"></i></button>
                                     </form>
@@ -194,7 +229,7 @@ $actionsById = array_column($actions, null, 'id');
                     <div class="mb-3"><label for="typeSelect" class="form-label fw-semibold">Action type <span class="text-danger">*</span></label>
                         <select class="form-select" name="type" id="typeSelect"><option value="warning">Warning</option><option value="fine">Fine</option><option value="suspension">Suspension</option><option value="impound">Impound</option></select>
                     </div>
-                    <div class="mb-3"><label for="amountInput" class="form-label fw-semibold">Amount (UGX)</label><input type="number" class="form-control" name="amount" id="amountInput"></div>
+                    <div class="mb-3"><label for="amountInput" class="form-label fw-semibold">Amount (UGX)</label><input type="number" class="form-control" name="amount" id="amountInput" min="0" step="any"></div>
                     <div class="mb-3"><label for="descInput" class="form-label fw-semibold">Description <span class="text-danger">*</span></label><textarea class="form-control" name="description" id="descInput" rows="2" required></textarea></div>
                     <div class="mb-3"><label for="statusSelect" class="form-label fw-semibold">Status</label><select class="form-select" name="status" id="statusSelect"><option value="pending">Pending</option><option value="resolved">Resolved</option><option value="closed">Closed</option></select></div>
                 </div>

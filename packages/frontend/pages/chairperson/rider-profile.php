@@ -43,10 +43,10 @@ $sc = ['active'=>'bg-success','expired'=>'bg-danger','pending'=>'bg-warning text
                 <div class="d-flex gap-2">
                     <a href="<?= BASE_URL ?>/pages/chairperson/id-preview.php?id=<?= $riderId ?>" class="btn btn-outline-primary"><i class="fas fa-id-card me-1"></i>ID card</a>
                     <a href="<?= BASE_URL ?>/pages/chairperson/edit-rider.php?id=<?= $riderId ?>" class="btn btn-primary"><i class="fas fa-edit me-1"></i>Edit</a>
-                    <?php if ($rider['email'] && (!$account || !$account['password_changed_at'])): ?>
-                    <form method="post" class="d-inline" data-confirm="Email <?= h($rider['email']) ?> a link to set up their portal password?" data-confirm-ok="Send invite">
+                    <?php if ($rider['email'] || $rider['phone']): ?>
+                    <form method="post" class="d-inline" data-confirm="Send <?= h($rider['full_name']) ?> a link to <?= $account && $account['password_changed_at'] ? 'choose a new portal password' : 'set up their portal password' ?> by <?= $rider['email'] ? 'email to ' . h($rider['email']) : 'SMS to their phone' ?>? You never see the password." data-confirm-ok="Send the link">
                         <?= csrf_field() ?><input type="hidden" name="action" value="invite">
-                        <button class="btn btn-outline-success" data-busy-label="Sending"><i class="fas fa-paper-plane me-1"></i><?= $account ? 'Resend portal invite' : 'Invite to rider portal' ?></button>
+                        <button class="btn btn-outline-success" data-busy-label="Sending"><i class="fas fa-paper-plane me-1" aria-hidden="true"></i><?= !$account ? 'Give portal access' : ($account['password_changed_at'] ? 'Reset portal access' : 'Resend portal invite') ?></button>
                     </form>
                     <?php endif; ?>
                 </div>
@@ -92,7 +92,7 @@ $sc = ['active'=>'bg-success','expired'=>'bg-danger','pending'=>'bg-warning text
                         <tbody>
                         <?php if (!$payments): ?><tr><td colspan="5"><div class="empty-state" style="padding:36px 20px;"><i class="fas fa-inbox"></i><h5>No payment history</h5></div></td></tr><?php endif; ?>
                         <?php foreach ($payments as $p): $psc = ['Confirmed'=>'bg-success','Pending'=>'bg-warning text-dark','Failed'=>'bg-danger']; ?>
-                            <tr><td><?= h($p['fiscal_year']) ?></td><td><?= h(formatCurrency($p['amount'])) ?></td><td><?= formatDate($p['paid_at']) ?></td><td><code><?= h($p['receipt_number']) ?></code></td><td><span class="badge <?= $psc[$p['status']] ?>"><?= h($p['status']) ?></span></td></tr>
+                            <tr><td><?= h($p['fiscal_year']) ?></td><td><?= h(formatCurrency($p['amount'])) ?></td><td><?= formatDate($p['paid_at']) ?></td><td><?php if ($p['status'] === 'Confirmed' && $p['receipt_number']): ?><a href="<?= BASE_URL ?>/pages/chairperson/receipt.php?id=<?= (int) $p['id'] ?>" title="Open the receipt"><code><?= h($p['receipt_number']) ?></code></a><?php else: ?><code><?= h($p['receipt_number']) ?></code><?php endif; ?></td><td><span class="badge <?= $psc[$p['status']] ?>"><?= h($p['status']) ?></span></td></tr>
                         <?php endforeach; ?>
                         </tbody>
                     </table>

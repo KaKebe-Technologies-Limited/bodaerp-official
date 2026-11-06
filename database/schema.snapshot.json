@@ -1,10 +1,10 @@
 {
     "_note": "Structure of the database (no data). Written automatically on the developer machine; applied automatically on every other copy. Commit it with the code. Safe to delete: it is rebuilt from the local database.",
     "meta": {
-        "saved_at": "2026-11-06 02:52:17",
+        "saved_at": "2026-11-06 22:04:08",
         "saved_by": "cli",
-        "database_server": "10.4.34-MariaDB-1:10.4.34+maria~ubu2004",
-        "tables": 35
+        "database_server": "11.8.9-MariaDB-ubu2404",
+        "tables": 36
     },
     "format": 1,
     "tables": {
@@ -787,6 +787,24 @@
                     "def": "text NOT NULL"
                 },
                 {
+                    "name": "image",
+                    "type": "varchar(255)",
+                    "null": true,
+                    "def": "varchar(255) DEFAULT NULL"
+                },
+                {
+                    "name": "link_label",
+                    "type": "varchar(80)",
+                    "null": true,
+                    "def": "varchar(80) DEFAULT NULL"
+                },
+                {
+                    "name": "link_url",
+                    "type": "varchar(255)",
+                    "null": true,
+                    "def": "varchar(255) DEFAULT NULL"
+                },
+                {
                     "name": "sort_order",
                     "type": "smallint(6)",
                     "null": false,
@@ -892,9 +910,9 @@
                 },
                 {
                     "name": "type",
-                    "type": "enum('export','correction','deletion')",
+                    "type": "enum('export','correction','deletion','objection')",
                     "null": false,
-                    "def": "enum('export','correction','deletion') NOT NULL"
+                    "def": "enum('export','correction','deletion','objection') NOT NULL"
                 },
                 {
                     "name": "details",
@@ -1152,6 +1170,36 @@
                     "def": "enum('pending','resolved','closed') NOT NULL DEFAULT 'pending'"
                 },
                 {
+                    "name": "appeal_text",
+                    "type": "text",
+                    "null": true,
+                    "def": "text DEFAULT NULL"
+                },
+                {
+                    "name": "appeal_at",
+                    "type": "datetime",
+                    "null": true,
+                    "def": "datetime DEFAULT NULL"
+                },
+                {
+                    "name": "appeal_status",
+                    "type": "enum('open','upheld','rejected')",
+                    "null": true,
+                    "def": "enum('open','upheld','rejected') DEFAULT NULL"
+                },
+                {
+                    "name": "appeal_response",
+                    "type": "varchar(1000)",
+                    "null": true,
+                    "def": "varchar(1000) DEFAULT NULL"
+                },
+                {
+                    "name": "appeal_by",
+                    "type": "int(11)",
+                    "null": true,
+                    "def": "int(11) DEFAULT NULL"
+                },
+                {
                     "name": "officer_user_id",
                     "type": "int(11)",
                     "null": true,
@@ -1173,11 +1221,11 @@
             "indexes": {
                 "PRIMARY": "PRIMARY KEY (`id`)",
                 "action_code": "UNIQUE KEY `action_code` (`action_code`)",
-                "rider_id": "KEY `rider_id` (`rider_id`)",
                 "stage_id": "KEY `stage_id` (`stage_id`)",
                 "officer_user_id": "KEY `officer_user_id` (`officer_user_id`)",
                 "idx_enforcement_city": "KEY `idx_enforcement_city` (`city_id`)",
-                "idx_enforcement_status": "KEY `idx_enforcement_status` (`status`)"
+                "idx_enforcement_status": "KEY `idx_enforcement_status` (`status`)",
+                "idx_enforcement_rider": "KEY `idx_enforcement_rider` (`rider_id`,`type`,`status`)"
             },
             "foreign_keys": {
                 "enforcement_actions_ibfk_1": "CONSTRAINT `enforcement_actions_ibfk_1` FOREIGN KEY (`rider_id`) REFERENCES `riders` (`id`) ON DELETE SET NULL",
@@ -1185,6 +1233,167 @@
                 "enforcement_actions_ibfk_3": "CONSTRAINT `enforcement_actions_ibfk_3` FOREIGN KEY (`stage_id`) REFERENCES `stages` (`id`) ON DELETE SET NULL",
                 "enforcement_actions_ibfk_4": "CONSTRAINT `enforcement_actions_ibfk_4` FOREIGN KEY (`officer_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL"
             },
+            "checks": []
+        },
+        "id_cards": {
+            "engine": "InnoDB",
+            "charset": "utf8mb4",
+            "collation": "utf8mb4_unicode_ci",
+            "columns": [
+                {
+                    "name": "id",
+                    "type": "int(10) unsigned",
+                    "null": false,
+                    "def": "int(10) unsigned NOT NULL AUTO_INCREMENT"
+                },
+                {
+                    "name": "rider_id",
+                    "type": "int(11)",
+                    "null": false,
+                    "def": "int(11) NOT NULL"
+                },
+                {
+                    "name": "city_id",
+                    "type": "char(3)",
+                    "null": false,
+                    "def": "char(3) NOT NULL"
+                },
+                {
+                    "name": "stage_id",
+                    "type": "int(11)",
+                    "null": true,
+                    "def": "int(11) DEFAULT NULL"
+                },
+                {
+                    "name": "version",
+                    "type": "smallint(5) unsigned",
+                    "null": false,
+                    "def": "smallint(5) unsigned NOT NULL DEFAULT 1"
+                },
+                {
+                    "name": "serial",
+                    "type": "varchar(60)",
+                    "null": false,
+                    "def": "varchar(60) NOT NULL"
+                },
+                {
+                    "name": "verify_token",
+                    "type": "char(20)",
+                    "null": false,
+                    "def": "char(20) NOT NULL"
+                },
+                {
+                    "name": "reason",
+                    "type": "varchar(20)",
+                    "null": false,
+                    "def": "varchar(20) NOT NULL DEFAULT 'first'"
+                },
+                {
+                    "name": "status",
+                    "type": "enum('issued','printed','collected','replaced','lost','cancelled')",
+                    "null": false,
+                    "def": "enum('issued','printed','collected','replaced','lost','cancelled') NOT NULL DEFAULT 'issued'"
+                },
+                {
+                    "name": "valid_until",
+                    "type": "date",
+                    "null": true,
+                    "def": "date DEFAULT NULL"
+                },
+                {
+                    "name": "note",
+                    "type": "varchar(300)",
+                    "null": true,
+                    "def": "varchar(300) DEFAULT NULL"
+                },
+                {
+                    "name": "print_data",
+                    "type": "text",
+                    "null": true,
+                    "def": "text DEFAULT NULL"
+                },
+                {
+                    "name": "edited_by",
+                    "type": "int(11)",
+                    "null": true,
+                    "def": "int(11) DEFAULT NULL"
+                },
+                {
+                    "name": "edited_at",
+                    "type": "datetime",
+                    "null": true,
+                    "def": "datetime DEFAULT NULL"
+                },
+                {
+                    "name": "issued_by",
+                    "type": "int(11)",
+                    "null": true,
+                    "def": "int(11) DEFAULT NULL"
+                },
+                {
+                    "name": "issued_at",
+                    "type": "datetime",
+                    "null": false,
+                    "def": "datetime NOT NULL DEFAULT current_timestamp()"
+                },
+                {
+                    "name": "printed_by",
+                    "type": "int(11)",
+                    "null": true,
+                    "def": "int(11) DEFAULT NULL"
+                },
+                {
+                    "name": "printed_at",
+                    "type": "datetime",
+                    "null": true,
+                    "def": "datetime DEFAULT NULL"
+                },
+                {
+                    "name": "print_count",
+                    "type": "smallint(5) unsigned",
+                    "null": false,
+                    "def": "smallint(5) unsigned NOT NULL DEFAULT 0"
+                },
+                {
+                    "name": "collected_by",
+                    "type": "int(11)",
+                    "null": true,
+                    "def": "int(11) DEFAULT NULL"
+                },
+                {
+                    "name": "collected_at",
+                    "type": "datetime",
+                    "null": true,
+                    "def": "datetime DEFAULT NULL"
+                },
+                {
+                    "name": "ended_by",
+                    "type": "int(11)",
+                    "null": true,
+                    "def": "int(11) DEFAULT NULL"
+                },
+                {
+                    "name": "ended_at",
+                    "type": "datetime",
+                    "null": true,
+                    "def": "datetime DEFAULT NULL"
+                },
+                {
+                    "name": "end_reason",
+                    "type": "varchar(300)",
+                    "null": true,
+                    "def": "varchar(300) DEFAULT NULL"
+                }
+            ],
+            "indexes": {
+                "PRIMARY": "PRIMARY KEY (`id`)",
+                "uq_id_cards_serial": "UNIQUE KEY `uq_id_cards_serial` (`serial`)",
+                "idx_id_cards_rider": "KEY `idx_id_cards_rider` (`rider_id`,`version`)",
+                "idx_id_cards_token": "KEY `idx_id_cards_token` (`verify_token`)",
+                "idx_id_cards_city": "KEY `idx_id_cards_city` (`city_id`,`status`)",
+                "idx_id_cards_stage": "KEY `idx_id_cards_stage` (`stage_id`,`status`)"
+            },
+            "foreign_keys": [],
             "checks": []
         },
         "login_attempts": {
@@ -2669,8 +2878,8 @@
                 {
                     "name": "email",
                     "type": "varchar(150)",
-                    "null": false,
-                    "def": "varchar(150) NOT NULL"
+                    "null": true,
+                    "def": "varchar(150) DEFAULT NULL"
                 },
                 {
                     "name": "email_verified_at",
@@ -2817,7 +3026,8 @@
                 "stage_id": "KEY `stage_id` (`stage_id`)",
                 "idx_users_role": "KEY `idx_users_role` (`role`)",
                 "idx_users_city": "KEY `idx_users_city` (`city_id`)",
-                "idx_users_reset_token": "KEY `idx_users_reset_token` (`reset_token`)"
+                "idx_users_reset_token": "KEY `idx_users_reset_token` (`reset_token`)",
+                "idx_users_phone": "KEY `idx_users_phone` (`phone`)"
             },
             "foreign_keys": {
                 "users_ibfk_1": "CONSTRAINT `users_ibfk_1` FOREIGN KEY (`city_id`) REFERENCES `cities` (`id`)",

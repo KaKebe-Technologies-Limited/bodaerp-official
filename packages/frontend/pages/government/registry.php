@@ -87,7 +87,7 @@ $statusTone = ['active' => 'success', 'expired' => 'danger', 'pending' => 'warni
                         <tbody>
                         <?php foreach ($riders as $r): ?>
                             <tr>
-                                <td><strong><?= h($r['full_name']) ?></strong></td>
+                                <td><?= person_cell(null, $r['full_name']) ?></td>
                                 <td><code><?= h($r['id_number']) ?></code></td>
                                 <td><?= h($r['bike_plate']) ?></td>
                                 <td class="small"><?= h($r['city_name'] ?? '') ?><br><span class="text-muted"><?= h($r['stage_name'] ?? '') ?></span></td>

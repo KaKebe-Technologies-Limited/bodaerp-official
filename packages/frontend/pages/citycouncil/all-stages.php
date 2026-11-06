@@ -11,6 +11,7 @@ if ($search !== '') { $stageWhere .= " AND s.name LIKE :q"; $stageParams['q'] = 
 if ($statusFilter !== '') { $stageWhere .= " AND s.status = :status"; $stageParams['status'] = $statusFilter; }
 
 $stages = fetchAll("SELECT s.*, v.rider_count, v.active_count, v.compliance_pct,
+    (SELECT u.avatar_path FROM users u WHERE u.stage_id = s.id AND u.role = 'chairperson' AND u.deleted_at IS NULL ORDER BY u.id LIMIT 1) AS chair_avatar,
     (SELECT COALESCE(SUM(p.amount),0) FROM payments p WHERE p.rider_id IN (SELECT id FROM riders WHERE stage_id = s.id) AND p.status='Confirmed') AS revenue
     FROM stages s LEFT JOIN v_stage_stats v ON v.stage_id = s.id
     $stageWhere ORDER BY s.name", $stageParams);
@@ -76,7 +77,7 @@ $totalRiders = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE city_id = ? A
                     <td><?= (int) $s['rider_count'] ?></td>
                     <td><?= h(formatCurrency($s['revenue'])) ?></td>
                     <td><?= (float) ($s['compliance_pct'] ?? 0) ?>%</td>
-                    <td><?= h($s['chairperson_name'] ?: '–') ?></td>
+                    <td><?= $s['chairperson_name'] ? person_cell($s['chair_avatar'], $s['chairperson_name']) : '<span class="text-muted">No chairperson yet</span>' ?></td>
                     <td><?= h($s['chairperson_phone'] ?: '–') ?></td>
                 </tr>
             <?php endforeach; ?>

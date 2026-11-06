@@ -1,0 +1,12 @@
+{
+    "_note": "Self-hosted libraries, copied unchanged from the npm releases below. tests/check_dependencies.php checks these versions against the OSV advisory database. When upgrading, replace the files and change the version here.",
+    "libraries": {
+        "bootstrap":                     { "version": "5.3.8",  "path": "bootstrap",  "license": "MIT" },
+        "@fortawesome/fontawesome-free": { "version": "7.3.1",  "path": "fontawesome", "license": "Font Awesome Free (icons CC BY 4.0, fonts OFL 1.1, code MIT)" },
+        "apexcharts":                    { "version": "4.7.0",  "path": "apexcharts", "license": "MIT (last MIT release; 5.x and later need a paid licence for a platform like this)" },
+        "jspdf":                         { "version": "4.2.1",  "path": "jspdf/jspdf.umd.min.js", "license": "MIT" },
+        "jspdf-autotable":               { "version": "5.0.9",  "path": "jspdf/jspdf.plugin.autotable.min.js", "license": "MIT" },
+        "qrcodejs":                      { "version": "1.0.0",  "path": "qrcodejs", "license": "MIT" },
+        "@fontsource-variable/outfit":   { "version": "5.3.0",  "path": "outfit", "license": "OFL 1.1" }
+    }
+}

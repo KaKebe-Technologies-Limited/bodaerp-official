@@ -7,6 +7,11 @@ $cityId = $_SESSION['city_id'];
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     csrf_verify();
     $riderId = (int) ($_POST['id'] ?? 0);
+    if (($_POST['action'] ?? '') === 'portal_link') {
+        require_once __DIR__ . '/../../../backend/accounts.php';
+        if (fetchValue("SELECT COUNT(*) FROM riders WHERE id = ? AND city_id = ? AND deleted_at IS NULL", [$riderId, $cityId])) flash('info', rider_portal_invite($riderId));
+        redirect('/pages/citycouncil/city-riders.php' . (isset($_GET['page']) ? '?page=' . (int) $_GET['page'] : ''));
+    }
     if (($_POST['action'] ?? '') === 'delete') {
         runQuery("UPDATE riders SET deleted_at = NOW() WHERE id = ? AND city_id = ?", [$riderId, $cityId]);
         audit_log('DELETE', 'rider', (string) $riderId, 'Rider soft-deleted');
@@ -61,9 +66,9 @@ if (isset($_GET['export'])) {
     header("Content-Disposition: attachment; filename=\"$filename.csv\"");
     $out = fopen('php://output', 'w');
     fwrite($out, "\xEF\xBB\xBF");
-    fputcsv($out, ['ID', 'Rider', 'Plate', 'Stage', 'Phone', 'Status', 'Expiry']);
+    csv_put($out, ['ID', 'Rider', 'Plate', 'Stage', 'Phone', 'Status', 'Expiry']);
     foreach ($exportRows as $r) {
-        fputcsv($out, [$r['id_number'], $r['full_name'], $r['bike_plate'], $r['stage_name'], $r['phone'], ucfirst($r['status']), formatDate($r['expiry_date'])]);
+        csv_put($out, [$r['id_number'], $r['full_name'], $r['bike_plate'], $r['stage_name'], $r['phone'], ucfirst($r['status']), formatDate($r['expiry_date'])]);
     }
     fclose($out);
     exit;
@@ -167,7 +172,7 @@ function qsMerge(array $overrides): string {
             <div class="card-body p-0">
                 <div class="table-responsive">
                     <table class="table table-hover mb-0" id="ridersTable">
-                        <thead><tr><th>ID</th><th>Rider</th><th>Plate</th><th>Stage</th><th>Phone</th><th>Status</th><th>Expiry</th><th class="no-export">Actions</th></tr></thead>
+                        <thead><tr><th>Rider</th><th>Permit number</th><th>Plate</th><th>Stage</th><th>Phone</th><th>Status</th><th>Expiry</th><th class="no-export">Actions</th></tr></thead>
                         <tbody>
                         <?php if (!$riders): ?>
                             <tr><td colspan="8"><div class="empty-state" style="padding:36px 20px;"><i class="fas fa-inbox"></i><h5>No riders found</h5></div></td></tr>
@@ -176,16 +181,19 @@ function qsMerge(array $overrides): string {
                             $statusBadge = ['active'=>'bg-success','expired'=>'bg-danger','pending'=>'bg-warning text-dark'][$r['status']];
                         ?>
                             <tr>
+                                <td><?= person_cell($r['photo_path'], $r['full_name']) ?></td>
                                 <td><code><?= h($r['id_number']) ?></code></td>
-                                <td><strong><?= h($r['full_name']) ?></strong></td>
                                 <td><?= h($r['bike_plate']) ?></td>
                                 <td><?= h($r['stage_name']) ?></td>
                                 <td><?= h($r['phone']) ?></td>
                                 <td><span class="badge <?= $statusBadge ?>"><span class="status-dot <?= h($r['status']) ?>"></span><?= ucfirst($r['status']) ?></span></td>
                                 <td><?= formatDate($r['expiry_date']) ?></td>
                                 <td class="no-export">
+                                    <a class="btn btn-sm btn-outline-primary" href="<?= BASE_URL ?>/pages/citycouncil/id-card.php?id=<?= (int) $r['id'] ?>" aria-label="ID card of <?= h($r['full_name']) ?>" title="ID card"><i class="fas fa-id-card" aria-hidden="true"></i></a>
+                                    <a class="btn btn-sm btn-outline-secondary" href="<?= BASE_URL ?>/pages/citycouncil/edit-rider.php?id=<?= (int) $r['id'] ?>" aria-label="Correct every detail of <?= h($r['full_name']) ?>" title="Full record"><i class="fas fa-user-pen" aria-hidden="true"></i></a>
+                                    <form method="post" class="d-inline" data-confirm="Send <?= h($r['full_name']) ?> a link to set or reset their portal password, by email or SMS? You never see the password." data-confirm-ok="Send the link"><?= csrf_field() ?><input type="hidden" name="action" value="portal_link"><input type="hidden" name="id" value="<?= (int) $r['id'] ?>"><button class="btn btn-sm btn-outline-success" aria-label="Send <?= h($r['full_name']) ?> a portal sign-in link" title="Portal access link"><i class="fas fa-key" aria-hidden="true"></i></button></form>
                                     <button class="btn btn-sm btn-outline-warning" data-call="openEdit" data-call-args="<?= h(js_json([(int) $r['id']])) ?>" aria-label="Edit <?= h($r['full_name']) ?>" title="Edit"><i class="fas fa-edit" aria-hidden="true"></i></button>
-                                    <form method="post" class="d-inline" data-confirm="Delete this rider? This cannot be undone.">
+                                    <form method="post" class="d-inline" data-confirm="Delete <?= h($r['full_name']) ?> (<?= h($r['bike_plate']) ?>)? Their permit, payments and portal account are removed. This cannot be undone." data-confirm-ok="Delete rider">
                                         <?= csrf_field() ?>
                                         <input type="hidden" name="action" value="delete">
                                         <input type="hidden" name="id" value="<?= (int) $r['id'] ?>">

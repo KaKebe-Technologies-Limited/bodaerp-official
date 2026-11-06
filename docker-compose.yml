@@ -5,28 +5,32 @@
 #   phpMyAdmin  http://localhost:7081/
 #   Mailpit     http://localhost:7082/           (every email the app sends lands here)
 # Ports sit in BodaERP's 7000-7999 block and bind to 127.0.0.1 only.
+# PHP 8.5 + MariaDB 11.8 (the live server's version) by default. To reproduce XAMPP 8.2.12 exactly,
+# put PHP_VERSION=8.2 and MARIADB_VERSION=10.4 in .env and run the same command.
 name: bodaerp
 
 services:
   db:
-    image: mariadb:10.4
+    image: mariadb:${MARIADB_VERSION:-11.8}
     restart: unless-stopped
     environment:
       MARIADB_ROOT_PASSWORD: ${DOCKER_DB_ROOT_PASSWORD:-bodaerp-dev}
       MARIADB_DATABASE: bodaerp
+      # Lets an existing volume move to a newer MariaDB (runs mariadb-upgrade on start).
+      MARIADB_AUTO_UPGRADE: "1"
     command: ["--character-set-server=utf8mb4", "--collation-server=utf8mb4_unicode_ci"]
     volumes:
       - db_data:/var/lib/mysql
     ports:
       - "127.0.0.1:7036:3306"
     healthcheck:
-      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$$MARIADB_ROOT_PASSWORD --silent"]
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
       interval: 5s
       timeout: 5s
       retries: 30
 
   mailpit:
-    image: axllent/mailpit:v1.20
+    image: axllent/mailpit:v1.33
     restart: unless-stopped
     ports:
       - "127.0.0.1:7082:8025"
@@ -40,6 +44,8 @@ services:
     build:
       context: .
       dockerfile: docker/php/Dockerfile
+      args:
+        PHP_VERSION: ${PHP_VERSION:-8.5}
     restart: unless-stopped
     depends_on:
       db:

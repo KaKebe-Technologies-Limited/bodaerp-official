@@ -25,6 +25,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $currency      = $_POST['currency'] ?? 'UGX';
         $fee           = (float) ($_POST['annual_fee'] ?? 0);
         $logo          = trim($_POST['logo_path'] ?? '') ?: '/assets/images/logo.png';
+        if (($_FILES['logo_file']['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_NO_FILE) {
+            $up = store_upload($_FILES['logo_file'], 'cities', ['image/png' => 'png', 'image/jpeg' => 'jpg', 'image/webp' => 'webp'], 2 * 1024 * 1024);
+            if ($up['ok']) $logo = $up['path'];
+            else $errors[] = 'Logo: ' . $up['error'];
+        }
         $email         = trim($_POST['contact_email'] ?? '');
         $phone         = trim($_POST['contact_phone'] ?? '');
         $address       = trim($_POST['address'] ?? '');
@@ -32,8 +37,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $splitAssoc    = (int) ($_POST['split_assoc'] ?? 0);
         $splitGov      = (int) ($_POST['split_government'] ?? 0);
         $splitPlatform = (int) ($_POST['split_platform'] ?? 0);
-        $gateway       = $_POST['payment_gateway'] ?? 'MTN MoMo';
-        $fiscal        = trim($_POST['fiscal_year'] ?? '2026/2027');
+        $gateway       = in_array($_POST['payment_gateway'] ?? '', ['MTN MoMo', 'Airtel Money', 'Both'], true) ? $_POST['payment_gateway'] : 'Both';
+        $fiscal        = CURRENT_FISCAL_YEAR;
         $target        = (int) ($_POST['compliance_target'] ?? 70);
         $status        = $_POST['status'] ?? 'pending';
 
@@ -85,6 +90,7 @@ $activeCitiesAll = (int) fetchValue("SELECT COUNT(*) FROM cities WHERE status = 
 $pendingCitiesAll = (int) fetchValue("SELECT COUNT(*) FROM cities WHERE status = 'pending'");
 $totalRidersAll  = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE deleted_at IS NULL");
 ?>
+<?php $splitDefaults = fetchOne("SELECT default_split_city, default_split_association, default_split_government, default_split_platform FROM platform_settings WHERE id = 1") ?? []; ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -152,7 +158,7 @@ $totalRidersAll  = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE deleted_a
                             <tr id="row-<?= h($t['id']) ?>">
                                 <td>
                                     <div class="d-flex align-items-center gap-2">
-                                        <img alt="" src="<?= h(BASE_URL . $t['logo_path']) ?>" class="city-cell-logo border" data-fallback-src="<?= BASE_URL ?>/assets/images/logo-mark.png">
+                                        <?= person_avatar($t['logo_path'] ?: null, $t['name'], 'is-square') ?>
                                         <div><strong><?= h($t['name']) ?></strong><br><small class="text-muted"><?= h($t['id']) ?> · <?= h($t['country']) ?></small></div>
                                     </div>
                                 </td>
@@ -169,7 +175,7 @@ $totalRidersAll  = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE deleted_a
                                 <td class="no-export">
                                     <button class="btn btn-sm btn-outline-primary" data-call="openEditCity" data-call-args="<?= h(js_json([(string) $t['id']])) ?>" aria-label="Edit <?= h($t['name']) ?>" title="Edit"><i class="fas fa-edit" aria-hidden="true"></i></button>
                                     <a href="<?= BASE_URL ?>/pages/superadmin/users.php?city=<?= h($t['id']) ?>" class="btn btn-sm btn-outline-success" aria-label="Users in <?= h($t['name']) ?>" title="Users"><i class="fas fa-users" aria-hidden="true"></i></a>
-                                    <form method="post" class="d-inline" data-confirm="Delete this city? This cannot be undone.">
+                                    <form method="post" class="d-inline" data-confirm="Delete <?= h($t['name']) ?> with its <?= (int) $t['stage_count'] ?> stages and <?= number_format($t['rider_count']) ?> riders? This cannot be undone." data-confirm-title="Delete a city" data-confirm-ok="Delete city" data-confirm-typed="<?= h($t['name']) ?>">
                                         <?= csrf_field() ?>
                                         <input type="hidden" name="action" value="delete">
                                         <input type="hidden" name="id" value="<?= h($t['id']) ?>">
@@ -196,7 +202,7 @@ $totalRidersAll  = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE deleted_a
 <div class="modal fade" id="cityModal" tabindex="-1">
     <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content" style="border-radius:16px;overflow:hidden;">
-            <form method="post" id="cityForm">
+            <form method="post" id="cityForm" enctype="multipart/form-data">
                 <?= csrf_field() ?>
                 <input type="hidden" name="edit_city_id" id="editCityId">
                 <div class="modal-header" style="background:var(--primary-blue);color:white;border-bottom:none;">
@@ -230,9 +236,10 @@ $totalRidersAll  = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE deleted_a
                             <input type="number" class="form-control" name="annual_fee" id="cityFee" value="50000">
                         </div>
                         <div class="col-md-8">
-                            <label for="cityLogo" class="form-label fw-semibold">Logo path / URL</label>
-                            <input type="text" class="form-control" name="logo_path" id="cityLogo" placeholder="/assets/images/lcc.png" data-preview-target="logoPreview" data-preview-base="<?= h(BASE_URL) ?>">
-                            <small class="text-muted">Upload to assets/images/ and enter the path here.</small>
+                            <label for="cityLogoFile" class="form-label fw-semibold">City logo</label>
+                            <input type="file" name="logo_file" id="cityLogoFile" accept="image/png,image/jpeg,image/webp" data-max-mb="2">
+                            <input type="hidden" name="logo_path" id="cityLogo">
+                            <small class="text-muted">PNG, JPG or WebP up to 2 MB. Shown beside the city in lists and on its riders' ID cards. Leave empty to keep the current logo.</small>
                         </div>
                         <div class="col-md-4 d-flex align-items-end">
                             <img id="logoPreview" alt="Logo preview" src="<?= BASE_URL ?>/assets/images/logo.png" class="city-logo-preview" data-fallback-src="<?= BASE_URL ?>/assets/images/logo-mark.png">
@@ -255,19 +262,19 @@ $totalRidersAll  = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE deleted_a
                                 <div class="col-3"><label for="splitCity" class="small text-muted">City council %</label><input type="number" class="form-control" name="split_city" id="splitCity" value="55" min="0" max="100" data-call-input="updateSplitTotal"></div>
                                 <div class="col-3"><label for="splitAssoc" class="small text-muted">Boda association %</label><input type="number" class="form-control" name="split_assoc" id="splitAssoc" value="26" min="0" max="100" data-call-input="updateSplitTotal"></div>
                                 <div class="col-3"><label for="splitGovernment" class="small text-muted">Government %</label><input type="number" class="form-control" name="split_government" id="splitGovernment" value="10" min="0" max="100" data-call-input="updateSplitTotal"></div>
-                                <div class="col-3"><label for="splitPlatform" class="small text-muted">Kakebe Tech (platform) %</label><input type="number" class="form-control" name="split_platform" id="splitPlatform" value="9" min="0" max="100" data-call-input="updateSplitTotal"></div>
+                                <div class="col-3"><label for="splitPlatform" class="small text-muted">Platform %</label><input type="number" class="form-control" name="split_platform" id="splitPlatform" value="9" min="0" max="100" data-call-input="updateSplitTotal"></div>
                             </div>
                             <div class="mt-2">Total: <span id="splitTotal" class="split-total ok">100%</span></div>
                         </div>
                         <div class="col-md-6">
-                            <label for="cityPayGW" class="form-label fw-semibold">Payment gateway</label>
+                            <label for="cityPayGW" class="form-label fw-semibold">Mobile money accepted</label>
                             <select class="form-select" name="payment_gateway" id="cityPayGW">
-                                <option value="MTN MoMo">MTN MoMo</option><option value="Airtel Money">Airtel Money</option><option value="Both">Both</option>
+                                <option value="Both">MTN and Airtel</option><option value="MTN MoMo">MTN Mobile Money only</option><option value="Airtel Money">Airtel Money only</option>
                             </select>
                         </div>
                         <div class="col-md-6">
-                            <label for="cityFiscal" class="form-label fw-semibold">Fiscal year</label>
-                            <input type="text" class="form-control" name="fiscal_year" id="cityFiscal" value="2026/2027">
+                            <span class="form-label fw-semibold d-block">Permit year</span>
+                            <p class="mb-0"><?= h(CURRENT_FISCAL_YEAR) ?> <span class="text-muted small">(July to June, set automatically)</span></p>
                         </div>
                         <div class="col-md-6">
                             <label for="cityCompliance" class="form-label fw-semibold">Compliance target %</label>
@@ -315,10 +322,10 @@ $totalRidersAll  = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE deleted_a
         document.getElementById('editCityId').value = '';
         ['cityId','cityName','cityEmail','cityPhone','cityAddress'].forEach(id => document.getElementById(id).value = '');
         document.getElementById('cityId').readOnly = false;
-        document.getElementById('splitCity').value = 55;
-        document.getElementById('splitAssoc').value = 26;
-        document.getElementById('splitGovernment').value = 10;
-        document.getElementById('splitPlatform').value = 9;
+        document.getElementById('splitCity').value = <?= (int) ($splitDefaults['default_split_city'] ?? 0) ?>;
+        document.getElementById('splitAssoc').value = <?= (int) ($splitDefaults['default_split_association'] ?? 0) ?>;
+        document.getElementById('splitGovernment').value = <?= (int) ($splitDefaults['default_split_government'] ?? 0) ?>;
+        document.getElementById('splitPlatform').value = <?= (int) ($splitDefaults['default_split_platform'] ?? 0) ?>;
         document.getElementById('cityFee').value = 50000;
         document.getElementById('cityCompliance').value = 70;
         document.getElementById('cityLogo').value = '';
@@ -349,7 +356,6 @@ $totalRidersAll  = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE deleted_a
         document.getElementById('splitGovernment').value = t.revenue_split_government;
         document.getElementById('splitPlatform').value = t.revenue_split_platform;
         document.getElementById('cityPayGW').value = t.payment_gateway;
-        document.getElementById('cityFiscal').value = t.fiscal_year;
         document.getElementById('cityCompliance').value = t.compliance_target;
         document.getElementById('cityStatus').value = t.status;
         updateSplitTotal();

@@ -25,7 +25,8 @@ $cssV = fn(string $f) => @filemtime(__DIR__ . '/../assets/css/' . $f) ?: 1;
 <meta name="theme-color" content="<?= h(brand_color('brand_color_dark', BRAND_DEFAULT_DARK)) ?>">
 <?= brand_favicon_tags() ?>
 <link rel="stylesheet" href="<?= BASE_URL ?>/assets/vendor/bootstrap/bootstrap.min.css">
-<link rel="stylesheet" href="<?= BASE_URL ?>/assets/vendor/inter/inter.css">
+<link rel="stylesheet" href="<?= BASE_URL ?>/assets/vendor/outfit/outfit.css">
 <link rel="stylesheet" href="<?= BASE_URL ?>/assets/vendor/fontawesome/css/all.min.css">
 <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/public.css?v=<?= $cssV('public.css') ?>">
+<link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/controls.css?v=<?= $cssV('controls.css') ?>">
 <style><?= brand_css_vars() ?></style>

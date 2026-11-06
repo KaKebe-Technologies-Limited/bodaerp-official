@@ -20,18 +20,30 @@ $roles = [
     'rider'       => ['akello@bodaerp.com',           'rider123'],
 ];
 $skip = ['db-backup.php'];                                 // a file download, not a page
-$needsId = ['rider-profile.php', 'edit-rider.php', 'id-preview.php'];
+$needsId = ['rider-profile.php', 'edit-rider.php', 'id-preview.php', 'id-card.php'];
 
 echo "Testing $base\n\n";
 
 $pub = test_jar();
 foreach (['', 'index.php', 'login.php', 'forgot-password.php', 'faq.php', 'contact.php', 'verify.php', 'verify.php?code=BODA-LIR-000001',
-          'p/about', 'p/privacy-policy', 'p/terms-of-service', 'p/cookie-policy', 'reset-password.php?token=x', 'verify-email.php'] as $p) {
+          'p/about', 'p/privacy-policy', 'p/terms-of-service', 'p/cookie-policy', 'p/photo-credits', 'reset-password.php?token=x', 'verify-email.php'] as $p) {
     $t->page('public/' . ($p ?: '(home)'), http("$base/$p", $pub));
 }
-foreach (['assets/css/style.css', 'assets/css/public.css', 'assets/js/main.js', 'assets/js/public.js', 'robots.txt', 'sitemap.xml'] as $a) {
+foreach (['assets/css/style.css', 'assets/css/public.css', 'assets/css/controls.css', 'assets/js/main.js', 'assets/js/public.js', 'assets/js/controls.js', 'robots.txt', 'sitemap.xml'] as $a) {
     $t->page($a, http("$base/$a", $pub));
 }
+// Home page hero: every slide comes from the database with a photo that exists and loads.
+$home = http("$base/", $pub)['body'];
+preg_match_all('/<img class="hero-photo" src="([^"]+)"/', $home, $slidePhotos);
+$slideCount = (int) fetchValue("SELECT COUNT(*) FROM content_items WHERE group_code = 'home_slide' AND is_active = 1 AND image IS NOT NULL AND image <> ''");
+$t->ok(count($slidePhotos[1]) === $slideCount && $slideCount > 0, 'home page shows one hero slide per active slide in Pages & content', count($slidePhotos[1]) . " shown, $slideCount in the database");
+foreach ($slidePhotos[1] as $src) {
+    $img = http(preg_replace('#^(https?://[^/]+).*#', '$1', $base) . $src, $pub);
+    $t->ok($img['code'] === 200 && strlen($img['body']) > 1000, "hero photo loads: $src", 'HTTP ' . $img['code']);
+}
+$t->ok(str_contains($home, 'data-hero-next') === ($slideCount > 1) && !str_contains($home, 'data-hero-pause') && !str_contains($home, 'hero-eyebrow'), 'hero slider has previous/next arrows when there is more than one slide, and no badge or pause button (owner, 2026-11-06)');
+$t->ok(!preg_match('/Built in Lira|runs BodaERP from|Who builds BodaERP/i', $home . http("$base/p/about", $pub)['body']), 'public pages do not say where the system is built (owner, 2026-11-06)');
+$t->ok(!preg_match('/<(details|datalist|progress|meter)\b/i', $home . http("$base/faq.php", $pub)['body']), 'public pages use no browser-drawn details, datalist, progress or meter elements');
 $r = http("$base/this-page-does-not-exist", $pub);
 $t->ok($r['code'] === 404 && str_contains($r['body'], 'could not find'), 'unknown URL shows the branded 404', 'HTTP ' . $r['code']);
 foreach (['.env', '.env.example', 'database/schema.snapshot.json', 'database/bodaerp_full.sql', 'packages/backend/auth.php',
@@ -57,10 +69,17 @@ foreach ($roles as $dir => [$email, $password]) {
         $name = basename($f);
         if (in_array($name, $skip, true)) continue;
         $url = "$base/pages/$dir/$name";
+        if ($name === 'receipt.php') {
+            $listPage = ['rider' => 'rider/payment-history.php', 'chairperson' => 'chairperson/collect-payments.php', 'citycouncil' => 'citycouncil/payment-transactions.php'][$dir] ?? null;
+            $payId = $listPage && preg_match('/receipt\.php\?id=(\d+)/', http("$base/pages/$listPage", $jar)['body'], $pm) ? $pm[1] : '';
+            if ($payId === '') continue;
+            $t->page("$dir/$name", http("$url?id=$payId", $jar)); $count++;
+            continue;
+        }
         if (in_array($name, $needsId, true)) {
             if ($riderId === null) {
-                $list = http("$base/pages/chairperson/my-riders.php", $jar);
-                $riderId = preg_match('/rider-profile\.php\?id=(\d+)/', $list['body'], $m) ? $m[1] : '';
+                $list = http($dir === 'citycouncil' ? "$base/pages/citycouncil/city-riders.php" : "$base/pages/chairperson/my-riders.php", $jar);
+                $riderId = preg_match('/(?:rider-profile|id-card)\.php\?id=(\d+)/', $list['body'], $m) ? $m[1] : '';
             }
             if ($riderId === '') continue;
             $url .= "?id=$riderId";

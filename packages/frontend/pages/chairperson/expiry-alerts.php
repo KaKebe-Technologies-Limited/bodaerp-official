@@ -55,12 +55,12 @@ $upcomingRevenue = array_sum(array_column($riders, 'annual_tax'));
                     <tbody>
                     <?php foreach ($riders as $r): $days = (int) $r['days_left']; $badge = $days <= 7 ? 'bg-danger' : 'bg-warning text-dark'; ?>
                         <tr>
-                            <td><strong><?= h($r['full_name']) ?></strong></td>
+                            <td><?= person_cell($r['photo_path'], $r['full_name']) ?></td>
                             <td><?= h($r['bike_plate']) ?></td>
                             <td><?= formatDate($r['expiry_date']) ?></td>
                             <td><span class="badge <?= $badge ?>"><?= $days ?> days</span></td>
                             <td class="no-export">
-                                <form method="post" class="d-inline" data-confirm="Send renewal reminder?">
+                                <form method="post" class="d-inline" data-confirm="Send <?= h($r['full_name']) ?> a reminder that their permit expires on <?= h(formatDate($r['expiry_date'])) ?>?" data-confirm-ok="Send reminder">
                                     <?= csrf_field() ?><input type="hidden" name="rider_id" value="<?= (int)$r['id'] ?>">
                                     <button type="submit" class="btn btn-sm btn-outline-warning"><i class="fas fa-bell"></i> Remind</button>
                                 </form>

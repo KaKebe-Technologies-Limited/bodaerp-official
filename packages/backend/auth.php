@@ -102,8 +102,25 @@ function audit_log(string $action, ?string $entityType = null, ?string $entityId
  * Checks the password, lockout and throttling.
  * @return array{ok:bool, user?:array, error?:string, needs_code?:bool}
  */
+/** +2567XXXXXXXX from what a rider types as a phone number, or null when it is not a Ugandan mobile number. */
+function login_phone(string $typed): ?string {
+    if (str_contains($typed, '@')) return null;
+    $digits = preg_replace('/\D/', '', $typed);
+    $local = preg_replace('/^(256|0)/', '', $digits);
+    return preg_match('/^7\d{8}$/', $local) ? '+256' . $local : null;
+}
+
+/** The active account for an email address, or for a rider's phone number (riders without email sign in by phone). */
+function login_find_user(string $identifier): ?array {
+    $phone = login_phone($identifier);
+    if ($phone !== null) {
+        return fetchOne("SELECT * FROM users WHERE phone = ? AND role = 'rider' AND status = 'active' AND deleted_at IS NULL ORDER BY id LIMIT 1", [$phone]);
+    }
+    return fetchOne("SELECT * FROM users WHERE email = ? AND status = 'active' AND deleted_at IS NULL", [mb_strtolower(trim($identifier))]);
+}
+
 function attempt_login(string $email, string $password): array {
-    $email = mb_strtolower(trim($email));
+    $email = login_phone($email) ?? mb_strtolower(trim($email));
     if (!rate_limit('login-ip:' . client_ip(), 30, 900)) {
         return ['ok' => false, 'error' => 'Too many sign-in attempts from this network. Wait 15 minutes and try again.'];
     }
@@ -111,7 +128,7 @@ function attempt_login(string $email, string $password): array {
         return ['ok' => false, 'error' => str_replace('{minutes}', (string) $minutes, get_setting('msg_login_locked', 'Too many failed attempts. Try again in {minutes} minutes.'))];
     }
 
-    $user = fetchOne("SELECT * FROM users WHERE email = ? AND status = 'active' AND deleted_at IS NULL", [$email]);
+    $user = login_find_user($email);
     // Verify against a dummy hash when the user does not exist, so response time does not reveal which emails are registered.
     $hash = $user['password_hash'] ?? '$2y$10$Oqr3vafUgGeAMH1ZIYlTvu1L8cMOmql2Ce1PzJd/6umQixuQeL5rW';
     if (!password_verify($password, $hash) || !$user) {
@@ -121,7 +138,7 @@ function attempt_login(string $email, string $password): array {
         if ($minutes = login_lockout_minutes($email)) {
             return ['ok' => false, 'error' => str_replace('{minutes}', (string) $minutes, get_setting('msg_login_locked', 'Too many failed attempts. Try again in {minutes} minutes.'))];
         }
-        return ['ok' => false, 'error' => get_setting('msg_login_failed', 'That email and password do not match an active account.')];
+        return ['ok' => false, 'error' => get_setting('msg_login_failed', 'That email or phone number and password do not match an active account.')];
     }
 
     if (password_needs_rehash($user['password_hash'], PASSWORD_DEFAULT)) {
@@ -172,7 +189,7 @@ function two_factor_send_code(array $user): bool {
     foreach (two_factor_channels($user) as $channel) {
         $sent = $channel === 'sms'
             ? send_template_sms('two_factor_code', $user['phone'], ['code' => $code])
-            : send_template_email('two_factor_code', $user['email'], ['name' => $user['name'], 'code' => $code]);
+            : (!empty($user['email']) && send_template_email('two_factor_code', $user['email'], ['name' => $user['name'], 'code' => $code]));
         if ($sent) {
             $_SESSION['pending_2fa']['channel'] = $channel;
             $_SESSION['pending_2fa']['hint'] = $channel === 'sms' ? sms_phone_hint((string) $user['phone']) : preg_replace('/(?<=.).(?=[^@]*@)/', '•', (string) $user['email']);
@@ -210,6 +227,7 @@ function login_complete(array $user, string $how = 'password'): void {
     $_SESSION['city_id']       = $user['city_id'];
     $_SESSION['city_name']     = $city['name'] ?? null;
     $_SESSION['city_logo']     = $city['logo_path'] ?? null;
+    $_SESSION['city_currency'] = $city['currency'] ?? 'UGX';
     $_SESSION['id_prefix']     = $city['id_prefix'] ?? null;
     $_SESSION['stage_id']      = $user['stage_id'];
     $_SESSION['rider_id']      = $riderId !== null ? (int) $riderId : null;

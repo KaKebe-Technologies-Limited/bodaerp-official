@@ -29,7 +29,6 @@ function http(string $url, string $jar, ?array $post = null, array $headers = []
     $hsize = (int) curl_getinfo($ch, CURLINFO_HEADER_SIZE);
     $out = ['code' => (int) curl_getinfo($ch, CURLINFO_HTTP_CODE), 'redirect' => (string) curl_getinfo($ch, CURLINFO_REDIRECT_URL),
         'headers' => substr($raw, 0, $hsize), 'body' => substr($raw, $hsize)];
-    curl_close($ch);
     return $out;
 }
 

@@ -51,7 +51,7 @@ require __DIR__ . '/packages/frontend/partials/auth-start.php';
                 <div class="login-field">
                     <label for="code">Sign-in code</label>
                     <div class="input-box code">
-                        <input id="code" name="code" inputmode="numeric" autocomplete="one-time-code" pattern="\d{6}" maxlength="6" required autofocus>
+                        <input id="code" name="code" inputmode="numeric" autocomplete="one-time-code" pattern="\d{6}" data-pattern-message="Enter the 6 digits from the message." maxlength="6" required autofocus>
                     </div>
                 </div>
                 <button type="submit" class="btn-login"><i class="fas fa-shield-halved" aria-hidden="true"></i> Confirm and sign in</button>

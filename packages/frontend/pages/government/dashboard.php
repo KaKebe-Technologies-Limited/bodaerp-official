@@ -123,8 +123,8 @@ $agencyLabel = $_SESSION['agency_name'] ?? 'Government Portal';
                     <div class="card-body">
                         <h6 class="section-heading mb-3">Government &amp; Platform Revenue</h6>
                         <div class="mt-2">
-                            <div class="d-flex justify-content-between align-items-center py-2 border-bottom"><span><span class="badge me-2" style="background:#b45309;">●</span>Government share</span><span class="fw-bold">UGX <?= number_format(round($splitGovTotal)) ?></span></div>
-                            <div class="d-flex justify-content-between align-items-center py-2"><span><span class="badge bg-info text-dark me-2">●</span>Kakebe Tech (platform)</span><span class="fw-bold">UGX <?= number_format(round($splitPlatformTotal)) ?></span></div>
+                            <div class="d-flex justify-content-between align-items-center py-2 border-bottom"><span><span class="legend-dot me-2" style="background:#b45309;"></span>Government share</span><span class="fw-bold">UGX <?= number_format(round($splitGovTotal)) ?></span></div>
+                            <div class="d-flex justify-content-between align-items-center py-2"><span><span class="legend-dot bg-info me-2"></span>Platform</span><span class="fw-bold">UGX <?= number_format(round($splitPlatformTotal)) ?></span></div>
                         </div>
                         <a href="<?= BASE_URL ?>/pages/government/comparison.php" class="btn btn-sm btn-outline-primary mt-3 w-100"><i class="fas fa-balance-scale me-1"></i>Full District &amp; City Comparison</a>
                     </div>

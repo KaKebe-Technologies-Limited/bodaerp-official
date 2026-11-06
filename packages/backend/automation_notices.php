@@ -88,8 +88,8 @@ function automation_email_note(int $sent): string {
 function job_renewal_reminders(): string {
     $inApp = runQuery("INSERT INTO notifications (rider_id, type, message)
         SELECT r.id, 'Renewal Reminder', CONCAT('Your permit expires on ', DATE_FORMAT(r.expiry_date, '%b %d, %Y'), '. Renew now to stay compliant.')
-        FROM riders r JOIN cities c ON c.id = r.city_id JOIN users u ON u.id = r.user_id
-        WHERE r.status = 'active' AND r.deleted_at IS NULL AND u.notify_in_app = 1
+        FROM riders r JOIN cities c ON c.id = r.city_id LEFT JOIN users u ON u.id = r.user_id
+        WHERE r.status = 'active' AND r.deleted_at IS NULL AND COALESCE(u.notify_in_app, 1) = 1
           AND r.expiry_date BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL c.reminder_days DAY)
           AND NOT EXISTS (SELECT 1 FROM notifications n WHERE n.rider_id = r.id AND n.type = 'Renewal Reminder'
                           AND n.created_at >= DATE_SUB(NOW(), INTERVAL 14 DAY))");
@@ -277,6 +277,8 @@ function job_retention_cleanup(): string {
         'scan records' => "DELETE FROM anomaly_scan_runs WHERE started_at < DATE_SUB(NOW(), INTERVAL {$days['scan_runs_days']} DAY)",
         'spam messages' => "DELETE FROM contact_messages WHERE status = 'spam' AND created_at < DATE_SUB(NOW(), INTERVAL {$days['spam_messages_days']} DAY)",
         'send records' => "DELETE FROM automation_sends WHERE created_at < DATE_SUB(NOW(), INTERVAL {$days['send_records_days']} DAY)",
+        // The privacy policy promises security logs are kept for up to 12 months. Changes to records stay.
+        'security log rows' => "DELETE FROM audit_logs WHERE action IN ('LOGIN','LOGIN_FAILED','LOGOUT','ACCESS_DENIED','PASSWORD_RESET_REQUESTED') AND created_at < DATE_SUB(NOW(), INTERVAL 12 MONTH)",
     ];
     $removed = [];
     foreach ($statements as $label => $sql) {

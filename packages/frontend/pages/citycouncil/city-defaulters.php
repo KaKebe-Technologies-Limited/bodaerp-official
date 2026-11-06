@@ -80,18 +80,17 @@ $amountOwed = array_sum(array_map(fn($d) => (float) $d['annual_tax'], $defaulter
             <div class="card-body p-0">
                 <div class="table-responsive">
                     <table class="table table-hover mb-0" id="defaultersTable">
-                        <thead><tr><th>#</th><th>Rider</th><th>Plate</th><th>Stage</th><th>Phone</th><th>Amount</th><th>Last payment</th><th>Overdue</th><th>Status</th><th class="no-export">Actions</th></tr></thead>
+                        <thead><tr><th>Rider</th><th>Plate</th><th>Stage</th><th>Phone</th><th>Amount</th><th>Last payment</th><th>Overdue</th><th>Status</th><th class="no-export">Actions</th></tr></thead>
                         <tbody>
                         <?php if (!$defaulters): ?>
-                            <tr><td colspan="10"><div class="empty-state" style="padding:36px 20px;"><i class="fas fa-inbox"></i><h5>No defaulters: great compliance!</h5></div></td></tr>
+                            <tr><td colspan="9"><div class="empty-state" style="padding:36px 20px;"><i class="fas fa-inbox"></i><h5>No defaulters: great compliance!</h5></div></td></tr>
                         <?php endif; ?>
                         <?php foreach ($defaulters as $i => $d):
                             $days = (int) $d['overdue_days'];
                             [$badge, $label] = $days > 90 ? ['bg-danger','Critical'] : ($days > 60 ? ['bg-warning text-dark','Warning'] : ['bg-secondary','Normal']);
                         ?>
                             <tr>
-                                <td><?= $i + 1 ?></td>
-                                <td><strong><?= h($d['full_name']) ?></strong></td>
+                                <td><?= person_cell($d['photo_path'], $d['full_name'], h($d['id_number'] ?? '')) ?></td>
                                 <td><?= h($d['bike_plate']) ?></td>
                                 <td><?= h($d['stage_name']) ?></td>
                                 <td><?= h($d['phone']) ?></td>

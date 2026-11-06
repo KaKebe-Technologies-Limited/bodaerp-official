@@ -53,7 +53,7 @@ portal_start('superadmin', 'content', $page ? 'Edit page' : 'New page', [
             <div class="mb-3"><label class="form-label fw-semibold" for="title">Title</label><input class="form-control form-control-lg" id="title" name="title" maxlength="200" required value="<?= h($v['title']) ?>"></div>
             <div class="mb-3">
                 <label class="form-label fw-semibold" for="slug">Web address</label>
-                <div class="input-group"><span class="input-group-text"><?= h(app_url('p/')) ?></span><input class="form-control" id="slug" name="slug" maxlength="120" value="<?= h($v['slug']) ?>" <?= (int) $v['is_system'] ? 'readonly' : '' ?> pattern="[a-z0-9-]*"></div>
+                <div class="input-group"><span class="input-group-text"><?= h(app_url('p/')) ?></span><input class="form-control" id="slug" name="slug" maxlength="120" value="<?= h($v['slug']) ?>" <?= (int) $v['is_system'] ? 'readonly' : '' ?> pattern="[a-z0-9\-]*" data-pattern-message="Use only small letters, digits and dashes, for example permit-fees."></div>
                 <div class="form-text"><?= (int) $v['is_system'] ? 'This page is linked from the footer and emails, so its address is fixed.' : 'Leave empty to build it from the title.' ?></div>
             </div>
             <div class="mb-3"><label class="form-label fw-semibold" for="summary">Summary</label><input class="form-control" id="summary" name="summary" maxlength="500" value="<?= h($v['summary']) ?>"><div class="form-text">One sentence shown under the title.</div></div>

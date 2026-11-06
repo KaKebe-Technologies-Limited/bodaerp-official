@@ -52,6 +52,7 @@ if ($search !== '') { $stageWhere .= " AND (s.name LIKE :q1 OR s.chairperson_nam
 if ($statusFilter !== '') { $stageWhere .= " AND s.status = :status"; $stageParams['status'] = $statusFilter; }
 
 $stages = fetchAll("SELECT s.*, v.rider_count, v.compliance_pct,
+    (SELECT u.avatar_path FROM users u WHERE u.stage_id = s.id AND u.role = 'chairperson' AND u.deleted_at IS NULL ORDER BY u.id LIMIT 1) AS chair_avatar,
     (SELECT COALESCE(SUM(p.amount),0) FROM payments p WHERE p.city_id = s.city_id AND p.rider_id IN (SELECT id FROM riders WHERE stage_id = s.id) AND p.status='Confirmed') AS revenue
     FROM stages s LEFT JOIN v_stage_stats v ON v.stage_id = s.id
     $stageWhere ORDER BY s.name", $stageParams);
@@ -125,7 +126,7 @@ $stagesById = array_column($stages, null, 'id');
                             <tr>
                                 <td><?= $i + 1 ?></td>
                                 <td><strong><?= h($s['name']) ?></strong><br><small class="text-muted"><?= h($s['location'] ?: '') ?></small></td>
-                                <td><?= h($s['chairperson_name'] ?: '–') ?></td>
+                                <td><?= $s['chairperson_name'] ? person_cell($s['chair_avatar'], $s['chairperson_name']) : '<span class="text-muted">No chairperson yet</span>' ?></td>
                                 <td><?= h($s['chairperson_phone'] ?: '–') ?></td>
                                 <td><span class="badge bg-primary"><?= (int) $s['rider_count'] ?></span></td>
                                 <td><?= h(formatCurrency($s['revenue'])) ?></td>
@@ -133,7 +134,7 @@ $stagesById = array_column($stages, null, 'id');
                                 <td><span class="badge bg-<?= $s['status'] === 'active' ? 'success' : 'secondary' ?>"><span class="status-dot <?= h($s['status']) ?>"></span><?= ucfirst($s['status']) ?></span></td>
                                 <td class="no-export">
                                     <button class="btn btn-sm btn-outline-warning" data-call="openEditStage" data-call-args="<?= h(js_json([(int) $s['id']])) ?>" aria-label="Edit stage <?= h($s['name']) ?>" title="Edit"><i class="fas fa-edit" aria-hidden="true"></i></button>
-                                    <form method="post" class="d-inline" data-confirm="Delete this stage? All riders must be reassigned first.">
+                                    <form method="post" class="d-inline" data-confirm="Delete the stage <?= h($s['name']) ?>? It has <?= (int) $s['rider_count'] ?> riders, and they must be moved to another stage first." data-confirm-ok="Delete stage">
                                         <?= csrf_field() ?>
                                         <input type="hidden" name="action" value="delete">
                                         <input type="hidden" name="id" value="<?= (int) $s['id'] ?>">

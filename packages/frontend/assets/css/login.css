@@ -11,7 +11,7 @@
 
 body.auth-page {
     margin: 0;
-    font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+    font-family: 'Outfit Variable', 'Outfit', system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
     color: var(--ink);
     background: #e6ecf5;
     -webkit-font-smoothing: antialiased;

@@ -56,8 +56,8 @@ if (isset($_GET['export'])) {
     header('Content-Disposition: attachment; filename="contact-messages-' . date('Y-m-d') . '.csv"');
     $out = fopen('php://output', 'w');
     fwrite($out, "\xEF\xBB\xBF");
-    fputcsv($out, ['Received', 'Name', 'Email', 'Phone', 'Organisation', 'Subject', 'Message', 'Status']);
-    foreach ($rows as $r) fputcsv($out, array_map(fn($v) => preg_match('/^[=+\-@]/', (string) $v) ? "'" . $v : $v, $r));
+    csv_put($out, ['Received', 'Name', 'Email', 'Phone', 'Organisation', 'Subject', 'Message', 'Status']);
+    foreach ($rows as $r) csv_put($out, $r);
     audit_log('EXPORT', 'contact_message', null, count($rows) . ' messages exported');
     exit;
 }
@@ -106,7 +106,7 @@ portal_start('superadmin', 'inbox', 'Contact inbox', [
                 <?php foreach (['new' => 'Mark as unread', 'archived' => 'Archive', 'spam' => 'Mark as spam'] as $op => $label): if ($msg['status'] === $op) continue; ?>
                     <form method="post"><?= csrf_field() ?><input type="hidden" name="action" value="<?= $op ?>"><input type="hidden" name="id" value="<?= (int) $msg['id'] ?>"><button class="btn btn-outline-secondary w-100"><?= h($label) ?></button></form>
                 <?php endforeach; ?>
-                <form method="post" data-confirm="Delete this message permanently?"><?= csrf_field() ?><input type="hidden" name="action" value="delete"><input type="hidden" name="id" value="<?= (int) $msg['id'] ?>"><button class="btn btn-outline-danger w-100">Delete</button></form>
+                <form method="post" data-confirm="Delete the message from <?= h($msg['name']) ?> (<?= h($msg['subject']) ?>) permanently? It cannot be recovered." data-confirm-ok="Delete message"><?= csrf_field() ?><input type="hidden" name="action" value="delete"><input type="hidden" name="id" value="<?= (int) $msg['id'] ?>"><button class="btn btn-outline-danger w-100">Delete</button></form>
             </div>
         </div></div>
     </div>
@@ -122,7 +122,7 @@ portal_start('superadmin', 'inbox', 'Contact inbox', [
         <div class="col-auto"><button class="btn btn-outline-primary">Search</button></div>
     </form>
     <?php if (!$rows): echo empty_state('fa-inbox', $q !== '' ? 'No message matches that search' : 'No messages here', 'New messages from the contact page appear here and are emailed to the contact inbox address.'); else: ?>
-    <form method="post" data-confirm="Apply this action to the selected messages?">
+    <form method="post" data-confirm="Apply &quot;{action}&quot; to {count} selected messages?">
         <?= csrf_field() ?><input type="hidden" name="action" value="bulk">
         <div class="d-flex gap-2 mb-2"><select name="bulk" class="form-select form-select-sm w-auto" aria-label="Bulk action"><option value="read">Mark as read</option><option value="new">Mark as unread</option><option value="archived">Archive</option><option value="spam">Mark as spam</option><option value="delete">Delete</option></select><button class="btn btn-sm btn-outline-secondary">Apply to selected</button></div>
         <div class="table-responsive"><table class="table align-middle">

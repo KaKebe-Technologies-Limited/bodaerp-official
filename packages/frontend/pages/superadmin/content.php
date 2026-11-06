@@ -6,10 +6,10 @@ require_once __DIR__ . '/../../../backend/admin_ui.php';
 require_once __DIR__ . '/../../../backend/site.php';
 require_role(['super_admin']);
 
-$tabs = ['pages' => 'Pages', 'menus' => 'Menus', 'home_feature' => 'Home: features', 'home_step' => 'Home: how it works',
+$tabs = ['pages' => 'Pages', 'menus' => 'Menus', 'home_slide' => 'Home: hero slides', 'home_why' => 'Home: why it matters', 'home_feature' => 'Home: features', 'home_step' => 'Home: how it works',
     'home_role' => 'Home: who uses it', 'faq' => 'FAQ'];
 // Singular name of one item in each content group, for buttons and messages.
-$itemNoun = ['home_feature' => 'feature card', 'home_step' => 'step', 'home_role' => 'role card', 'faq' => 'question'];
+$itemNoun = ['home_slide' => 'slide', 'home_why' => 'reason', 'home_feature' => 'feature card', 'home_step' => 'step', 'home_role' => 'role card', 'faq' => 'question'];
 $tab = isset($tabs[$_GET['tab'] ?? '']) ? $_GET['tab'] : 'pages';
 $menus = ['header' => 'Top menu', 'footer_product' => 'Footer: Product', 'footer_company' => 'Footer: Company', 'footer_legal' => 'Footer: Legal'];
 $back = fn(string $t) => '/pages/superadmin/content.php?tab=' . $t;
@@ -26,7 +26,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $n += runQuery("INSERT IGNORE INTO pages (slug,title,summary,body,meta_title,meta_description,is_system) VALUES (?,?,?,?,?,?,?)", [$slug, $title, $summary, $body, $mt, $md, $sys])->affected_rows;
         }
         foreach ($c['menus'] as [$menu, $label, $url, $sort]) $n += runQuery("INSERT IGNORE INTO menu_items (menu,label,url,sort_order) VALUES (?,?,?,?)", [$menu, $label, $url, $sort])->affected_rows;
-        foreach ($c['items'] as [$g, $icon, $title, $body, $sort]) $n += runQuery("INSERT IGNORE INTO content_items (group_code,icon,title,body,sort_order) VALUES (?,?,?,?,?)", [$g, $icon, $title, $body, $sort])->affected_rows;
+        foreach ($c['items'] as $item) {
+            [$g, $icon, $title, $body, $sort] = $item;
+            $n += runQuery("INSERT IGNORE INTO content_items (group_code,icon,title,body,sort_order,image,link_label,link_url) VALUES (?,?,?,?,?,?,?,?)",
+                [$g, $icon, $title, $body, $sort, $item[5] ?? null, $item[6] ?? null, $item[7] ?? null])->affected_rows;
+        }
         foreach ($c['emails'] as [$code, $name, $desc, $subj, $body, $vars]) $n += runQuery("INSERT IGNORE INTO email_templates (code,name,description,subject,body_html,variables) VALUES (?,?,?,?,?,?)", [$code, $name, $desc, $subj, $body, $vars])->affected_rows;
         foreach ($c['settings'] as [$k, $v, $type, $cat, $desc, $flag, $sort]) $n += runQuery("INSERT IGNORE INTO settings (`key`,`value`,value_type,category,description,is_feature_flag,sort_order) VALUES (?,?,?,?,?,?,?)", [$k, $v, $type, $cat, $desc, $flag, $sort])->affected_rows;
         runQuery("UPDATE pages SET deleted_at = NULL WHERE is_system = 1 AND deleted_at IS NOT NULL");
@@ -71,13 +75,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $title = trim((string) ($_POST['title'] ?? ''));
         $body = trim((string) ($_POST['body'] ?? ''));
         $icon = preg_replace('/[^a-z0-9-]/', '', strtolower((string) ($_POST['icon'] ?? ''))) ?: null;
+        // Slides carry a photo and a button; other groups leave these empty.
+        $image = $linkLabel = $linkUrl = null;
+        $itemProblem = '';
+        if ($group === 'home_slide') {
+            $image = trim((string) ($_POST['image'] ?? '')) ?: null;
+            if (!empty($_FILES['image_file']['name'])) {
+                $up = store_upload($_FILES['image_file'], 'media', ['image/jpeg' => 'jpg', 'image/png' => 'png', 'image/webp' => 'webp'], 5 * 1024 * 1024);
+                if ($up['ok']) $image = $up['path']; else $itemProblem = $up['error'];
+            }
+            if ($image !== null && !preg_match('#^(/[A-Za-z0-9/_.-]+|https://\S+)$#', $image)) $itemProblem = 'The photo must be an uploaded file or a path such as /assets/images/home/stage-riders.webp.';
+            if ($image === null) $itemProblem = 'Choose a photo for the slide.';
+            $linkLabel = mb_substr(trim((string) ($_POST['link_label'] ?? '')), 0, 80) ?: null;
+            $linkUrl = trim((string) ($_POST['link_url'] ?? '')) ?: null;
+            if ($linkUrl !== null && !preg_match('#^(/[^\s]*|https://\S+)$#', $linkUrl)) $itemProblem = 'The button link must start with / (a page on this site) or https://.';
+            if (($linkLabel === null) !== ($linkUrl === null)) $itemProblem = 'Give the button both a text and a link, or leave both empty.';
+        }
         if ($title === '' || mb_strlen($title) > 200 || $body === '') {
             flash('error', 'Enter a ' . ($group === 'faq' ? 'question and an answer' : 'title and a description') . '.');
+        } elseif ($itemProblem !== '') {
+            flash('error', $itemProblem);
         } else {
-            $params = [$group, $icon, $title, $body, (int) ($_POST['sort_order'] ?? 0), !empty($_POST['is_active']) ? 1 : 0];
+            $params = [$group, $icon, $title, $body, (int) ($_POST['sort_order'] ?? 0), !empty($_POST['is_active']) ? 1 : 0, $image, $linkLabel, $linkUrl];
             try {
-                if ($id) runQuery("UPDATE content_items SET group_code=?, icon=?, title=?, body=?, sort_order=?, is_active=? WHERE id=?", [...$params, $id]);
-                else runQuery("INSERT INTO content_items (group_code, icon, title, body, sort_order, is_active) VALUES (?,?,?,?,?,?)", $params);
+                if ($id) runQuery("UPDATE content_items SET group_code=?, icon=?, title=?, body=?, sort_order=?, is_active=?, image=?, link_label=?, link_url=? WHERE id=?", [...$params, $id]);
+                else runQuery("INSERT INTO content_items (group_code, icon, title, body, sort_order, is_active, image, link_label, link_url) VALUES (?,?,?,?,?,?,?,?,?)", $params);
                 audit_log($id ? 'UPDATE' : 'CREATE', 'content_item', (string) ($id ?: db()->insert_id), "$group: $title");
                 flash('success', 'Saved.');
             } catch (mysqli_sql_exception $e) {
@@ -169,7 +191,7 @@ portal_start('superadmin', 'content', 'Pages & content', [
         <div class="row g-4">
             <div class="col-lg-8">
                 <?php if (!$rows): echo empty_state('fa-bars', 'No menu links'); else: ?>
-                <form method="post" id="bulkMenus" data-confirm="Apply this action to the selected links?">
+                <form method="post" id="bulkMenus" data-confirm="Apply &quot;{action}&quot; to {count} selected menu links?">
                     <?= csrf_field() ?><input type="hidden" name="action" value="bulk_menu">
                     <div class="d-flex gap-2 mb-2"><select name="bulk" class="form-select form-select-sm w-auto" aria-label="Bulk action"><option value="show">Show selected</option><option value="hide">Hide selected</option><option value="delete">Delete selected</option></select><button class="btn btn-sm btn-outline-secondary">Apply</button></div>
                     <div class="table-responsive"><table class="table align-middle">
@@ -214,18 +236,19 @@ portal_start('superadmin', 'content', 'Pages & content', [
             </div>
         </div>
 
-<?php else: $isFaq = $tab === 'faq'; ?>
+<?php else: $isFaq = $tab === 'faq'; $isSlide = $tab === 'home_slide'; ?>
         <div class="row g-4">
             <div class="col-lg-7">
                 <?php if (!$rows): echo empty_state($isFaq ? 'fa-circle-question' : 'fa-table-cells', 'Nothing here yet', 'Add the first ' . ($itemNoun[$tab] ?? 'item') . ' with the form.'); else: ?>
-                <form method="post" data-confirm="Apply this action to the selected items?">
+                <form method="post" data-confirm="Apply &quot;{action}&quot; to {count} selected items?">
                     <?= csrf_field() ?><input type="hidden" name="action" value="bulk_item">
                     <div class="d-flex gap-2 mb-2"><select name="bulk" class="form-select form-select-sm w-auto" aria-label="Bulk action"><option value="show">Show selected</option><option value="hide">Hide selected</option><option value="delete">Delete selected</option></select><button class="btn btn-sm btn-outline-secondary">Apply</button></div>
                     <ul class="list-group">
                         <?php foreach ($rows as $it): ?>
                         <li class="list-group-item d-flex gap-3 align-items-start">
                             <input class="form-check-input mt-1" type="checkbox" name="ids[]" value="<?= (int) $it['id'] ?>" aria-label="Select <?= h($it['title']) ?>">
-                            <?php if (!$isFaq): ?><i class="fas <?= h($it['icon'] ?: 'fa-check') ?> text-primary mt-1" aria-hidden="true"></i><?php endif; ?>
+                            <?php if ($isSlide): ?><img src="<?= h(media_url($it['image'], '/assets/images/logo-mark.png')) ?>" alt="" width="96" height="54" class="rounded object-fit-cover flex-shrink-0" loading="lazy">
+                            <?php elseif (!$isFaq): ?><i class="fas <?= h($it['icon'] ?: 'fa-check') ?> text-primary mt-1" aria-hidden="true"></i><?php endif; ?>
                             <div class="flex-grow-1"><div class="fw-semibold"><?= h($it['title']) ?> <?= $it['is_active'] ? '' : '<span class="badge bg-secondary">Hidden</span>' ?></div><div class="small text-muted"><?= h(mb_strimwidth($it['body'], 0, 160, '…')) ?></div></div>
                             <span class="small text-muted">#<?= (int) $it['sort_order'] ?></span>
                             <a class="btn btn-sm btn-outline-primary" href="?tab=<?= h($tab) ?>&edit=<?= (int) $it['id'] ?>#itemForm">Edit</a>
@@ -237,12 +260,25 @@ portal_start('superadmin', 'content', 'Pages & content', [
             </div>
             <div class="col-lg-5">
                 <?php $edit = isset($_GET['edit']) ? fetchOne("SELECT * FROM content_items WHERE id = ? AND group_code = ?", [(int) $_GET['edit'], $tab]) : null; ?>
-                <form method="post" class="border rounded p-3" id="itemForm">
+                <form method="post" class="border rounded p-3" id="itemForm"<?= $isSlide ? ' enctype="multipart/form-data"' : '' ?>>
                     <h2 class="h6 fw-bold"><?= $edit ? 'Edit' : 'Add' ?> <?= h($itemNoun[$tab] ?? 'item') ?></h2>
                     <?= csrf_field() ?><input type="hidden" name="action" value="save_item"><input type="hidden" name="group_code" value="<?= h($tab) ?>"><input type="hidden" name="id" value="<?= (int) ($edit['id'] ?? 0) ?>">
                     <div class="mb-2"><label class="form-label small fw-semibold" for="i_title"><?= $isFaq ? 'Question' : 'Title' ?></label><input class="form-control" id="i_title" name="title" maxlength="200" required value="<?= h($edit['title'] ?? '') ?>"></div>
                     <div class="mb-2"><label class="form-label small fw-semibold" for="i_body"><?= $isFaq ? 'Answer' : 'Description' ?></label><textarea class="form-control" id="i_body" name="body" rows="5" required data-maxlength="1000"><?= h($edit['body'] ?? '') ?></textarea></div>
-                    <?php if (!$isFaq): ?><div class="mb-2"><label class="form-label small fw-semibold" for="i_icon">Icon</label><input class="form-control" id="i_icon" name="icon" value="<?= h($edit['icon'] ?? 'fa-check') ?>"><div class="form-text">A Font Awesome icon name, for example fa-id-card or fa-money-bill-wave.</div></div><?php endif; ?>
+                    <?php if ($isSlide): ?>
+                    <div class="mb-2">
+                        <label class="form-label small fw-semibold" for="i_image">Photo</label>
+                        <?php if (!empty($edit['image'])): ?><img src="<?= h(media_url($edit['image'])) ?>" alt="" class="d-block w-100 rounded mb-2 object-fit-cover" style="aspect-ratio:16/9"><?php endif; ?>
+                        <input class="form-control mb-2" id="i_image" name="image" value="<?= h($edit['image'] ?? '') ?>" placeholder="/assets/images/home/stage-riders.webp" aria-describedby="i_image_help">
+                        <input type="file" name="image_file" id="i_image_file" accept="image/jpeg,image/png,image/webp" data-max-mb="5" aria-label="Upload a new photo for this slide">
+                        <div class="form-text" id="i_image_help">A wide photo, at least 1600 pixels across. Text sits on the left, so keep the subject in the middle or on the right. Uploading a file replaces the path above.</div>
+                    </div>
+                    <div class="row g-2 mb-2">
+                        <div class="col-sm-6"><label class="form-label small fw-semibold" for="i_link_label">Button text</label><input class="form-control" id="i_link_label" name="link_label" maxlength="80" value="<?= h($edit['link_label'] ?? '') ?>" placeholder="Check a permit now"></div>
+                        <div class="col-sm-6"><label class="form-label small fw-semibold" for="i_link_url">Button link</label><input class="form-control" id="i_link_url" name="link_url" value="<?= h($edit['link_url'] ?? '') ?>" placeholder="/verify.php"></div>
+                    </div>
+                    <?php endif; ?>
+                    <?php if (!$isFaq && !$isSlide): ?><div class="mb-2"><label class="form-label small fw-semibold" for="i_icon">Icon</label><input class="form-control" id="i_icon" name="icon" value="<?= h($edit['icon'] ?? 'fa-check') ?>"><div class="form-text">A Font Awesome icon name, for example fa-id-card or fa-money-bill-wave.</div></div><?php endif; ?>
                     <div class="mb-2"><label class="form-label small fw-semibold" for="i_sort">Order</label><input class="form-control" type="number" id="i_sort" name="sort_order" value="<?= (int) ($edit['sort_order'] ?? (count($rows) + 1)) ?>"></div>
                     <div class="form-check mb-3"><input class="form-check-input" type="checkbox" id="i_active" name="is_active" value="1"<?= !$edit || $edit['is_active'] ? ' checked' : '' ?>><label class="form-check-label" for="i_active">Show on the website</label></div>
                     <button class="btn btn-primary">Save</button>

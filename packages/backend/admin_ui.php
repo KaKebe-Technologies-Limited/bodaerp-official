@@ -90,6 +90,37 @@ function posted_ids(): array {
     return array_values(array_unique(array_filter(array_map('intval', (array) ($_POST['ids'] ?? [])), fn($i) => $i > 0)));
 }
 
+/**
+ * Small action menu down the side of a document page (ID card, receipt, A4 card sheet), in place of a row of buttons
+ * on top (see .doc-layout in portal-shell.css). $groups: heading => items. Item keys: label, icon (Font Awesome name
+ * without "fa-"), then href (a link; external => true opens a new tab), or form (id of the form the button submits),
+ * or attrs (data-* attributes for a button the page script handles). Optional tone: 'primary' or 'danger'.
+ * A null item is skipped, so callers can write `$canEdit ? [...] : null`.
+ */
+function action_rail(array $groups, string $label = 'Actions'): string {
+    $html = '<nav class="action-rail no-print" aria-label="' . h($label) . '">';
+    foreach ($groups as $title => $items) {
+        $items = array_filter($items);
+        if (!$items) continue;
+        $html .= '<div class="action-rail-group">' . ($title !== '' ? '<div class="action-rail-title">' . h((string) $title) . '</div>' : '');
+        foreach ($items as $item) {
+            $cls = 'action-rail-item' . (!empty($item['tone']) ? ' is-' . $item['tone'] : '');
+            $inner = '<i class="fas fa-' . h($item['icon']) . '" aria-hidden="true"></i><span>' . h($item['label']) . '</span>';
+            $attrs = '';
+            foreach ($item['attrs'] ?? [] as $name => $value) $attrs .= ' ' . h($name) . ($value === true ? '' : '="' . h((string) $value) . '"');
+            if (isset($item['href'])) {
+                $html .= '<a class="' . $cls . '" href="' . h($item['href']) . '"' . (!empty($item['external']) ? ' target="_blank" rel="noopener"' : '') . $attrs . '>' . $inner . '</a>';
+            } elseif (isset($item['form'])) {
+                $html .= '<button type="submit" form="' . h($item['form']) . '" class="' . $cls . '"' . $attrs . '>' . $inner . '</button>';
+            } else {
+                $html .= '<button type="button" class="' . $cls . '"' . $attrs . '>' . $inner . '</button>';
+            }
+        }
+        $html .= '</div>';
+    }
+    return $html . '</nav>';
+}
+
 function empty_state(string $icon, string $title, string $text = '', string $action = ''): string {
     return '<div class="text-center py-5 text-muted"><i class="fas ' . h($icon) . ' fa-2x mb-3 opacity-50" aria-hidden="true"></i>'
         . '<p class="fw-semibold text-dark mb-1">' . h($title) . '</p>' . ($text ? '<p class="small mb-3">' . h($text) . '</p>' : '') . $action . '</div>';

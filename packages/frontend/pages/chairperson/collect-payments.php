@@ -100,7 +100,7 @@ $receiptMsg = $_GET['receipt'] ?? null;
                                     <td><?= h($p['full_name']) ?></td>
                                     <td><?= h(formatCurrency($p['amount'])) ?></td>
                                     <td><?= h($p['payment_method']) ?></td>
-                                    <td><code><?= h($p['receipt_number']) ?></code></td>
+                                    <td><?php if ($p['status'] === 'Confirmed' && $p['receipt_number']): ?><a href="<?= BASE_URL ?>/pages/chairperson/receipt.php?id=<?= (int) $p['id'] ?>" title="Open the receipt"><code><?= h($p['receipt_number']) ?></code></a><?php else: ?><code><?= h($p['receipt_number']) ?></code><?php endif; ?></td>
                                     <td><span class="badge <?= $sc[$p['status']] ?>"><?= h($p['status']) ?></span></td>
                                 </tr>
                             <?php endforeach; ?>

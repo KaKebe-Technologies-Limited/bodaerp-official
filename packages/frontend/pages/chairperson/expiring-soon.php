@@ -40,13 +40,12 @@ $riders = fetchAll(
         <div class="card"><div class="card-body p-0">
             <div class="table-responsive">
                 <table class="table table-hover mb-0" id="expiringSoonTable">
-                    <thead><tr><th>#</th><th>Rider</th><th>Plate</th><th>Expiry date</th><th>Days left</th><th class="no-export">Status</th></tr></thead>
+                    <thead><tr><th>Rider</th><th>Plate</th><th>Expiry date</th><th>Days left</th><th class="no-export">Status</th></tr></thead>
                     <tbody>
-                    <?php if (!$riders): ?><tr><td colspan="6"><div class="empty-state" style="padding:36px 20px;"><i class="fas fa-inbox"></i><h5>No riders expiring soon</h5></div></td></tr><?php endif; ?>
+                    <?php if (!$riders): ?><tr><td colspan="5"><div class="empty-state" style="padding:36px 20px;"><i class="fas fa-inbox"></i><h5>No riders expiring soon</h5></div></td></tr><?php endif; ?>
                     <?php foreach ($riders as $i => $r): $days = (int) $r['days_left']; $badge = $days <= 7 ? 'bg-danger' : ($days <= 14 ? 'bg-warning text-dark' : 'bg-secondary'); ?>
                         <tr>
-                            <td><?= $i+1 ?></td>
-                            <td><strong><?= h($r['full_name']) ?></strong></td>
+                            <td><?= person_cell($r['photo_path'], $r['full_name']) ?></td>
                             <td><?= h($r['bike_plate']) ?></td>
                             <td><?= formatDate($r['expiry_date']) ?></td>
                             <td><span class="badge <?= $badge ?>"><?= $days ?> days</span></td>

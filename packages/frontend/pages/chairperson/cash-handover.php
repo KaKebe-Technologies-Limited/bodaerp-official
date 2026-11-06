@@ -85,7 +85,7 @@ portal_start('chairperson', 'cash-handover', 'Cash handover', [
         <div class="card-body">
             <h2 class="section-title">Record a handover</h2>
             <?php if ($payments): ?>
-                <form method="post" data-confirm="Record that you are handing over this cash to the city office?" data-confirm-ok="Record handover">
+                <form method="post" data-confirm="Record that you are handing <?= h(formatCurrency($expected)) ?> in cash from <?= count($payments) ?> receipts to the city office? The city office then confirms the amount it received." data-confirm-ok="Record handover">
                     <?= csrf_field() ?>
                     <input type="hidden" name="payments_count" value="<?= count($payments) ?>">
                     <div class="mb-3">

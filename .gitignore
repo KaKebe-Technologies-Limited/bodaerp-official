@@ -39,7 +39,7 @@ ipn_logs.txt
 
 # PHP + MySQL + plain JavaScript only: no Node/Composer tooling in this project
 node_modules/
-vendor/
+/vendor/
 package.json
 package-lock.json
 composer.json
