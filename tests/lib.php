@@ -39,7 +39,9 @@ function latest_mail_to(string $to, int $sinceTs = 0): ?string {
     $api = env('MAILPIT_API');
     if ($api) {
         for ($i = 0; $i < 10; $i++) {
-            $list = json_decode((string) @file_get_contents(rtrim($api, '/') . '/api/v1/search?query=' . urlencode('to:' . $to) . '&limit=1'), true);
+            $redirect = env('MAIL_REDIRECT_TO', '');
+            $query = $redirect !== '' && strcasecmp($redirect, $to) !== 0 ? 'subject:"[for ' . $to . ']"' : 'to:' . $to;
+            $list = json_decode((string) @file_get_contents(rtrim($api, '/') . '/api/v1/search?query=' . urlencode($query) . '&limit=1'), true);
             $id = $list['messages'][0]['ID'] ?? null;
             $created = isset($list['messages'][0]['Created']) ? strtotime($list['messages'][0]['Created']) : 0;
             if ($id && $created >= $sinceTs - 2) {
@@ -55,7 +57,7 @@ function latest_mail_to(string $to, int $sinceTs = 0): ?string {
     foreach ($files as $f) {
         if (filemtime($f) < $sinceTs - 2) break;
         $raw = (string) file_get_contents($f);
-        if (stripos($raw, "To: <$to>") === false) continue;
+        if (stripos($raw, "To: <$to>") === false && stripos($raw, "X-BodaERP-Original-To: <$to>") === false) continue;
         $decoded = preg_replace_callback('/Content-Transfer-Encoding: base64\r\n\r\n([A-Za-z0-9+\/=\r\n]+)/', fn($m) => base64_decode(str_replace(["\r", "\n"], '', $m[1])), $raw);
         $subject = preg_match('/^Subject: (.*)$/m', $raw, $s) ? (str_starts_with($s[1], '=?UTF-8?B?') ? base64_decode(substr($s[1], 10, -2)) : $s[1]) : '';
         return $subject . "\n" . $decoded;

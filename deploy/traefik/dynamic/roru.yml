@@ -1,0 +1,16 @@
+# Roru (ripplesofresilienceug.org, behind Cloudflare). Traefik holds its Let's Encrypt certificate and renews it;
+# roru_nginx serves plain HTTP on the "web" network (deploy/traefik/roru/). Plain HTTP is redirected by
+# redirect.yml; Let's Encrypt HTTP challenges are answered by Traefik before any router.
+http:
+  routers:
+    roru:
+      entryPoints: [websecure]
+      rule: Host(`ripplesofresilienceug.org`) || Host(`www.ripplesofresilienceug.org`)
+      tls:
+        certResolver: le
+      service: roru
+  services:
+    roru:
+      loadBalancer:
+        servers:
+          - url: http://roru_nginx:80

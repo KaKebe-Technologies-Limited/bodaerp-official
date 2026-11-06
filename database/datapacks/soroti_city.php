@@ -25,7 +25,7 @@ return [
                         payment_gateway,sms_gateway,revenue_split_city,revenue_split_association,revenue_split_platform,revenue_split_government,compliance_target,created_by)
                       VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
                 [$cityId, 'Soroti City', 'Uganda', 'UGX', '/assets/images/logo.png', $fee, '2026/2027', 'BODA-SOR', 'active',
-                 'council@soroticity.go.ug', '+256 454 461 000', 'Soroti City Council, Eastern Division, Soroti, Teso Sub-region, Uganda',
+                 'soroti@bodaerp.site', '+256 454 461 000', 'Soroti City Council, Eastern Division, Soroti, Teso Sub-region, Uganda',
                  'Both', "Africa's Talking", $sp[0], $sp[1], $sp[2], $sp[3], 70, $superId ?: null])->close();
             $count['city'] = 1;
         } else {
@@ -62,21 +62,21 @@ return [
             $creds[] = ['role' => $role, 'name' => $name, 'email' => $email, 'password' => $isNew ? $password : null, 'new' => $isNew];
             return (int) $id;
         };
-        $adminId = $mkUser('Soroti City Council', 'soroti.admin@bodaerp.com', '+256 454 461 000', 'Soroti@2026', 'city_admin', null);
+        $adminId = $mkUser('Soroti City Council', 'soroti.admin@bodaerp.site', '+256 454 461 000', 'Soroti@2026', 'city_admin', null);
         $chairId = [
-            1 => $mkUser('Emuron Peter', 'chair.sorotimarket@bodaerp.com',   '+256 772 500 101', 'Chair@2026', 'chairperson', $stageId[1]),
-            2 => $mkUser('Apolot Jane',  'chair.sorotirailway@bodaerp.com',  '+256 772 500 102', 'Chair@2026', 'chairperson', $stageId[2]),
-            3 => $mkUser('Okiror David', 'chair.sorotihospital@bodaerp.com', '+256 772 500 103', 'Chair@2026', 'chairperson', $stageId[3]),
-            4 => $mkUser('Among Rose',   'chair.arapai@bodaerp.com',         '+256 772 500 104', 'Chair@2026', 'chairperson', $stageId[4]),
+            1 => $mkUser('Emuron Peter', 'chair.sorotimarket@bodaerp.site',   '+256 772 500 101', 'Chair@2026', 'chairperson', $stageId[1]),
+            2 => $mkUser('Apolot Jane',  'chair.sorotirailway@bodaerp.site',  '+256 772 500 102', 'Chair@2026', 'chairperson', $stageId[2]),
+            3 => $mkUser('Okiror David', 'chair.sorotihospital@bodaerp.site', '+256 772 500 103', 'Chair@2026', 'chairperson', $stageId[3]),
+            4 => $mkUser('Among Rose',   'chair.arapai@bodaerp.site',         '+256 772 500 104', 'Chair@2026', 'chairperson', $stageId[4]),
         ];
 
         // riders: name, gender, dob, marital, stage, plate, model, state, days since registration, rider login e-mail
         $riders = [
-            ['EKURU SAMUEL',  'Male',   '1991-03-14', 'Married', 1, 'UFB 214K', 'Bajaj Boxer 150',  'active',  120, 'ekuru.samuel@bodaerp.com'],
-            ['AMUGE SARAH',   'Female', '1995-07-22', 'Single',  1, 'UFC 508M', 'TVS Star HLX 125', 'active',  95,  'amuge.sarah@bodaerp.com'],
-            ['OPOLOT ISAAC',  'Male',   '1989-11-05', 'Married', 2, 'UEY 733T', 'Bajaj Boxer 100',  'soon',    355, 'opolot.isaac@bodaerp.com'],
-            ['ADEKE MARY',    'Female', '1993-04-18', 'Married', 3, 'UFA 119R', 'Honda CG 125',     'expired', 410, 'adeke.mary@bodaerp.com'],
-            ['ETYANG MOSES',  'Male',   '1990-09-30', 'Single',  4, 'UFD 842P', 'Bajaj Boxer 150',  'pending', 2,   'etyang.moses@bodaerp.com'],
+            ['EKURU SAMUEL',  'Male',   '1991-03-14', 'Married', 1, 'UFB 214K', 'Bajaj Boxer 150',  'active',  120, 'ekuru.samuel@bodaerp.site'],
+            ['AMUGE SARAH',   'Female', '1995-07-22', 'Single',  1, 'UFC 508M', 'TVS Star HLX 125', 'active',  95,  'amuge.sarah@bodaerp.site'],
+            ['OPOLOT ISAAC',  'Male',   '1989-11-05', 'Married', 2, 'UEY 733T', 'Bajaj Boxer 100',  'soon',    355, 'opolot.isaac@bodaerp.site'],
+            ['ADEKE MARY',    'Female', '1993-04-18', 'Married', 3, 'UFA 119R', 'Honda CG 125',     'expired', 410, 'adeke.mary@bodaerp.site'],
+            ['ETYANG MOSES',  'Male',   '1990-09-30', 'Single',  4, 'UFD 842P', 'Bajaj Boxer 150',  'pending', 2,   'etyang.moses@bodaerp.site'],
             ['EBONG FRANCIS', 'Male',   '1987-02-09', 'Married', 1, 'UEZ 305H', 'TVS HLX 150',      'active',  70,  null],
             ['APOLOT GRACE',  'Female', '1996-12-01', 'Single',  2, 'UFE 671G', 'Honda CG 125',     'active',  45,  null],
             ['OKIROR DENIS',  'Male',   '1992-06-27', 'Single',  2, 'UFA 902B', 'Bajaj Boxer 150',  'expired', 440, null],

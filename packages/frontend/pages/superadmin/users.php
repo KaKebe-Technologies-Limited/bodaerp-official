@@ -240,7 +240,7 @@ $adminUsersAll    = (int) fetchValue("SELECT COUNT(*) FROM users WHERE deleted_a
                     <?php if ($errors): ?><div class="alert alert-danger" role="alert"><?= implode('<br>', array_map('h', $errors)) ?></div><?php endif; ?>
                     <div class="row g-3">
                         <div class="col-12"><label for="userName" class="form-label fw-semibold">Full name <span class="text-danger">*</span></label><input type="text" class="form-control" name="name" id="userName" placeholder="Full name" required></div>
-                        <div class="col-md-6"><label for="userEmail" class="form-label fw-semibold">Email <span class="text-danger">*</span></label><input type="email" class="form-control" name="email" id="userEmail" placeholder="email@example.com" required></div>
+                        <div class="col-md-6"><label for="userEmail" class="form-label fw-semibold">Email <span class="text-danger">*</span></label><input type="email" class="form-control" name="email" id="userEmail" placeholder="email@bodaerp.site" required></div>
                         <div class="col-md-6"><label for="userPhone" class="form-label fw-semibold">Phone</label><input type="text" class="form-control" name="phone" id="userPhone" placeholder="+256 7xx xxx xxx"></div>
                         <div class="col-md-6">
                             <label for="userRole" class="form-label fw-semibold">Role <span class="text-danger">*</span></label>

@@ -154,7 +154,7 @@ What was built:
 ```bash
 php database/migrate.php [--status|--capture]   # migrations + schema snapshot (also automatic on first request)
 php database/seed_run.php [--fresh|--if-empty]  # demo data (never on real data)
-php database/create_admin.php --name "N" --email e@x.com
+php database/create_admin.php --name "N" --email admin@bodaerp.site
 php tests/smoke.php          # every public page + every page of every role; secrets blocked; headers
 php tests/flows.php          # critical flows end to end (creates and removes flowtest-* data)
 php tests/access.php         # access walls: each role against other roles, cities, stages and riders
@@ -263,7 +263,7 @@ Data flow: page → `require_role()` (auth.php) → `fetch*/runQuery` (db_helper
 3. After any schema change: `docker compose exec app php database/migrate.php --capture` then
    `docker compose exec app chown $(id -u):$(id -g) database/schema.snapshot.json`.
 4. Browser checks: Playwright, one window; screenshots go to `.playwright-mcp/` (git-ignored). Admin sign-in in Docker
-   needs the emailed code: `curl -s "http://localhost:7082/api/v1/search?query=to:admin@bodaerp.com&limit=1"`.
+   needs the emailed code: `curl -s "http://localhost:7082/api/v1/search?query=to:admin@bodaerp.site&limit=1"`.
 5. Do not commit unless the owner asks.
 
 ## Rules when changing code

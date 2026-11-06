@@ -78,11 +78,11 @@ and bind to 127.0.0.1. The Docker files are never used by XAMPP or production.
 
 | Role | Email | Password |
 |---|---|---|
-| Super Admin | `admin@bodaerp.com` | `admin123` |
-| City council (Lira) | `council@liracityuganda.go.ug` | `lira2025` |
-| Stage chairperson (Lira) | `ocen@railway.lira.ug` | `chair123` |
-| Rider (Lira) | `akello@bodaerp.com` | `rider123` |
-| Government (Works & Transport) | `works@gov.bodaerp.com` | `Gov@2026` |
+| Super Admin | `admin@bodaerp.site` | `admin123` |
+| City council (Lira) | `lira@bodaerp.site` | `lira2025` |
+| Stage chairperson (Lira) | `ocen@bodaerp.site` | `chair123` |
+| Rider (Lira) | `akello@bodaerp.site` | `rider123` |
+| Government (Works & Transport) | `works@bodaerp.site` | `Gov@2026` |
 
 In the Docker stack, administrators and government users get a 6-digit sign-in code by email (Mailpit), because
 Platform Settings → *Require 2FA* is on and SMTP works there. On XAMPP (no SMTP) two-step sign-in stays off.
@@ -176,4 +176,4 @@ docs/                          DATABASE.md, DEPLOYMENT.md, ARCHITECTURE.md
 
 ---
 
-*Kakebe Technologies Limited, support@kakebe.tech*
+*Kakebe Technologies Limited, support@bodaerp.site*

@@ -53,7 +53,7 @@ require __DIR__ . '/packages/frontend/partials/auth-start.php';
                         <label for="email">Email address or phone number</label>
                         <div class="input-box">
                             <i class="fas fa-envelope" aria-hidden="true"></i>
-                            <input type="text" id="email" name="email" value="<?= h($email) ?>" placeholder="name@example.com or 0772 123456" autocomplete="username" required autofocus>
+                            <input type="text" id="email" name="email" value="<?= h($email) ?>" placeholder="name@bodaerp.site or 0772 123456" autocomplete="username" required autofocus>
                         </div>
                     </div>
                     <button type="submit" class="btn-login"><i class="fas fa-paper-plane" aria-hidden="true"></i> Send me a reset link</button>

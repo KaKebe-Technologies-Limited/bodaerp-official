@@ -13,11 +13,11 @@ $base = test_base($argv);
 $t = new TestRun();
 
 $roles = [
-    'superadmin'  => ['admin@bodaerp.com',            'admin123'],
-    'government'  => ['works@gov.bodaerp.com',        'Gov@2026'],
-    'citycouncil' => ['council@liracityuganda.go.ug', 'lira2025'],
-    'chairperson' => ['ocen@railway.lira.ug',         'chair123'],
-    'rider'       => ['akello@bodaerp.com',           'rider123'],
+    'superadmin'  => ['admin@bodaerp.site',            'admin123'],
+    'government'  => ['works@bodaerp.site',        'Gov@2026'],
+    'citycouncil' => ['lira@bodaerp.site', 'lira2025'],
+    'chairperson' => ['ocen@bodaerp.site',         'chair123'],
+    'rider'       => ['akello@bodaerp.site',           'rider123'],
 ];
 $skip = ['db-backup.php'];                                 // a file download, not a page
 $needsId = ['rider-profile.php', 'edit-rider.php', 'id-preview.php', 'id-card.php'];

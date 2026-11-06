@@ -19,19 +19,19 @@
 --  SAMPLE LOGINS  (all passwords are case-sensitive)
 -- ------------------------------------------------------------
 --  ROLE          EMAIL                          PASSWORD
---  super_admin   superadmin@bodaerp.com         Admin@2026
---  city_admin    lira.admin@bodaerp.com         City@2026
---  city_admin    gulu.admin@bodaerp.com         City@2026
---  city_admin    kampala.admin@bodaerp.com      City@2026
---  chairperson   chair.railway@bodaerp.com      Chair@2026
---  chairperson   chair.gulumain@bodaerp.com     Chair@2026
---  chairperson   chair.nakasero@bodaerp.com     Chair@2026
---  rider         james.rider@bodaerp.com        Rider@2026
---  rider         grace.rider@bodaerp.com        Rider@2026
---  government    works@gov.bodaerp.com          Gov@2026
---  government    ura@gov.bodaerp.com            Gov@2026
---  government    localgov@gov.bodaerp.com       Gov@2026
---  government    ict@gov.bodaerp.com            Gov@2026
+--  super_admin   superadmin@bodaerp.site         Admin@2026
+--  city_admin    lira.admin@bodaerp.site         City@2026
+--  city_admin    gulu.admin@bodaerp.site         City@2026
+--  city_admin    kampala.admin@bodaerp.site      City@2026
+--  chairperson   chair.railway@bodaerp.site      Chair@2026
+--  chairperson   chair.gulumain@bodaerp.site     Chair@2026
+--  chairperson   chair.nakasero@bodaerp.site     Chair@2026
+--  rider         james.rider@bodaerp.site        Rider@2026
+--  rider         grace.rider@bodaerp.site        Rider@2026
+--  government    works@bodaerp.site          Gov@2026
+--  government    ura@bodaerp.site            Gov@2026
+--  government    localgov@bodaerp.site       Gov@2026
+--  government    ict@bodaerp.site            Gov@2026
 --
 --  >> After first login, change these passwords in Settings. <<
 --  NOTE: this file requires the `agency_name` column and the
@@ -47,16 +47,16 @@ START TRANSACTION;
 -- 1. Super admin  (created before cities: cities.created_by -> users.id)
 -- ------------------------------------------------------------
 INSERT INTO `users` (`id`,`name`,`email`,`phone`,`password_hash`,`role`,`city_id`,`stage_id`,`status`,`created_at`) VALUES
-(1,'Kakebe Super Admin','superadmin@bodaerp.com','+256 700 000 001','$2y$10$3X6I30k2opSowP3kdqOtXuC.fYZjE/zZmsXZPXR.Ibtad5e1LrtKG','super_admin',NULL,NULL,'active','2025-01-01 09:00:00');
+(1,'Kakebe Super Admin','superadmin@bodaerp.site','+256 700 000 001','$2y$10$3X6I30k2opSowP3kdqOtXuC.fYZjE/zZmsXZPXR.Ibtad5e1LrtKG','super_admin',NULL,NULL,'active','2025-01-01 09:00:00');
 
 -- ------------------------------------------------------------
 -- 2. Cities
 -- ------------------------------------------------------------
 INSERT INTO `cities`
 (`id`,`name`,`country`,`currency`,`logo_path`,`annual_fee`,`fiscal_year`,`id_prefix`,`status`,`contact_email`,`contact_phone`,`address`,`payment_gateway`,`sms_gateway`,`revenue_split_city`,`revenue_split_association`,`revenue_split_platform`,`revenue_split_government`,`compliance_target`,`grace_period_days`,`reminder_days`,`created_by`,`created_at`) VALUES
-('LIR','Lira City','Uganda','UGX','/assets/images/logo.png',50000.00,'2026/2027','BODA-LIR','active','council@liracityuganda.go.ug','+256 473 420 123','Lira City Council, Parliament Avenue, Lira, Uganda','MTN MoMo','Africa''s Talking',55,26,9,10,70,30,14,1,'2025-01-01 09:00:00'),
-('GUL','Gulu City','Uganda','UGX','/assets/images/logo.png',45000.00,'2026/2027','BODA-GUL','active','council@gulucity.go.ug','+256 471 432 456','Gulu City Council, Gulu, Uganda','Airtel Money','Africa''s Talking',50,28,10,12,70,30,14,1,'2025-03-01 09:00:00'),
-('KLA','Kampala City','Uganda','UGX','/assets/images/logo.png',60000.00,'2026/2027','BODA-KLA','active','council@kcca.go.ug','+256 417 123 456','KCCA, City Square, Kampala, Uganda','MTN MoMo','Africa''s Talking',58,22,9,11,75,30,14,1,'2025-06-01 09:00:00');
+('LIR','Lira City','Uganda','UGX','/assets/images/logo.png',50000.00,'2026/2027','BODA-LIR','active','lira@bodaerp.site','+256 473 420 123','Lira City Council, Parliament Avenue, Lira, Uganda','MTN MoMo','Africa''s Talking',55,26,9,10,70,30,14,1,'2025-01-01 09:00:00'),
+('GUL','Gulu City','Uganda','UGX','/assets/images/logo.png',45000.00,'2026/2027','BODA-GUL','active','gulu@bodaerp.site','+256 471 432 456','Gulu City Council, Gulu, Uganda','Airtel Money','Africa''s Talking',50,28,10,12,70,30,14,1,'2025-03-01 09:00:00'),
+('KLA','Kampala City','Uganda','UGX','/assets/images/logo.png',60000.00,'2026/2027','BODA-KLA','active','kampala@bodaerp.site','+256 417 123 456','KCCA, City Square, Kampala, Uganda','MTN MoMo','Africa''s Talking',58,22,9,11,75,30,14,1,'2025-06-01 09:00:00');
 
 -- ------------------------------------------------------------
 -- 3. Stages
@@ -71,37 +71,37 @@ INSERT INTO `stages` (`id`,`city_id`,`code`,`name`,`location`,`route`,`chairpers
 -- 4. City admins, chairpersons, rider-linked users
 -- ------------------------------------------------------------
 INSERT INTO `users` (`id`,`name`,`email`,`phone`,`password_hash`,`role`,`city_id`,`stage_id`,`status`,`created_at`) VALUES
-(2,'Lira City Council','lira.admin@bodaerp.com','+256 473 420 123','$2y$10$WTIAkl5szK9GaKL3zu/eGefU2AwkI5XFaAqGrD.yDzI3b777A33Q2','city_admin','LIR',NULL,'active','2025-01-02 09:00:00'),
-(3,'Gulu City Council','gulu.admin@bodaerp.com','+256 471 432 456','$2y$10$WTIAkl5szK9GaKL3zu/eGefU2AwkI5XFaAqGrD.yDzI3b777A33Q2','city_admin','GUL',NULL,'active','2025-03-02 09:00:00'),
-(4,'Kampala City Council','kampala.admin@bodaerp.com','+256 417 123 456','$2y$10$WTIAkl5szK9GaKL3zu/eGefU2AwkI5XFaAqGrD.yDzI3b777A33Q2','city_admin','KLA',NULL,'active','2025-06-02 09:00:00'),
-(5,'Ocen Patrick','chair.railway@bodaerp.com','+256 772 111 001','$2y$10$uBrs2SttZK63SVWohYSb0.OdWxPY3fIFMIjWniqdhpP0qLr.C/PZe','chairperson','LIR',1,'active','2025-01-16 09:00:00'),
-(6,'Komakech Denis','chair.gulumain@bodaerp.com','+256 772 222 001','$2y$10$uBrs2SttZK63SVWohYSb0.OdWxPY3fIFMIjWniqdhpP0qLr.C/PZe','chairperson','GUL',3,'active','2025-03-11 09:00:00'),
-(7,'Nakato Sarah','chair.nakasero@bodaerp.com','+256 772 333 001','$2y$10$uBrs2SttZK63SVWohYSb0.OdWxPY3fIFMIjWniqdhpP0qLr.C/PZe','chairperson','KLA',4,'active','2025-06-11 09:00:00'),
-(8,'Akello James','james.rider@bodaerp.com','+256 772 123 456','$2y$10$ByGLTF9YSM/CRJ920KYK0eAiFJl879KuRS.dQidlcif5AvjgdTAe.','rider','LIR',1,'active','2025-02-01 09:00:00'),
-(9,'Aciro Grace','grace.rider@bodaerp.com','+256 772 222 456','$2y$10$ByGLTF9YSM/CRJ920KYK0eAiFJl879KuRS.dQidlcif5AvjgdTAe.','rider','GUL',3,'active','2025-03-20 09:00:00');
+(2,'Lira City Council','lira.admin@bodaerp.site','+256 473 420 123','$2y$10$WTIAkl5szK9GaKL3zu/eGefU2AwkI5XFaAqGrD.yDzI3b777A33Q2','city_admin','LIR',NULL,'active','2025-01-02 09:00:00'),
+(3,'Gulu City Council','gulu.admin@bodaerp.site','+256 471 432 456','$2y$10$WTIAkl5szK9GaKL3zu/eGefU2AwkI5XFaAqGrD.yDzI3b777A33Q2','city_admin','GUL',NULL,'active','2025-03-02 09:00:00'),
+(4,'Kampala City Council','kampala.admin@bodaerp.site','+256 417 123 456','$2y$10$WTIAkl5szK9GaKL3zu/eGefU2AwkI5XFaAqGrD.yDzI3b777A33Q2','city_admin','KLA',NULL,'active','2025-06-02 09:00:00'),
+(5,'Ocen Patrick','chair.railway@bodaerp.site','+256 772 111 001','$2y$10$uBrs2SttZK63SVWohYSb0.OdWxPY3fIFMIjWniqdhpP0qLr.C/PZe','chairperson','LIR',1,'active','2025-01-16 09:00:00'),
+(6,'Komakech Denis','chair.gulumain@bodaerp.site','+256 772 222 001','$2y$10$uBrs2SttZK63SVWohYSb0.OdWxPY3fIFMIjWniqdhpP0qLr.C/PZe','chairperson','GUL',3,'active','2025-03-11 09:00:00'),
+(7,'Nakato Sarah','chair.nakasero@bodaerp.site','+256 772 333 001','$2y$10$uBrs2SttZK63SVWohYSb0.OdWxPY3fIFMIjWniqdhpP0qLr.C/PZe','chairperson','KLA',4,'active','2025-06-11 09:00:00'),
+(8,'Akello James','james.rider@bodaerp.site','+256 772 123 456','$2y$10$ByGLTF9YSM/CRJ920KYK0eAiFJl879KuRS.dQidlcif5AvjgdTAe.','rider','LIR',1,'active','2025-02-01 09:00:00'),
+(9,'Aciro Grace','grace.rider@bodaerp.site','+256 772 222 456','$2y$10$ByGLTF9YSM/CRJ920KYK0eAiFJl879KuRS.dQidlcif5AvjgdTAe.','rider','GUL',3,'active','2025-03-20 09:00:00');
 
 -- ------------------------------------------------------------
 -- 4b. Government / national portal accounts (city_id & stage_id NULL)
 -- ------------------------------------------------------------
 INSERT INTO `users` (`id`,`name`,`email`,`phone`,`password_hash`,`role`,`city_id`,`stage_id`,`agency_name`,`status`,`created_at`) VALUES
-(10,'Ministry of Works & Transport','works@gov.bodaerp.com','+256 414 320 452','$2y$10$TgchybDM.KANJVJ4NZQagOqJS9vpySi3RvIFTLIqGtncDB3McOobi','government',NULL,NULL,'Ministry of Works & Transport','active','2026-01-05 09:00:00'),
-(11,'Uganda Revenue Authority','ura@gov.bodaerp.com','+256 417 442 040','$2y$10$TgchybDM.KANJVJ4NZQagOqJS9vpySi3RvIFTLIqGtncDB3McOobi','government',NULL,NULL,'Uganda Revenue Authority (URA)','active','2026-01-05 09:00:00'),
-(12,'Ministry of Local Government','localgov@gov.bodaerp.com','+256 414 347 083','$2y$10$TgchybDM.KANJVJ4NZQagOqJS9vpySi3RvIFTLIqGtncDB3McOobi','government',NULL,NULL,'Ministry of Local Government','active','2026-01-05 09:00:00'),
-(13,'Ministry of ICT & National Guidance','ict@gov.bodaerp.com','+256 414 236 954','$2y$10$TgchybDM.KANJVJ4NZQagOqJS9vpySi3RvIFTLIqGtncDB3McOobi','government',NULL,NULL,'Ministry of ICT & National Guidance','active','2026-01-05 09:00:00');
+(10,'Ministry of Works & Transport','works@bodaerp.site','+256 414 320 452','$2y$10$TgchybDM.KANJVJ4NZQagOqJS9vpySi3RvIFTLIqGtncDB3McOobi','government',NULL,NULL,'Ministry of Works & Transport','active','2026-01-05 09:00:00'),
+(11,'Uganda Revenue Authority','ura@bodaerp.site','+256 417 442 040','$2y$10$TgchybDM.KANJVJ4NZQagOqJS9vpySi3RvIFTLIqGtncDB3McOobi','government',NULL,NULL,'Uganda Revenue Authority (URA)','active','2026-01-05 09:00:00'),
+(12,'Ministry of Local Government','localgov@bodaerp.site','+256 414 347 083','$2y$10$TgchybDM.KANJVJ4NZQagOqJS9vpySi3RvIFTLIqGtncDB3McOobi','government',NULL,NULL,'Ministry of Local Government','active','2026-01-05 09:00:00'),
+(13,'Ministry of ICT & National Guidance','ict@bodaerp.site','+256 414 236 954','$2y$10$TgchybDM.KANJVJ4NZQagOqJS9vpySi3RvIFTLIqGtncDB3McOobi','government',NULL,NULL,'Ministry of ICT & National Guidance','active','2026-01-05 09:00:00');
 
 -- ------------------------------------------------------------
 -- 5. Riders
 -- ------------------------------------------------------------
 INSERT INTO `riders`
 (`id`,`user_id`,`city_id`,`stage_id`,`id_number`,`full_name`,`nin`,`date_of_birth`,`gender`,`marital_status`,`phone`,`email`,`physical_address`,`next_of_kin_name`,`next_of_kin_contact`,`bike_plate`,`bike_model`,`route`,`photo_path`,`status`,`member_since`,`expiry_date`,`annual_tax`,`created_by`,`created_at`) VALUES
-(1,8,'LIR',1,'BODA-LIR-000101','Akello James','CM95001234AB','1992-04-11','Male','Married','+256 772 123 456','james.rider@bodaerp.com','Railway Ward, Lira','Akello Mary','+256 772 900 101','UAX 123A','Bajaj Boxer 150','Railway - Town',NULL,'active','2025-02-01','2027-02-01',50000.00,2,'2025-02-01 09:00:00'),
-(2,9,'GUL',3,'BODA-GUL-000102','Aciro Grace','CM94005678CD','1994-09-02','Female','Single','+256 772 222 456','grace.rider@bodaerp.com','Gulu Central','Aciro Peter','+256 772 900 102','UBK 456C','TVS Star HLX','Main - Layibi',NULL,'active','2025-03-20','2027-03-20',45000.00,3,'2025-03-20 09:00:00'),
-(3,NULL,'LIR',1,'BODA-LIR-000103','Okello Brian','CM91002233EF','1991-01-19','Male','Single','+256 772 300 103','okello.brian@example.com','Adyel Division, Lira','Okello Jane','+256 772 900 103','UAP 778D','Bajaj Boxer 150','Railway - Town',NULL,'active','2025-04-05','2027-04-05',50000.00,2,'2025-04-05 09:00:00'),
-(4,NULL,'LIR',2,'BODA-LIR-000104','Adong Sarah','CM90004455GH','1990-06-30','Female','Married','+256 772 300 104','adong.sarah@example.com','Central Market, Lira','Adong Paul','+256 772 900 104','UAQ 991E','TVS Star HLX','Market - Town',NULL,'expired','2024-05-10','2026-05-10',50000.00,2,'2024-05-10 09:00:00'),
-(5,NULL,'GUL',3,'BODA-GUL-000105','Otim Daniel','CM89006677IJ','1989-11-12','Male','Single','+256 772 300 105','otim.daniel@example.com','Layibi, Gulu','Otim Rose','+256 772 900 105','UBL 220F','Boxer 100','Main - Layibi',NULL,'pending','2026-08-01',NULL,45000.00,3,'2026-08-01 09:00:00'),
-(6,NULL,'KLA',4,'BODA-KLA-000106','Nabirye Faith','CM93008899KL','1993-03-25','Female','Married','+256 772 300 106','nabirye.faith@example.com','Nakasero, Kampala','Nabirye Joseph','+256 772 900 106','UBA 145G','Bajaj Boxer 150','Nakasero - City Square',NULL,'active','2025-07-01','2027-07-01',60000.00,4,'2025-07-01 09:00:00'),
-(7,NULL,'KLA',4,'BODA-KLA-000107','Ssali Ivan','CM92009900MN','1992-08-08','Male','Single','+256 772 300 107','ssali.ivan@example.com','Old Kampala','Ssali Grace','+256 772 900 107','UBB 662H','TVS Apache','Nakasero - City Square',NULL,'active','2025-07-15','2027-07-15',60000.00,4,'2025-07-15 09:00:00'),
-(8,NULL,'LIR',2,'BODA-LIR-000108','Ejang Moses','CM88001122OP','1988-12-01','Male','Married','+256 772 300 108','ejang.moses@example.com','Ojwina, Lira','Ejang Betty','+256 772 900 108','UAR 334J','Boxer 100','Market - Town',NULL,'active','2025-05-20','2027-05-20',50000.00,2,'2025-05-20 09:00:00');
+(1,8,'LIR',1,'BODA-LIR-000101','Akello James','CM95001234AB','1992-04-11','Male','Married','+256 772 123 456','james.rider@bodaerp.site','Railway Ward, Lira','Akello Mary','+256 772 900 101','UAX 123A','Bajaj Boxer 150','Railway - Town',NULL,'active','2025-02-01','2027-02-01',50000.00,2,'2025-02-01 09:00:00'),
+(2,9,'GUL',3,'BODA-GUL-000102','Aciro Grace','CM94005678CD','1994-09-02','Female','Single','+256 772 222 456','grace.rider@bodaerp.site','Gulu Central','Aciro Peter','+256 772 900 102','UBK 456C','TVS Star HLX','Main - Layibi',NULL,'active','2025-03-20','2027-03-20',45000.00,3,'2025-03-20 09:00:00'),
+(3,NULL,'LIR',1,'BODA-LIR-000103','Okello Brian','CM91002233EF','1991-01-19','Male','Single','+256 772 300 103','okello.brian@bodaerp.site','Adyel Division, Lira','Okello Jane','+256 772 900 103','UAP 778D','Bajaj Boxer 150','Railway - Town',NULL,'active','2025-04-05','2027-04-05',50000.00,2,'2025-04-05 09:00:00'),
+(4,NULL,'LIR',2,'BODA-LIR-000104','Adong Sarah','CM90004455GH','1990-06-30','Female','Married','+256 772 300 104','adong.sarah@bodaerp.site','Central Market, Lira','Adong Paul','+256 772 900 104','UAQ 991E','TVS Star HLX','Market - Town',NULL,'expired','2024-05-10','2026-05-10',50000.00,2,'2024-05-10 09:00:00'),
+(5,NULL,'GUL',3,'BODA-GUL-000105','Otim Daniel','CM89006677IJ','1989-11-12','Male','Single','+256 772 300 105','otim.daniel@bodaerp.site','Layibi, Gulu','Otim Rose','+256 772 900 105','UBL 220F','Boxer 100','Main - Layibi',NULL,'pending','2026-08-01',NULL,45000.00,3,'2026-08-01 09:00:00'),
+(6,NULL,'KLA',4,'BODA-KLA-000106','Nabirye Faith','CM93008899KL','1993-03-25','Female','Married','+256 772 300 106','nabirye.faith@bodaerp.site','Nakasero, Kampala','Nabirye Joseph','+256 772 900 106','UBA 145G','Bajaj Boxer 150','Nakasero - City Square',NULL,'active','2025-07-01','2027-07-01',60000.00,4,'2025-07-01 09:00:00'),
+(7,NULL,'KLA',4,'BODA-KLA-000107','Ssali Ivan','CM92009900MN','1992-08-08','Male','Single','+256 772 300 107','ssali.ivan@bodaerp.site','Old Kampala','Ssali Grace','+256 772 900 107','UBB 662H','TVS Apache','Nakasero - City Square',NULL,'active','2025-07-15','2027-07-15',60000.00,4,'2025-07-15 09:00:00'),
+(8,NULL,'LIR',2,'BODA-LIR-000108','Ejang Moses','CM88001122OP','1988-12-01','Male','Married','+256 772 300 108','ejang.moses@bodaerp.site','Ojwina, Lira','Ejang Betty','+256 772 900 108','UAR 334J','Boxer 100','Market - Town',NULL,'active','2025-05-20','2027-05-20',50000.00,2,'2025-05-20 09:00:00');
 
 -- ------------------------------------------------------------
 -- 6. Payments

@@ -1,0 +1,14 @@
+# Any other plain-HTTP request goes to HTTPS. Let's Encrypt challenges are answered by Traefik before routing.
+http:
+  routers:
+    to-https:
+      entryPoints: [web]
+      rule: HostRegexp(`.+`)
+      priority: 1
+      middlewares: [to-https]
+      service: noop@internal
+  middlewares:
+    to-https:
+      redirectScheme:
+        scheme: https
+        permanent: true

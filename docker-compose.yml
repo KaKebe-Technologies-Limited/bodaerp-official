@@ -58,10 +58,14 @@ services:
       DB_NAME: bodaerp
       DB_USER: root
       DB_PASS: ${DOCKER_DB_ROOT_PASSWORD:-bodaerp-dev}
-      SMTP_HOST: mailpit
-      SMTP_PORT: "1025"
-      SMTP_SECURE: "none"
-      MAIL_FROM: no-reply@bodaerp.local
+      # Mailpit catches every email unless .env names a real SMTP server (then mail really leaves the laptop).
+      SMTP_HOST: ${SMTP_HOST:-mailpit}
+      SMTP_PORT: ${SMTP_PORT:-1025}
+      SMTP_SECURE: ${SMTP_SECURE:-none}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+      MAIL_FROM: ${MAIL_FROM:-no-reply@bodaerp.site}
+      MAIL_REDIRECT_TO: ${MAIL_REDIRECT_TO:-}
       SHOW_DEMO_LOGINS: "1"
       SEED_DEMO: "1"
       UPLOAD_PATH: /var/www/uploads

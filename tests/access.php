@@ -12,11 +12,11 @@ $t = new TestRun();
 echo "Testing access walls on $base\n\n";
 
 $accounts = [
-    'super_admin' => ['admin@bodaerp.com', 'admin123'],
-    'city_admin'  => ['council@liracityuganda.go.ug', 'lira2025'],
-    'chairperson' => ['ocen@railway.lira.ug', 'chair123'],
-    'rider'       => ['akello@bodaerp.com', 'rider123'],
-    'government'  => ['works@gov.bodaerp.com', 'Gov@2026'],
+    'super_admin' => ['admin@bodaerp.site', 'admin123'],
+    'city_admin'  => ['lira@bodaerp.site', 'lira2025'],
+    'chairperson' => ['ocen@bodaerp.site', 'chair123'],
+    'rider'       => ['akello@bodaerp.site', 'rider123'],
+    'government'  => ['works@bodaerp.site', 'Gov@2026'],
 ];
 $folders = ['super_admin' => 'superadmin', 'city_admin' => 'citycouncil', 'chairperson' => 'chairperson', 'rider' => 'rider', 'government' => 'government'];
 $jars = [];

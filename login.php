@@ -46,23 +46,23 @@ $demoRoles = [
     'gov'   => ['Government', 'National', 'fa-landmark'],
 ];
 $demo = [
-    ['super', 'Super Admin', 'admin@bodaerp.com', 'admin123'],
-    ['city', 'City (Lira)', 'council@liracityuganda.go.ug', 'lira2025'],
-    ['city', 'City (Gulu)', 'council@gulucity.go.ug', 'gulu2025'],
-    ['city', 'City (Kampala)', 'council@kcca.go.ug', 'kampala2025'],
-    ['city', 'City (Mbarara)', 'council@mbararacity.go.ug', 'mbarara2025'],
-    ['stage', 'Chairperson (Lira)', 'ocen@railway.lira.ug', 'chair123'],
-    ['stage', 'Chairperson (Gulu)', 'komakech@gulumain.gulu.ug', 'chair123'],
-    ['stage', 'Chairperson (Kampala)', 'nakato@nakasero.kla.ug', 'chair123'],
-    ['stage', 'Chairperson (Mbarara)', 'tumwine@mbararamain.mba.ug', 'chair123'],
-    ['rider', 'Rider (Lira)', 'akello@bodaerp.com', 'rider123'],
-    ['rider', 'Rider (Gulu)', 'aciro@bodaerp.com', 'rider123'],
-    ['rider', 'Rider (Kampala)', 'mukasa@bodaerp.com', 'rider123'],
-    ['rider', 'Rider (Mbarara)', 'kyomuhendo@bodaerp.com', 'rider123'],
-    ['gov', 'Government (Works & Transport)', 'works@gov.bodaerp.com', 'Gov@2026'],
-    ['gov', 'Government (URA)', 'ura@gov.bodaerp.com', 'Gov@2026'],
-    ['gov', 'Government (Local Govt.)', 'localgov@gov.bodaerp.com', 'Gov@2026'],
-    ['gov', 'Government (ICT)', 'ict@gov.bodaerp.com', 'Gov@2026'],
+    ['super', 'Super Admin', 'admin@bodaerp.site', 'admin123'],
+    ['city', 'City (Lira)', 'lira@bodaerp.site', 'lira2025'],
+    ['city', 'City (Gulu)', 'gulu@bodaerp.site', 'gulu2025'],
+    ['city', 'City (Kampala)', 'kampala@bodaerp.site', 'kampala2025'],
+    ['city', 'City (Mbarara)', 'mbarara@bodaerp.site', 'mbarara2025'],
+    ['stage', 'Chairperson (Lira)', 'ocen@bodaerp.site', 'chair123'],
+    ['stage', 'Chairperson (Gulu)', 'komakech@bodaerp.site', 'chair123'],
+    ['stage', 'Chairperson (Kampala)', 'nakato@bodaerp.site', 'chair123'],
+    ['stage', 'Chairperson (Mbarara)', 'tumwine@bodaerp.site', 'chair123'],
+    ['rider', 'Rider (Lira)', 'akello@bodaerp.site', 'rider123'],
+    ['rider', 'Rider (Gulu)', 'aciro@bodaerp.site', 'rider123'],
+    ['rider', 'Rider (Kampala)', 'mukasa@bodaerp.site', 'rider123'],
+    ['rider', 'Rider (Mbarara)', 'kyomuhendo@bodaerp.site', 'rider123'],
+    ['gov', 'Government (Works & Transport)', 'works@bodaerp.site', 'Gov@2026'],
+    ['gov', 'Government (URA)', 'ura@bodaerp.site', 'Gov@2026'],
+    ['gov', 'Government (Local Govt.)', 'localgov@bodaerp.site', 'Gov@2026'],
+    ['gov', 'Government (ICT)', 'ict@bodaerp.site', 'Gov@2026'],
 ];
 $firstOfRole = [];
 foreach ($demo as [$r, , $de, $dp]) $firstOfRole[$r] ??= [$de, $dp];
@@ -97,7 +97,7 @@ require __DIR__ . '/packages/frontend/partials/auth-start.php';
                     <label for="email">Email address or phone number</label>
                     <div class="input-box">
                         <i class="fas fa-user" aria-hidden="true"></i>
-                        <input type="text" id="email" name="email" value="<?= h($email) ?>" placeholder="name@example.com or 0772 123456" autocomplete="username" inputmode="email" required autofocus>
+                        <input type="text" id="email" name="email" value="<?= h($email) ?>" placeholder="name@bodaerp.site or 0772 123456" autocomplete="username" inputmode="email" required autofocus>
                     </div>
                 </div>
                 <div class="login-field">

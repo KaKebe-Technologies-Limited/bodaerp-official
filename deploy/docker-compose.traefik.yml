@@ -1,0 +1,54 @@
+# Server overlay for the Kakebe VPS. The server's .env selects it, so the command there is still only
+#   docker compose up -d --build
+# with  COMPOSE_FILE=docker-compose.yml:deploy/docker-compose.traefik.yml  in .env (see deploy/make-env.sh).
+# Differences from the laptop stack: live mode, no demo data or demo sign-ins, no published ports (the shared
+# Traefik in deploy/traefik/ reaches the app over the external "web" network and holds the certificates),
+# production PHP and Apache settings, and no Mailpit or phpMyAdmin.
+services:
+  db:
+    ports: !reset []
+
+  app:
+    depends_on: !override
+      db:
+        condition: service_healthy
+    environment:
+      APP_ENV: live
+      APP_URL: ${APP_URL:-https://bodaerp.site}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-465}
+      SMTP_SECURE: ${SMTP_SECURE:-ssl}
+      MAIL_FROM: ${MAIL_FROM:-no-reply@bodaerp.site}
+      SHOW_DEMO_LOGINS: "0"
+      SEED_DEMO: "0"
+      USSD_TOKEN: ${USSD_TOKEN:-}
+      MAILPIT_API: ""
+      TEST_BASE_URL: ""
+    volumes:
+      - ./docker/php/php-prod.ini:/usr/local/etc/php/conf.d/zz-bodaerp-dev.ini:ro
+      - ./docker/php/apache-site.prod.conf:/etc/apache2/sites-available/000-default.conf:ro
+    ports: !reset []
+    networks: [default, web]
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS -o /dev/null http://localhost/login.php || exit 1"]
+    labels:
+      traefik.enable: "true"
+      traefik.docker.network: web
+      traefik.http.routers.bodaerp.rule: Host(`bodaerp.site`) || Host(`www.bodaerp.site`)
+      traefik.http.routers.bodaerp.entrypoints: websecure
+      traefik.http.routers.bodaerp.tls.certresolver: le
+      traefik.http.routers.bodaerp.middlewares: bodaerp-www
+      traefik.http.middlewares.bodaerp-www.redirectregex.regex: ^https://www\.bodaerp\.site/(.*)
+      traefik.http.middlewares.bodaerp-www.redirectregex.replacement: https://bodaerp.site/$${1}
+      traefik.http.middlewares.bodaerp-www.redirectregex.permanent: "true"
+      traefik.http.services.bodaerp.loadbalancer.server.port: "80"
+
+  mailpit:
+    profiles: ["laptop-only"]
+
+  phpmyadmin:
+    profiles: ["laptop-only"]
+
+networks:
+  web:
+    external: true

@@ -62,7 +62,7 @@ try {
     // 1. Super admin (bootstrapped first: cities.created_by references it)
     runQuery("INSERT INTO users (name,email,phone,password_hash,role,city_id,stage_id,status,created_at)
               VALUES (:name,:email,:phone,:ph,'super_admin',NULL,NULL,'active',:created_at)", [
-        'name' => 'Kakebe Admin', 'email' => 'admin@bodaerp.com', 'phone' => '+256 700 000 001',
+        'name' => 'Kakebe Admin', 'email' => 'admin@bodaerp.site', 'phone' => '+256 700 000 001',
         'ph' => password_hash('admin123', PASSWORD_DEFAULT), 'created_at' => '2024-01-01 09:00:00',
     ]);
     $superAdminId = (int) $db->insert_id;
@@ -70,10 +70,10 @@ try {
 
     // 1b. National government portal accounts (read-only role, no city)
     foreach ([
-        ['Ministry of Works & Transport',       'works@gov.bodaerp.com',    'Ministry of Works & Transport'],
-        ['Uganda Revenue Authority',            'ura@gov.bodaerp.com',      'Uganda Revenue Authority (URA)'],
-        ['Ministry of Local Government',        'localgov@gov.bodaerp.com', 'Ministry of Local Government'],
-        ['Ministry of ICT & National Guidance', 'ict@gov.bodaerp.com',      'Ministry of ICT & National Guidance'],
+        ['Ministry of Works & Transport',       'works@bodaerp.site',    'Ministry of Works & Transport'],
+        ['Uganda Revenue Authority',            'ura@bodaerp.site',      'Uganda Revenue Authority (URA)'],
+        ['Ministry of Local Government',        'localgov@bodaerp.site', 'Ministry of Local Government'],
+        ['Ministry of ICT & National Guidance', 'ict@bodaerp.site',      'Ministry of ICT & National Guidance'],
     ] as [$govName, $govEmail, $govAgency]) {
         runQuery("INSERT INTO users (name,email,phone,password_hash,role,city_id,stage_id,agency_name,status,created_at)
                   VALUES (:name,:email,NULL,:ph,'government',NULL,NULL,:agency,'active',:created_at)", [
@@ -85,16 +85,16 @@ try {
 
     $cities = [
         ['id'=>'LIR','name'=>'Lira City','logo'=>'/assets/images/lcc.png','fee'=>50000,'status'=>'active',
-         'email'=>'council@liracityuganda.go.ug','phone'=>'+256 473 420 123','address'=>'Lira City Council, Parliament Avenue, Lira, Uganda',
+         'email'=>'lira@bodaerp.site','phone'=>'+256 473 420 123','address'=>'Lira City Council, Parliament Avenue, Lira, Uganda',
          'gateway'=>'MTN MoMo','split'=>[55,26,9,10],'target'=>70,'created'=>'2025-01-01'],
         ['id'=>'GUL','name'=>'Gulu City','logo'=>'/assets/images/logo.png','fee'=>45000,'status'=>'active',
-         'email'=>'council@gulucity.go.ug','phone'=>'+256 471 432 456','address'=>'Gulu City Council, Gulu, Uganda',
+         'email'=>'gulu@bodaerp.site','phone'=>'+256 471 432 456','address'=>'Gulu City Council, Gulu, Uganda',
          'gateway'=>'Airtel Money','split'=>[50,28,10,12],'target'=>70,'created'=>'2025-03-01'],
         ['id'=>'KLA','name'=>'Kampala City','logo'=>'/assets/images/logo.png','fee'=>60000,'status'=>'active',
-         'email'=>'council@kcca.go.ug','phone'=>'+256 417 123 456','address'=>'KCCA, City Square, Kampala, Uganda',
+         'email'=>'kampala@bodaerp.site','phone'=>'+256 417 123 456','address'=>'KCCA, City Square, Kampala, Uganda',
          'gateway'=>'MTN MoMo','split'=>[58,22,9,11],'target'=>75,'created'=>'2025-06-01'],
         ['id'=>'MBA','name'=>'Mbarara City','logo'=>'/assets/images/logo.png','fee'=>48000,'status'=>'pending',
-         'email'=>'council@mbararacity.go.ug','phone'=>'+256 485 456 789','address'=>'Mbarara City Council, Mbarara, Uganda',
+         'email'=>'mbarara@bodaerp.site','phone'=>'+256 485 456 789','address'=>'Mbarara City Council, Mbarara, Uganda',
          'gateway'=>'Both','split'=>[52,26,10,12],'target'=>70,'created'=>'2026-01-15'],
     ];
     $citySql = "INSERT INTO cities (id,name,country,currency,logo_path,annual_fee,fiscal_year,id_prefix,status,
@@ -139,10 +139,10 @@ try {
                 VALUES (:name,:email,:phone,:ph,:role,:city,:stage,'active',:created_at)";
 
     $cityAdmins = [
-        ['name'=>'Lira City Council','email'=>'council@liracityuganda.go.ug','phone'=>'+256 473 420 123','pass'=>'lira2025','city'=>'LIR','created'=>'2025-01-01'],
-        ['name'=>'Gulu City Council','email'=>'council@gulucity.go.ug','phone'=>'+256 471 432 456','pass'=>'gulu2025','city'=>'GUL','created'=>'2025-03-01'],
-        ['name'=>'Kampala City Council','email'=>'council@kcca.go.ug','phone'=>'+256 417 123 456','pass'=>'kampala2025','city'=>'KLA','created'=>'2025-06-01'],
-        ['name'=>'Mbarara City Council','email'=>'council@mbararacity.go.ug','phone'=>'+256 485 456 789','pass'=>'mbarara2025','city'=>'MBA','created'=>'2026-01-15'],
+        ['name'=>'Lira City Council','email'=>'lira@bodaerp.site','phone'=>'+256 473 420 123','pass'=>'lira2025','city'=>'LIR','created'=>'2025-01-01'],
+        ['name'=>'Gulu City Council','email'=>'gulu@bodaerp.site','phone'=>'+256 471 432 456','pass'=>'gulu2025','city'=>'GUL','created'=>'2025-03-01'],
+        ['name'=>'Kampala City Council','email'=>'kampala@bodaerp.site','phone'=>'+256 417 123 456','pass'=>'kampala2025','city'=>'KLA','created'=>'2025-06-01'],
+        ['name'=>'Mbarara City Council','email'=>'mbarara@bodaerp.site','phone'=>'+256 485 456 789','pass'=>'mbarara2025','city'=>'MBA','created'=>'2026-01-15'],
     ];
     $cityAdminIds = []; // city => id
     foreach ($cityAdmins as $u) {
@@ -152,11 +152,11 @@ try {
     }
 
     $chairpersons = [
-        ['name'=>'Ocen Patrick','email'=>'ocen@railway.lira.ug','phone'=>'+256 772 111 001','city'=>'LIR','stage'=>'LIR-STG-001','created'=>'2025-01-15'],
-        ['name'=>'Opio John','email'=>'opio@market.lira.ug','phone'=>'+256 772 111 002','city'=>'LIR','stage'=>'LIR-STG-002','created'=>'2025-01-15'],
-        ['name'=>'Komakech Denis','email'=>'komakech@gulumain.gulu.ug','phone'=>'+256 772 222 001','city'=>'GUL','stage'=>'GUL-STG-001','created'=>'2025-03-10'],
-        ['name'=>'Nakato Sarah','email'=>'nakato@nakasero.kla.ug','phone'=>'+256 772 333 001','city'=>'KLA','stage'=>'KLA-STG-001','created'=>'2025-06-10'],
-        ['name'=>'Tumwine Edward','email'=>'tumwine@mbararamain.mba.ug','phone'=>'+256 772 444 001','city'=>'MBA','stage'=>'MBA-STG-001','created'=>'2026-01-20'],
+        ['name'=>'Ocen Patrick','email'=>'ocen@bodaerp.site','phone'=>'+256 772 111 001','city'=>'LIR','stage'=>'LIR-STG-001','created'=>'2025-01-15'],
+        ['name'=>'Opio John','email'=>'opio@bodaerp.site','phone'=>'+256 772 111 002','city'=>'LIR','stage'=>'LIR-STG-002','created'=>'2025-01-15'],
+        ['name'=>'Komakech Denis','email'=>'komakech@bodaerp.site','phone'=>'+256 772 222 001','city'=>'GUL','stage'=>'GUL-STG-001','created'=>'2025-03-10'],
+        ['name'=>'Nakato Sarah','email'=>'nakato@bodaerp.site','phone'=>'+256 772 333 001','city'=>'KLA','stage'=>'KLA-STG-001','created'=>'2025-06-10'],
+        ['name'=>'Tumwine Edward','email'=>'tumwine@bodaerp.site','phone'=>'+256 772 444 001','city'=>'MBA','stage'=>'MBA-STG-001','created'=>'2026-01-20'],
     ];
     $chairpersonIdByStage = []; // stageCode => userId
     foreach ($chairpersons as $u) {
@@ -166,10 +166,10 @@ try {
     }
 
     $demoRiderUsers = [
-        ['name'=>'Akello James','email'=>'akello@bodaerp.com','phone'=>'+256 772 123 456','city'=>'LIR','stage'=>'LIR-STG-001','idnum'=>'BODA-LIR-004521','created'=>'2025-02-01'],
-        ['name'=>'Aciro Grace','email'=>'aciro@bodaerp.com','phone'=>'+256 772 222 456','city'=>'GUL','stage'=>'GUL-STG-001','idnum'=>'BODA-GUL-001042','created'=>'2025-03-20'],
-        ['name'=>'Mukasa Ronald','email'=>'mukasa@bodaerp.com','phone'=>'+256 772 333 456','city'=>'KLA','stage'=>'KLA-STG-001','idnum'=>'BODA-KLA-002310','created'=>'2025-06-20'],
-        ['name'=>'Kyomuhendo Betty','email'=>'kyomuhendo@bodaerp.com','phone'=>'+256 772 444 456','city'=>'MBA','stage'=>'MBA-STG-001','idnum'=>'BODA-MBA-000112','created'=>'2026-01-25'],
+        ['name'=>'Akello James','email'=>'akello@bodaerp.site','phone'=>'+256 772 123 456','city'=>'LIR','stage'=>'LIR-STG-001','idnum'=>'BODA-LIR-004521','created'=>'2025-02-01'],
+        ['name'=>'Aciro Grace','email'=>'aciro@bodaerp.site','phone'=>'+256 772 222 456','city'=>'GUL','stage'=>'GUL-STG-001','idnum'=>'BODA-GUL-001042','created'=>'2025-03-20'],
+        ['name'=>'Mukasa Ronald','email'=>'mukasa@bodaerp.site','phone'=>'+256 772 333 456','city'=>'KLA','stage'=>'KLA-STG-001','idnum'=>'BODA-KLA-002310','created'=>'2025-06-20'],
+        ['name'=>'Kyomuhendo Betty','email'=>'kyomuhendo@bodaerp.site','phone'=>'+256 772 444 456','city'=>'MBA','stage'=>'MBA-STG-001','idnum'=>'BODA-MBA-000112','created'=>'2026-01-25'],
     ];
     $demoRiderUserIds = []; // idnum => userId
     foreach ($demoRiderUsers as $u) {

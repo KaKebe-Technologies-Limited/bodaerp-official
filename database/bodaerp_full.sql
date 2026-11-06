@@ -285,7 +285,7 @@ CREATE TABLE platform_settings (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 INSERT INTO platform_settings (id, support_email, support_phone)
-VALUES (1, 'support@kakebe.tech', '+256 700 000 000');
+VALUES (1, 'support@bodaerp.site', '+256 700 000 000');
 
 -- VIEWS (CREATE OR REPLACE: works on shared hosting)
 

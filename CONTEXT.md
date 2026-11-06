@@ -1,5 +1,5 @@
 # Project Context
-Last updated: 2026-11-06
+Last updated: 2026-11-07
 
 ## Current task
 2026-11-06: rounds 4 and 5 (own controls, homepage, portal redesign, ID cards rebuilt on the national-ID layout,

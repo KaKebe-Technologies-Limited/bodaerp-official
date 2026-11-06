@@ -7,7 +7,7 @@ RUN apt-get update \
  && apt-get install -y --no-install-recommends libpng-dev libjpeg62-turbo-dev libfreetype6-dev libzip-dev libicu-dev mariadb-client \
  && docker-php-ext-configure gd --with-freetype --with-jpeg \
  && docker-php-ext-install -j"$(nproc)" mysqli gd zip intl exif \
- && a2enmod rewrite headers \
+ && a2enmod rewrite headers remoteip \
  && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 COPY docker/php/php-dev.ini /usr/local/etc/php/conf.d/zz-bodaerp-dev.ini

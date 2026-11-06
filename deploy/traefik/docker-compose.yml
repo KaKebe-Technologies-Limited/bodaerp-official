@@ -1,0 +1,46 @@
+# Shared reverse proxy for every site on the Kakebe VPS (BodaERP and Roru). Lives on the server in /opt/traefik;
+# this copy keeps it reproducible. Start it with  docker compose up -d  in that folder.
+# - bodaerp.site: certificate from Let's Encrypt (HTTP challenge), routed by the labels in
+#   deploy/docker-compose.traefik.yml.
+# - Roru (ripplesofresilienceug.org): certificate from Let's Encrypt too, routed by dynamic/roru.yml to
+#   roru_nginx over plain HTTP (Roru's own overlay and nginx config: deploy/traefik/roru/).
+# Traefik renews every certificate itself about 30 days before it expires; nothing else to schedule.
+name: traefik
+
+services:
+  traefik:
+    image: traefik:v3.6
+    restart: unless-stopped
+    command:
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --providers.docker.network=web
+      - --providers.file.directory=/etc/traefik/dynamic
+      - --providers.file.watch=true
+      - --entrypoints.web.address=:80
+      - --entrypoints.websecure.address=:443
+      - --certificatesresolvers.le.acme.storage=/letsencrypt/acme.json
+      - --certificatesresolvers.le.acme.httpchallenge.entrypoint=web
+      - --log.level=WARN
+      - --accesslog=false
+      - --ping=true
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./dynamic:/etc/traefik/dynamic:ro
+      - letsencrypt:/letsencrypt
+    networks: [web]
+    healthcheck:
+      test: ["CMD", "traefik", "healthcheck", "--ping"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  letsencrypt:
+
+networks:
+  web:
+    external: true

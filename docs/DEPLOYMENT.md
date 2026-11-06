@@ -34,7 +34,7 @@ There is no build step: **the files are the application**.
 6. **Create the first Super Admin.** A new database has no users, and the demo accounts must **not** be used.
    - With SSH / a terminal:
      ```bash
-     php database/create_admin.php --name "Your Name" --email you@yourdomain.com
+     php database/create_admin.php --name "Your Name" --email you@bodaerp.site
      ```
      It prints a random password once. Change it after signing in.
    - Without a terminal: on your own computer run `php database/create_admin.php --hash "a long password"`,

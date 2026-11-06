@@ -1088,7 +1088,7 @@
             if (el.dataset.min !== undefined && n < Number(el.dataset.min)) return 'Use ' + el.dataset.min + ' or more.';
             if (el.dataset.max !== undefined && n > Number(el.dataset.max)) return 'Use ' + el.dataset.max + ' or less.';
         }
-        if (v.typeMismatch) return el.type === 'email' ? 'Enter an email address like name@example.com.' : el.type === 'url' ? 'Enter a full web address starting with https://' : 'Check the format of ' + name.toLowerCase() + '.';
+        if (v.typeMismatch) return el.type === 'email' ? 'Enter an email address like name@bodaerp.site.' : el.type === 'url' ? 'Enter a full web address starting with https://' : 'Check the format of ' + name.toLowerCase() + '.';
         if (v.tooShort) return 'Use at least ' + el.minLength + ' characters (you have ' + el.value.length + ').';
         if (v.tooLong) return 'Use at most ' + el.maxLength + ' characters.';
         if (v.patternMismatch) return el.getAttribute('data-pattern-message') || el.getAttribute('data-tip') || ('Check the format of ' + name.toLowerCase() + '.');

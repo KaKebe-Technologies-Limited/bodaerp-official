@@ -1,8 +1,8 @@
 <?php
 // BodaERP: create the first Super Admin (command line only)
-// php database/create_admin.php --name "Jane Doe" --email jane@example.com creates a Super Admin with a
-// random password, printed once php database/create_admin.php --name "Jane Doe" --email jane@example.com
-// --password "a long password" php database/create_admin.php --email jane@example.com --reset sets a new
+// php database/create_admin.php --name "Jane Doe" --email jane@bodaerp.site creates a Super Admin with a
+// random password, printed once php database/create_admin.php --name "Jane Doe" --email jane@bodaerp.site
+// --password "a long password" php database/create_admin.php --email jane@bodaerp.site --reset sets a new
 // random password on an existing account (its role is not changed) php database/create_admin.php --hash "a
 // long password" prints only a password hash: for hosting without a command line: insert it into
 // users.password_hash with phpMyAdmin (see docs/DEPLOYMENT.md)
@@ -23,8 +23,8 @@ $email = trim((string) ($o['email'] ?? ''));
 $name  = trim((string) ($o['name'] ?? ''));
 $reset = isset($o['reset']);
 if (!filter_var($email, FILTER_VALIDATE_EMAIL) || (!$reset && $name === '')) {
-    fwrite(STDERR, "Usage: php database/create_admin.php --name \"Full Name\" --email you@example.com [--password \"...\"]\n"
-                 . "       php database/create_admin.php --email you@example.com --reset\n");
+    fwrite(STDERR, "Usage: php database/create_admin.php --name \"Full Name\" --email you@bodaerp.site [--password \"...\"]\n"
+                 . "       php database/create_admin.php --email you@bodaerp.site --reset\n");
     exit(1);
 }
 

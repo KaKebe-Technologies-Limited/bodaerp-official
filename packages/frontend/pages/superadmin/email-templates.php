@@ -11,7 +11,7 @@ $tpl = $id ? fetchOne("SELECT * FROM email_templates WHERE id = ?", [$id]) : nul
 
 /** Sample values so previews and test emails show realistic content. */
 $sample = function (?string $vars): array {
-    $known = ['name' => 'Akello James', 'email' => 'akello@example.com', 'reset_url' => app_url('reset-password.php?token=sample'),
+    $known = ['name' => 'Akello James', 'email' => 'akello@bodaerp.site', 'reset_url' => app_url('reset-password.php?token=sample'),
         'set_password_url' => app_url('reset-password.php?welcome=1&token=sample'), 'verify_url' => app_url('verify-email.php?token=sample'),
         'portal_url' => app_url('pages/rider/dashboard.php'), 'inbox_url' => app_url('pages/superadmin/inbox.php'), 'admin_url' => app_url('pages/superadmin/data-requests.php'),
         'code' => '482913', 'ip_address' => client_ip(), 'created_by' => $_SESSION['name'] ?? 'Administrator', 'role' => 'Rider',

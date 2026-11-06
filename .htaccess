@@ -14,7 +14,7 @@ RewriteEngine On
 # Never serve secrets, tooling, docs, VCS metadata or SQL dumps
 RewriteRule (^|/)\.(?!well-known/) - [F,L]
 RewriteRule \.(sql|md|yml|yaml|log|sh|ini|lock|dist)$ - [F,L]
-RewriteRule ^(database|tests|storage|docker|docs)(/|$) - [F,L]
+RewriteRule ^(database|tests|storage|docker|docs|deploy|audit)(/|$) - [F,L]
 RewriteRule ^ipn_logs\.txt$ - [F,L]
 RewriteRule ^config/ - [F,L]
 

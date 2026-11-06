@@ -246,7 +246,7 @@ $totalRidersAll  = (int) fetchValue("SELECT COUNT(*) FROM riders WHERE deleted_a
                         </div>
                         <div class="col-md-6">
                             <label for="cityEmail" class="form-label fw-semibold">Contact email</label>
-                            <input type="email" class="form-control" name="contact_email" id="cityEmail" placeholder="council@city.go.ug">
+                            <input type="email" class="form-control" name="contact_email" id="cityEmail" placeholder="city@bodaerp.site">
                         </div>
                         <div class="col-md-6">
                             <label for="cityPhone" class="form-label fw-semibold">Contact phone</label>

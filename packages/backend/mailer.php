@@ -14,13 +14,19 @@ function mail_config(): array {
         'user'   => env('SMTP_USER', ''),
         'pass'   => env('SMTP_PASS', ''),
         'secure' => strtolower(env('SMTP_SECURE', 'tls')),          // tls (STARTTLS) | ssl | none
-        'from'   => env('MAIL_FROM', env('SMTP_USER', 'no-reply@' . preg_replace('/^www\./', '', $_SERVER['SERVER_NAME'] ?? 'localhost'))),
+        'from'   => env('MAIL_FROM', 'no-reply@bodaerp.site'),
         'from_name' => get_setting('mail_from_name', get_setting('site_name', 'BodaERP')),
         'timeout' => 12,
     ];
 }
 
 function mail_transport_name(): string { return mail_config()['host'] !== '' ? 'smtp' : 'log'; }
+
+/** The one inbox that receives every email while MAIL_REDIRECT_TO is set in the environment or .env; '' when off. */
+function mail_redirect_address(): string {
+    $address = mail_clean_header((string) env('MAIL_REDIRECT_TO', ''));
+    return filter_var($address, FILTER_VALIDATE_EMAIL) ? $address : '';
+}
 
 function mail_clean_header(string $v): string { return trim(str_replace(["\r", "\n", "\0"], ' ', $v)); }
 
@@ -96,7 +102,16 @@ function send_email(string $to, string $subject, string $html, string $text = ''
     if (!filter_var($to, FILTER_VALIDATE_EMAIL)) return false;
     $cfg = mail_config();
     $subject = mail_clean_header($subject);
-    $mime = mail_build_message($cfg, $to, $subject, $html, $text !== '' ? $text : mail_html_to_text($html), $replyTo, $attachments);
+    // MAIL_REDIRECT_TO (owner, 2026-11-06): while the platform is tested, every email goes to one inbox instead
+    // of the real recipient, who is named in the subject and in an X-BodaERP-Original-To header.
+    $intended = $to;
+    $redirect = mail_redirect_address();
+    if ($redirect !== '' && strcasecmp($redirect, $to) !== 0) {
+        $to = $redirect;
+        $subject = '[for ' . $intended . '] ' . $subject;
+    }
+    $mime = mail_build_message($cfg, $to, $subject, $html, $text !== '' ? $text : mail_html_to_text($html), $replyTo, $attachments,
+        $to !== $intended ? $intended : null);
 
     $status = 'logged'; $error = null;
     if ($cfg['host'] !== '') {
@@ -109,7 +124,7 @@ function send_email(string $to, string $subject, string $html, string $text = ''
     }
     try {
         runQuery("INSERT INTO email_log (to_email, subject, template_code, transport, status, error) VALUES (?,?,?,?,?,?)",
-            [$to, mb_substr($subject, 0, 200), $templateCode, $cfg['host'] !== '' ? 'smtp' : 'log', $status, $error]);
+            [$intended, mb_substr($subject, 0, 200), $templateCode, $cfg['host'] !== '' ? 'smtp' : 'log', $status, $error]);
     } catch (Throwable $e) { app_log('mail', 'email_log insert failed: ' . $e->getMessage()); }
     return $status !== 'failed';
 }
@@ -118,7 +133,7 @@ function mail_encode_header(string $v): string {
     return preg_match('/[^\x20-\x7e]/', $v) ? '=?UTF-8?B?' . base64_encode($v) . '?=' : $v;
 }
 
-function mail_build_message(array $cfg, string $to, string $subject, string $html, string $text, ?string $replyTo, array $attachments = []): string {
+function mail_build_message(array $cfg, string $to, string $subject, string $html, string $text, ?string $replyTo, array $attachments = [], ?string $originalTo = null): string {
     $boundary = 'b' . bin2hex(random_bytes(12));
     $mixed = 'm' . bin2hex(random_bytes(12));
     $domain = substr(strrchr($cfg['from'], '@') ?: '@localhost', 1);
@@ -132,6 +147,7 @@ function mail_build_message(array $cfg, string $to, string $subject, string $htm
         $attachments ? 'Content-Type: multipart/mixed; boundary="' . $mixed . '"' : 'Content-Type: multipart/alternative; boundary="' . $boundary . '"',
     ];
     if ($replyTo && filter_var($replyTo, FILTER_VALIDATE_EMAIL)) $headers[] = 'Reply-To: <' . mail_clean_header($replyTo) . '>';
+    if ($originalTo !== null) $headers[] = 'X-BodaERP-Original-To: <' . mail_clean_header($originalTo) . '>';
     $body = "--$boundary\r\nContent-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: base64\r\n\r\n"
         . chunk_split(base64_encode($text)) . "--$boundary\r\nContent-Type: text/html; charset=UTF-8\r\nContent-Transfer-Encoding: base64\r\n\r\n"
         . chunk_split(base64_encode($html)) . "--$boundary--\r\n";
