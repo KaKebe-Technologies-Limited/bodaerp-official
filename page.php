@@ -12,6 +12,8 @@ $seo = [
     'description' => $page['meta_description'] ?: (string) $page['summary'],
     'image' => (string) $page['og_image'],
     'noindex' => $page['status'] !== 'published',
+    'type' => $page['slug'] === 'about' ? 'AboutPage' : 'WebPage',
+    'crumb' => (string) $page['title'],
 ];
 $currentPath = '/p/' . $page['slug'];
 ?>

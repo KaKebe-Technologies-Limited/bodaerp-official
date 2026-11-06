@@ -66,8 +66,9 @@ $maskName = function (string $name): string {
     $parts = preg_split('/\s+/', trim($name)) ?: [];
     return implode(' ', array_map(fn($p, $i) => $i === 0 ? $p : mb_substr($p, 0, 1) . '.', $parts, array_keys($parts)));
 };
-$seo = ['title' => 'Verify a boda-boda rider permit | ' . get_setting('site_name', 'BodaERP'),
-    'description' => 'Check whether a boda-boda rider\'s BodaERP permit is valid by scanning the QR code on their ID card or entering the permit number.',
+$seo = ['title' => "Check a boda-boda rider's permit | " . get_setting('site_name', 'BodaERP'),
+    'description' => "Scan the QR code on a rider's ID card or type the permit number to see at once whether a boda-boda permit is valid, expired or suspended.",
+    'crumb' => 'Verify a rider',
     'noindex' => $searched];
 $currentPath = '/verify.php';
 ?>

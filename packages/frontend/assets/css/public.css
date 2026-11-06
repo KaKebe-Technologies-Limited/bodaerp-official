@@ -287,11 +287,12 @@ body.public :focus-visible { outline: 3px solid color-mix(in srgb, var(--brand) 
 .link-arrow:hover i { transform: translateX(3px); }
 
 .verify-band { padding: var(--space-8) 0; }
+.verify-band h2 { color: var(--brand-dark); }
 .verify-inner { display: grid; gap: var(--space-6); align-items: center; grid-template-columns: minmax(0, 1fr); }
 @media (min-width: 992px) { .verify-inner { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--space-8); } }
 .verify-band h2 { font-size: clamp(1.6rem, 3vw, 2.3rem); font-weight: 800; letter-spacing: -.5px; margin-bottom: var(--space-3); }
-.verify-band p { color: rgba(255, 255, 255, .82); margin: 0; max-width: 52ch; }
-.verify-form { background: var(--surface); color: var(--ink); border-radius: var(--radius-lg); padding: var(--space-5); box-shadow: var(--shadow-raised); }
+.verify-band p { color: var(--ink-soft); margin: 0; max-width: 52ch; }
+.verify-form { background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: var(--space-5); box-shadow: var(--shadow-card); }
 .verify-form label { display: block; font-weight: 600; font-size: .9rem; margin-bottom: var(--space-2); }
 .verify-row { display: flex; gap: var(--space-2); flex-wrap: wrap; }
 .verify-row input { flex: 1 1 220px; min-width: 0; min-height: 50px; border: 1.5px solid var(--line); border-radius: var(--radius); padding: 12px 14px; font-size: 1rem; text-transform: uppercase; color: var(--ink); }
@@ -330,23 +331,23 @@ body.public :focus-visible { outline: 3px solid color-mix(in srgb, var(--brand) 
 .footer-bottom { border-top: 1px solid rgba(255, 255, 255, .1); margin-top: var(--space-7); padding-top: var(--space-5); text-align: center; display: grid; gap: var(--space-3); justify-items: center; font-size: .9rem; }
 .legal-links { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: var(--space-2) var(--space-5); }
 .copyright { margin: 0; color: rgba(255, 255, 255, .7); }
-.photo-credit { margin: 0; font-size: .8rem; color: rgba(255, 255, 255, .5); }
-.photo-credit a { text-decoration: underline !important; text-underline-offset: 3px; }
 
 /* Hero arrows sit at the bottom right of the photo. */
 .hero-arrows { position: absolute; right: max(16px, calc((100vw - 1320px) / 2 + 12px)); bottom: var(--space-6); z-index: 2; display: flex; gap: var(--space-2); }
 @media (max-width: 767.98px) { .hero-arrows { right: 16px; bottom: 20px; } .hero-btn { width: 44px; height: 44px; } }
 
-/* Why it matters: four reasons over a photo, the heading on the left third. */
-.why-band { padding: var(--space-8) 0; --scrim: rgba(0, 23, 64, .82); }
+/* Why it matters: light band right after the dark hero, heading and photo on the left third, four reasons beside. */
 .why-layout { display: grid; gap: var(--space-7); align-items: start; }
 @media (min-width: 992px) { .why-layout { grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: var(--space-8); } }
-.why-intro h2 { font-size: clamp(1.8rem, 3.4vw, 2.6rem); font-weight: 800; letter-spacing: -.03em; color: #fff; margin: 0 0 var(--space-4); }
-.why-intro p { color: rgba(255, 255, 255, .84); font-size: 1.1rem; margin: 0; max-width: 40ch; }
+.why-intro h2 { font-size: clamp(1.8rem, 3.4vw, 2.6rem); font-weight: 800; letter-spacing: -.03em; color: var(--brand-dark); margin: 0 0 var(--space-4); }
+.why-intro p { color: var(--ink-soft); font-size: 1.1rem; margin: 0; max-width: 40ch; }
+.why-photo { display: block; margin-top: var(--space-6); }
+.why-photo img { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: var(--radius-lg); box-shadow: var(--shadow-card); }
+@media (max-width: 991.98px) { .why-photo { display: none; } }
 .why-list { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-6) var(--space-6); grid-template-columns: 1fr; }
 @media (min-width: 640px) { .why-list { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-.why-item { padding-top: var(--space-5); border-top: 1px solid rgba(255, 255, 255, .2); }
+.why-item { padding-top: var(--space-5); border-top: 2px solid var(--line); }
 .why-icon { width: 48px; height: 48px; display: grid; place-items: center; border-radius: 14px; background: var(--accent); color: #fff; font-size: 1.1rem; margin-bottom: var(--space-4); }
-.why-item h3 { color: #fff; font-size: 1.15rem; font-weight: 700; margin: 0 0 var(--space-2); }
-.why-item p { color: rgba(255, 255, 255, .8); margin: 0; font-size: .98rem; }
+.why-item h3 { color: var(--brand-dark); font-size: 1.15rem; font-weight: 700; margin: 0 0 var(--space-2); }
+.why-item p { color: var(--ink-soft); margin: 0; font-size: .98rem; }
 .photo-band :is(h1, h2, h3), .site-footer :is(h2, h3) { color: #fff; }

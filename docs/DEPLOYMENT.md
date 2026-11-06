@@ -1,7 +1,51 @@
 # Deploying to a live server
 
-Written for shared PHP + MySQL hosting such as Hostinger, but any Apache + PHP 8.1+ + MySQL/MariaDB host works.
+**bodaerp.site runs on the Kakebe VPS in Docker since 2026-11-07** (next section). The rest of this file covers
+shared PHP + MySQL hosting such as Hostinger, which still works: any Apache + PHP 8.1+ + MySQL/MariaDB host does.
 There is no build step: **the files are the application**.
+
+## Kakebe VPS (live since 2026-11-07)
+
+`ssh vps` (root). One shared Traefik holds ports 80/443 for every site on the server and gets and renews every
+certificate from Let's Encrypt by itself (about 30 days before expiry); nothing else renews certificates.
+
+| Path | What |
+|---|---|
+| `/opt/bodaerp` | git clone of this repo; `.env` (root only) written once by `sh deploy/make-env.sh` |
+| `/opt/traefik` | copy of `deploy/traefik/` (compose file + `dynamic/`); certificates in the `traefik_letsencrypt` volume |
+| `/var/www/roru` | Roru; behind Traefik through `docker-compose.traefik.yml` + `docker/nginx/traefik.conf` (copies in `deploy/traefik/roru/`), selected by `COMPOSE_FILE` in its `.env` |
+| `/root/bodaerp-passwords.txt` | the passwords set for every account at go-live (root only) |
+
+**Deploy an update:**
+```bash
+ssh vps
+cd /opt/bodaerp && git pull && docker compose up -d --build
+```
+The server `.env` holds `COMPOSE_FILE=docker-compose.yml:deploy/docker-compose.traefik.yml`, so that one command
+builds the live image (`SERVER_PROFILE=live`: production PHP and Apache settings baked in), applies migrations in
+the entrypoint and starts the app with no published ports. Changing a file in `deploy/traefik/`: copy it to
+`/opt/traefik` and run `docker compose up -d` there (files in `dynamic/` are picked up without a restart).
+
+**DNS (Hostinger, nameservers dns-parking.com):** `@` ALIAS `srv1584241.hstgr.cloud.` (the VPS, IPv4 and IPv6; an
+A record is refused next to the ALIAS), `www` CNAME `bodaerp.site.` (Traefik redirects www to the bare domain).
+`ff.bodaerp.site` and `ftp` still point at the Hostinger shared hosting on purpose.
+
+**Database backup by hand:**
+```bash
+cd /opt/bodaerp && docker compose exec -T db sh -c 'mariadb-dump -uroot -p"$MARIADB_ROOT_PASSWORD" --single-transaction --routines --triggers bodaerp' | gzip > /root/bodaerp-$(date +%F).sql.gz
+```
+
+**Go-live state (2026-11-07):** the database is the development database of that day (demo cities, stages, riders
+and payments), not the old Hostinger one (that held only the first demo seed). Every account got a new random
+password (the README demo passwords would otherwise work on a public site); they are in
+`/root/bodaerp-passwords.txt`. Sign-in codes are switched off (`platform_settings.require_2fa = 0`, setting
+`feature_two_factor = 0`) because no email or SMS route exists yet and the `@bodaerp.site` addresses have no
+mailbox (no MX record). Turn them back on in Super Admin once SMTP works and staff accounts have real addresses.
+
+**Rollback of the proxy:** in `/var/www/roru` set `COMPOSE_FILE=docker-compose.prod.yml` (the old `.env` is in
+`/root/roru.env.before-traefik`), `docker compose -f /opt/traefik/docker-compose.yml down`, then
+`docker compose up -d nginx` in `/var/www/roru`. Roru's old certificate in `docker/nginx/ssl` expired on
+2026-10-10, and the host's certbot timer that tried to renew it is no longer needed.
 
 ## First-time setup
 

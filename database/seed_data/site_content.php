@@ -33,9 +33,9 @@ return [
         ['social_x', '', 'text', 'contact', 'X (Twitter) profile URL (leave empty to hide)', 0, 9],
         ['social_linkedin', '', 'text', 'contact', 'LinkedIn page URL (leave empty to hide)', 0, 10],
 
-        ['seo_default_title', 'BodaERP: register boda-boda riders, collect permit fees, check permits at the roadside', 'text', 'seo', 'Title used when a page has none of its own', 0, 1],
-        ['seo_default_description', 'BodaERP registers boda-boda riders at their stage, collects permit fees by cash or mobile money with a receipt for every payment, issues ID cards with a QR code and lets anyone check a permit in seconds.', 'textarea', 'seo', 'Description used when a page has none of its own', 0, 2],
-        ['seo_og_image', '/assets/images/favicon-512.png', 'image', 'seo', 'Image shown when a link is shared on social media', 0, 3],
+        ['seo_default_title', 'Boda-boda rider registration and permits in Uganda | BodaERP', 'text', 'seo', 'Title used when a page has none of its own', 0, 1],
+        ['seo_default_description', 'Ugandan city councils use BodaERP to register boda-boda riders by stage, collect permit fees by cash or mobile money and check any permit by QR code.', 'textarea', 'seo', 'Description used when a page has none of its own', 0, 2],
+        ['seo_og_image', '/assets/images/og-image.jpg', 'image', 'seo', 'Image shown when a link is shared on social media', 0, 3],
         ['home_hero_title', 'Boda-boda rider registration, permit fees and roadside permit checks for city councils', 'text', 'home', 'Main heading on the home page', 0, 2],
         ['home_cta_secondary', 'Check a rider\'s permit', 'text', 'home', 'Second button (goes to rider verification)', 0, 5],
         ['home_features_title', 'What you can do with it', 'text', 'home', 'Heading of the features section', 0, 6],
@@ -58,11 +58,9 @@ return [
         ['home_stats_image', '/assets/images/home/boda-team.webp', 'image', 'home', 'Background photo behind the live totals', 0, 23],
         ['home_roles_image', '/assets/images/home/boda-passenger.webp', 'image', 'home', 'Photo beside the "who uses it" cards (an upright photo works best)', 0, 26],
         ['home_why_title', 'Why it matters', 'text', 'home', 'Heading of the "why it matters" section', 0, 27],
-        ['home_why_image', '/assets/images/home/motorcycle-centre.webp', 'image', 'home', 'Background photo behind the "why it matters" band', 0, 29],
+        ['home_why_image', '/assets/images/home/motorcycle-centre.webp', 'image', 'home', 'Photo beside the "why it matters" reasons (wide screens)', 0, 29],
         ['home_why_text', 'Boda-bodas are how many people get to work, to school, to market and to hospital. Knowing who is riding, and whether they hold a valid permit, protects everyone on the road.', 'textarea', 'home', 'Text under the "why it matters" heading', 0, 28],
-        ['home_verify_image', '/assets/images/home/lira-oyam-road.webp', 'image', 'home', 'Background photo behind the permit check band', 0, 24],
         ['home_cta_image', '/assets/images/home/lira-sunset.webp', 'image', 'home', 'Background photo behind the closing "talk to us" band', 0, 25],
-        ['footer_photo_credit', 'Photos by Wikimedia Commons contributors.', 'text', 'general', 'Photo credit line in the footer (links to the Photo credits page; empty = hidden)', 0, 30],
 
         ['login_heading', 'Sign in to BodaERP', 'text', 'login', 'Heading on the sign-in page', 0, 1],
         ['login_subheading', 'One sign-in for council staff, stage chairpersons, riders and government officers.', 'text', 'login', 'Text under the sign-in heading', 0, 2],
@@ -113,7 +111,7 @@ return [
             '<li><strong>Anyone</strong> can scan the QR code on an ID card, or type the permit number on this website, to see whether the permit is valid.</li></ul>',
             '<h2>Who it is for</h2>',
             '<p>City councils, because they set the fee and answer for road safety. Chairpersons, because they already know their riders. Riders, because a provable permit keeps them working. Government, because national planning needs the same figures from every city.</p>'
-        ), 'About BodaERP', 'Why boda-boda riders need to be registered, how BodaERP registers riders and collects permit fees, and who uses it.', 1],
+        ), 'About BodaERP | Boda-boda permits for Ugandan cities', 'Why boda-boda riders need to be registered, how BodaERP registers them at their stage and collects permit fees, and the councils and riders it serves.', 1],
 
         ['privacy-policy', 'Privacy Policy', 'How BodaERP collects, uses and protects personal data.', $page(
             '<p>This policy explains how Kakebe Technologies Limited ("we") handles personal data in BodaERP, in line with Uganda\'s Data Protection and Privacy Act, 2019.</p>',
@@ -132,7 +130,7 @@ return [
             '<p>You can ask for a copy of your data, ask for mistakes to be corrected, or object to processing. Riders can download their data and send these requests from their portal (My account → Privacy and your data). Anyone can also use the contact page.</p>',
             '<h2>Security</h2>',
             '<p>Passwords are stored only as secure hashes, connections should use HTTPS, and every change to a record is written to an audit log.</p>'
-        ), 'Privacy Policy | BodaERP', 'How BodaERP collects, uses, shares and protects the personal data of riders and staff.', 1],
+        ), 'Privacy policy | BodaERP', 'How BodaERP collects, uses, shares and protects the personal data of boda-boda riders, stage chairpersons and council staff, and the rights each one has.', 1],
 
         ['terms-of-service', 'Terms of Service', 'The rules for using BodaERP.', $page(
             '<p>These terms apply to everyone who uses BodaERP, operated by Kakebe Technologies Limited.</p>',
@@ -146,7 +144,7 @@ return [
             '<p>We work to keep BodaERP available at all times, but it may be paused briefly for maintenance. We are not liable for losses caused by outages beyond our reasonable control.</p>',
             '<h2>Changes</h2>',
             '<p>We may update these terms. The date of the latest change is shown on this page.</p>'
-        ), 'Terms of Service | BodaERP', 'The terms that apply to riders, stage chairpersons, city councils and government users of BodaERP.', 1],
+        ), 'Terms of service | BodaERP', 'The terms for riders, stage chairpersons, city councils and government officers who use BodaERP to register riders, pay permit fees and check permits.', 1],
 
         ['cookie-policy', 'Cookie Policy', 'Which cookies BodaERP uses and why.', $page(
             '<p>BodaERP uses as few cookies as possible.</p>',
@@ -155,7 +153,7 @@ return [
             '<tr><td>bodaerp_remember</td><td>Only if you tick "Keep me signed in": signs you back in on this device</td><td>Up to 30 days</td></tr>',
             '</tbody></table>',
             '<p>Your answer to the cookie notice is stored in your browser\'s local storage, not in a cookie. We do not use advertising, analytics or third-party tracking cookies.</p>'
-        ), 'Cookie Policy | BodaERP', 'BodaERP uses only the cookies needed to keep you signed in. No tracking or advertising cookies.', 1],
+        ), 'Cookie policy | BodaERP', 'BodaERP sets only the cookies that keep you signed in and remember your cookie choice. This site has no tracking or advertising cookies.', 1],
         ['photo-credits', 'Photo credits', 'The photographers whose pictures appear on this website.', $page(
             '<p>The photos on the home page come from Wikimedia Commons. They were cropped and resized for this website. Each is used under the licence named below, and you may reuse them under the same terms.</p>',
             '<ul>',
@@ -170,7 +168,7 @@ return [
             '<li><a href="https://commons.wikimedia.org/wiki/File:Sunset_in_lira_uganda.jpg">Sunset in Lira, Uganda</a>, released into the public domain (<a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0</a>)</li>',
             '</ul>',
             '<p>A photo you uploaded yourself in Super Admin, Pages and content, replaces these on your own site.</p>'
-        ), 'Photo credits | BodaERP', 'Photographers and licences of the photos used on the BodaERP website.', 0],
+        ), 'Photo credits | BodaERP', 'The photographers and Creative Commons licences of the boda-boda and city photos used on the BodaERP website, with links to each original.', 0],
     ],
 
     // menu, label, url (relative to the site), sort

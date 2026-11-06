@@ -2,8 +2,12 @@
 require_once __DIR__ . '/packages/backend/site.php';
 
 $faqs = content_items('faq');
-$seo = ['title' => 'Frequently asked questions | ' . get_setting('site_name', 'BodaERP'),
-    'description' => 'Answers for boda-boda riders, stage chairpersons and city councils about accounts, permit fees, payments and ID card checks.'];
+$faqText = fn(string $html) => trim(preg_replace('/\s+/', ' ', html_entity_decode(strip_tags($html), ENT_QUOTES | ENT_HTML5, 'UTF-8')));
+$seo = ['title' => 'Boda-boda permit questions answered | ' . get_setting('site_name', 'BodaERP'),
+    'description' => "Answers for riders, stage chairpersons and city councils on registration, permit fees, mobile money payments, receipts and checking a rider's ID card.",
+    'type' => 'FAQPage', 'crumb' => 'FAQ',
+    'entity' => $faqs ? ['mainEntity' => array_map(fn($f) => ['@type' => 'Question', 'name' => $faqText((string) $f['title']),
+        'acceptedAnswer' => ['@type' => 'Answer', 'text' => $faqText((string) $f['body'])]], $faqs)] : []];
 $currentPath = '/faq.php';
 ?>
 <!DOCTYPE html>

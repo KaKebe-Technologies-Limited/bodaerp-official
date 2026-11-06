@@ -67,8 +67,9 @@ $demo = [
 $firstOfRole = [];
 foreach ($demo as [$r, , $de, $dp]) $firstOfRole[$r] ??= [$de, $dp];
 
-$seo = ['title' => 'Sign in | ' . get_setting('site_name', 'BodaERP'),
-    'description' => 'Sign in to BodaERP: city council staff, stage chairpersons, riders and government officers.'];
+$seo = ['title' => 'Sign in to ' . get_setting('site_name', 'BodaERP'),
+    'description' => 'Sign in as a city council officer, stage chairperson, rider or government officer to manage boda-boda permits, permit payments and rider ID cards.',
+    'crumb' => 'Sign in'];
 require __DIR__ . '/packages/frontend/partials/auth-start.php';
 ?>
             <h1><?= h(get_setting('login_heading', 'Sign in')) ?></h1>

@@ -24,9 +24,17 @@ OVERALL: 79% complete. 21% remaining until public launch
 | Documentation | 5 of 6 | 83% |
 | **Total** | **154 of 185** | **83% raw; 79% weighted by launch risk (what is left is mostly owner actions, see BLOCKING)** |
 
-### NEXT (owner, 2026-11-06, in this order)
-1. Deploy bodaerp.site to the Kakebe VPS (`ssh vps`): steps and status in docs/DEPLOYMENT.md, section "Kakebe VPS".
-2. Round 6, the full plan in docs/ROUND6_PLAN.md (notifications for every role, notices, stages and chairpersons by
+### NEXT (owner, 2026-11-07)
+1. [x] (2026-11-07) bodaerp.site live on the Kakebe VPS behind a shared Traefik (Let's Encrypt, auto renewal; Roru's
+   expired certificate fixed the same way). Database = the development database of that day; every account has a new
+   random password (`/root/bodaerp-passwords.txt` on the server); sign-in codes off until email works. Same day: SEO
+   titles/descriptions per page, schema.org JSON-LD (Organization, WebSite, WebPage/FAQPage/ContactPage/AboutPage,
+   BreadcrumbList, Service), 1200x630 share card, footer photo-credit line removed, homepage light sections
+   alternate (`$tone()` in index.php) so no two neighbours share a colour. Details: docs/DEPLOYMENT.md "Kakebe VPS".
+2. Owner: email for bodaerp.site (a mailbox or SMTP service + MX/SPF/DKIM), then SMTP_* in `/opt/bodaerp/.env`,
+   real addresses on staff accounts, sign-in codes back on. Google Search Console: add the property (DNS TXT can be
+   added on request) and submit https://bodaerp.site/sitemap.xml.
+3. Round 6, the full plan in docs/ROUND6_PLAN.md (notifications for every role, notices, stages and chairpersons by
    city admins, chairperson search/add/move without delete, transfers, removal and restore, renewal requests with a
    view-only rider card, complaints for everyone including the public, pop-up permit check by number or plate,
    reports, monitoring, README with every role). Update its status table as phases finish.
@@ -35,14 +43,14 @@ OVERALL: 79% complete. 21% remaining until public launch
 0. Owner review of rounds 4 and 5 (2026-11-06, committed and pushed at the owner's request; visual sign-off still open): homepage slider and copy, portal redesign, own form controls (ROUND 4); ID cards, photo columns, phone portal accounts, 23 copy-promised features, upgrades (ROUND 5).
 0b. ApexCharts licence: kept on 4.7.0, the last MIT release. 5.x and later need a paid licence for a platform used by other organisations; upgrade only if the owner buys one.
 1. Owner review of round 2 (built and verified 2026-11-01, committed 2026-11-05 in 03a0cb8 at the owner's request): login, theme, portal shell, sidebars, government data fixes, home sections, AI-tell sweep. Still needs the owner's visual sign-off.
-2. SMTP not configured on the live server: password reset, invites, receipts and 2FA need it (docs/DEPLOYMENT.md → Email).
+2. SMTP not configured on the live server (Kakebe VPS): password reset, invites, receipts and sign-in codes need it; codes are switched off until then. bodaerp.site has no MX record, so the `@bodaerp.site` account addresses receive nothing (docs/DEPLOYMENT.md → Email).
 3. Mobile-money (ioTec) never tested end to end, even in test mode. `IOTEC_MODE=test` until then; IPN callback URL must point at this site.
 4. Rotate the secrets that are in git history (old config/database.php DB password, ioTec IPN secret).
 5. Legal review of Privacy Policy, Terms, Cookie Policy (Super Admin → Pages & Content).
 6. Real contact phone / WhatsApp / social links (Super Admin → Site Text & Branding → Contact details; empty = hidden).
 7. Reprint ID cards made before 2026-10-31: their QR holds the permit number (now shows a masked name, no photo). New cards use a random token.
-8. Security audit: DONE 2026-11-05 (`.claude/security-audit-2026-11-05.md`, 9 findings + 1 found while fixing, all fixed and verified; gap register #29-38). Owner action left: on the server set `APP_ENV=live` and `APP_URL`, and `IOTEC_IPN_HEADER` once ioTec's header name is known.
-9. Live server (MariaDB 11.8) never tested with the new migrations.
+8. Security audit: DONE 2026-11-05 (`.claude/security-audit-2026-11-05.md`, 9 findings + 1 found while fixing, all fixed and verified; gap register #29-38). `APP_ENV=live` and `APP_URL` are set on the VPS (2026-11-07); left: `IOTEC_IPN_HEADER` once ioTec's header name is known.
+9. [x] (2026-11-07) Live server on MariaDB 11.8.9 with every migration applied (Kakebe VPS).
 10. EgoSMS account + sender ID, then `EGOSMS_USERNAME/PASSWORD/SENDER` in the server `.env` (sandbox first, `EGOSMS_MODE=live` after a test). Until then SMS goes to `storage/sms/`.
 11. USSD renewal needs a short code from a USSD provider (EgoSMS has none), `USSD_TOKEN` in `.env`, then `ussd_code` in Site Text & Branding. Built and walked end to end locally; the pay step needs ioTec (blocker 3).
 12. Native-speaker review before switching on Luganda / Lango / Acholi / Runyankole (Super Admin → Languages + SMS translations, then `languages_enabled`).
@@ -130,7 +138,7 @@ What was built:
 | PHP CLI | `docker compose exec app php …` | `C:\xampp\php\php.exe …` |
 | Email | Mailpit (SMTP) | written to `storage/mail/*.eml` + Sent log |
 
-- XAMPP versions are an assumption (latest XAMPP stable known: 8.2.12). Production assumption: shared Apache + PHP 8.2 + MariaDB (Hostinger, live DB 11.8), **no Docker**.
+- XAMPP versions are an assumption (latest XAMPP stable known: 8.2.12). Production since 2026-11-07: Docker on the Kakebe VPS (PHP 8.5, MariaDB 11.8) behind a shared Traefik; shared hosting (Apache + PHP 8.2 + MariaDB, no Docker) must keep working.
 - The app never depends on Docker: config comes from real env vars → `.env` → XAMPP defaults (127.0.0.1, root, no password, DB `bodaerp` auto-created).
 - Verified 2026-10-31: Docker stack from scratch, and a "stock XAMPP" simulation (no env, no .env, empty root password, folder `bodaerp-official`, DB auto-built on first request, CLI migrate + seed): smoke 118/118, flows 56/56 (Docker), portability check clean.
 - Port block for this project is 7000-7999; another project's `rooibok-*` containers currently occupy 7000-7002 and 7020.
@@ -138,7 +146,7 @@ What was built:
 ## Decisions (do not reverse without asking the owner)
 
 - **Stack: PHP 8.1+ · MySQL/MariaDB (mysqli) · plain JavaScript.** No PDO (owner, 2026-10-31: keep the mysqli helpers), no Node/npm, no Composer, no build step.
-- **Docker is optional and dev-only** (owner, 2026-10-31). `docker-compose.yml` + `docker/` serve Developer A; XAMPP and production never use them.
+- **Docker: dev stack for Developer A and the live stack on the Kakebe VPS** (owner, 2026-10-31 dev-only; production moved onto it 2026-11-06/07). XAMPP and shared hosting still run the app without it, so the app must never depend on Docker. Server differences live in `deploy/docker-compose.traefik.yml`, chosen by `COMPOSE_FILE` in the server `.env`.
 - **CKEditor 5, GPL licence, free plugins only** (owner, 2026-10-31). v49.1.0 self-hosted browser build committed in `packages/frontend/assets/vendor/ckeditor5/` (licenseKey `'GPL'`). Note: GPL obligations apply if BodaERP is distributed.
 - **No public sign-up** (owner, 2026-10-31). Riders get an account when their chairperson registers them with an email (invite link); staff accounts from Super Admin → All Users.
 - **Nobody imports SQL by hand.** Migrations + schema snapshot apply themselves.

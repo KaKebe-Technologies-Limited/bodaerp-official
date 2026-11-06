@@ -9,5 +9,8 @@ echo "Disallow: $base/api/\n";
 echo "Disallow: $base/uploads/\n";
 echo "Disallow: $base/verify.php?\n";
 echo "Disallow: $base/reset-password.php\n";
+echo "Disallow: $base/forgot-password.php\n";
+echo "Disallow: $base/login-code.php\n";
+echo "Disallow: $base/verify-email.php\n";
 echo "Allow: $base/\n\n";
 echo 'Sitemap: ' . app_url('sitemap.xml') . "\n";

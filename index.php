@@ -24,8 +24,15 @@ $photoStyle = function (string $settingKey): string {
     return $full === '' ? '' : ' style="--photo: url(\'' . h($full) . '\'); --photo-sm: url(\'' . h($small) . '\')"';
 };
 $interval = max(0, min(30, (int) get_setting('home_slider_interval', '7')));
+// Light sections alternate grey and white in the order they render, so two neighbours never share a colour
+// whichever sections are switched off. The hero, the stats band and the closing band are dark.
+$tone = function (): string { static $n = 0; return $n++ % 2 === 0 ? ' section-alt' : ''; };
 $seo = ['title' => get_setting('seo_default_title', 'BodaERP'), 'description' => get_setting('seo_default_description', ''),
-    'image' => $slides ? (string) $slides[0]['image'] : ''];
+    'nodes' => [['@type' => 'Service', '@id' => app_url('') . '#service', 'name' => 'Boda-boda rider registration and permit management',
+        'serviceType' => 'Rider registration, permit fee collection and permit verification',
+        'description' => get_setting('seo_default_description', ''), 'provider' => ['@id' => app_url('') . '#organization'],
+        'areaServed' => ['@type' => 'Country', 'name' => 'Uganda'],
+        'audience' => ['@type' => 'Audience', 'audienceType' => 'City councils, boda-boda stage chairpersons and riders']]]];
 $currentPath = '/';
 [$rolesPhoto] = home_photo(get_setting('home_roles_image'));
 ?>
@@ -72,12 +79,18 @@ $currentPath = '/';
     <?php endif; ?>
 
     <?php if ($reasons): ?>
-    <section class="photo-band why-band" id="why-it-matters"<?= $photoStyle('home_why_image') ?>>
+    <section class="section<?= $tone() ?> why-section" id="why-it-matters">
         <div class="container">
             <div class="why-layout">
                 <div class="why-intro">
                     <h2><?= h(get_setting('home_why_title', 'Why it matters')) ?></h2>
                     <p><?= h(get_setting('home_why_text')) ?></p>
+                    <?php [$whyFull, $whySmall] = home_photo(get_setting('home_why_image')); if ($whyFull !== ''): ?>
+                    <picture class="why-photo">
+                        <source media="(min-width: 768px)" srcset="<?= h($whyFull) ?>">
+                        <img src="<?= h($whySmall) ?>" alt="" loading="lazy" decoding="async">
+                    </picture>
+                    <?php endif; ?>
                 </div>
                 <ul class="why-list">
                     <?php foreach ($reasons as $reason): ?>
@@ -94,7 +107,7 @@ $currentPath = '/';
     <?php endif; ?>
 
     <?php if ($steps): ?>
-    <section class="section" id="how-it-works">
+    <section class="section<?= $tone() ?>" id="how-it-works">
         <div class="container">
             <div class="section-head">
                 <h2><?= h(get_setting('home_steps_title', 'How it works')) ?></h2>
@@ -114,7 +127,7 @@ $currentPath = '/';
     <?php endif; ?>
 
     <?php if ($roles): ?>
-    <section class="section section-alt" id="who-uses-it">
+    <section class="section<?= $tone() ?>" id="who-uses-it">
         <div class="container">
             <div class="roles-layout<?= $rolesPhoto === '' ? ' no-photo' : '' ?>">
                 <?php if ($rolesPhoto !== ''): ?>
@@ -140,7 +153,7 @@ $currentPath = '/';
     <?php endif; ?>
 
     <?php if ($features): ?>
-    <section class="section" id="features">
+    <section class="section<?= $tone() ?>" id="features">
         <div class="container">
             <div class="section-head">
                 <h2><?= h(get_setting('home_features_title', 'Features')) ?></h2>
@@ -173,7 +186,7 @@ $currentPath = '/';
     <?php endif; ?>
 
     <?php if ($liveCities || $faqPreview): ?>
-    <section class="section" id="questions">
+    <section class="section<?= $tone() ?>" id="questions">
         <div class="container">
             <div class="split-thirds<?= $liveCities ? '' : ' is-single' ?>">
                 <?php if ($liveCities): ?>
@@ -199,7 +212,7 @@ $currentPath = '/';
     </section>
     <?php endif; ?>
 
-    <section class="photo-band verify-band" id="check-permit"<?= $photoStyle('home_verify_image') ?>>
+    <section class="section<?= $tone() ?> verify-band" id="check-permit">
         <div class="container">
             <div class="verify-inner">
                 <div>

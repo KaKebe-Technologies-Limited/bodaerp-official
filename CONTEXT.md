@@ -2,9 +2,10 @@
 Last updated: 2026-11-07
 
 ## Current task
-2026-11-06: rounds 4 and 5 (own controls, homepage, portal redesign, ID cards rebuilt on the national-ID layout,
-holder signature, document-page layout, 23 copy-promised features, upgrades) committed and pushed at the owner's
-request. Now: deploy to the Kakebe VPS (docs/DEPLOYMENT.md, "Kakebe VPS"). Then round 6 (docs/ROUND6_PLAN.md).
+2026-11-07: bodaerp.site live on the Kakebe VPS (Docker behind a shared Traefik with Let's Encrypt; Roru's expired
+certificate fixed by the same Traefik). SEO pass (per-page titles and descriptions, JSON-LD, share card), footer
+credit line removed, homepage light sections alternate. Next: owner sets up email for bodaerp.site, then round 6
+(docs/ROUND6_PLAN.md).
 
 ## Stack
 PHP 8.1+ with mysqli, MariaDB/MySQL, plain JavaScript, CKEditor 5 (GPL, self-hosted). No Composer, no Node, no build.
@@ -12,6 +13,11 @@ Docker is a dev convenience only (`docker compose up -d --build`, ports 7080-708
 server run without it. Full detail in CLAUDE.md, README.md and docs/.
 
 ## Recent decisions
+- 2026-11-07: Live database = the development database of the day (owner); the Hostinger one only held the first demo seed.
+- 2026-11-07: Every live account got a random password (README demo passwords + public repo); list in /root/bodaerp-passwords.txt.
+- 2026-11-07: Sign-in codes off on the live site until email works (owner: "remove otp for now").
+- 2026-11-07: Traefik terminates TLS for Roru too (owner), so its certificate renews itself.
+- 2026-11-07: Homepage light sections alternate by render order; two neighbours never share a colour (owner).
 - 2026-11-06: Rider ID card is view only; renewal is requested and paid by the rider, staff are notified (round 6).
 - 2026-11-06: Chairpersons never delete riders; city admin and super admin do, with a reason (round 6).
 - 2026-11-06: Browser-drawn controls are replaced by controls.js everywhere; never call alert/confirm/prompt (owner: "system style").
@@ -33,7 +39,8 @@ server run without it. Full detail in CLAUDE.md, README.md and docs/.
 - Test scripts do not run JavaScript; button behaviour is proven only by the Playwright pass.
 
 ## Next steps
-- Deploy to the Kakebe VPS behind a shared Traefik, copy the live database, switch DNS (owner approved a brief Roru outage).
+- Owner: email for bodaerp.site (mailbox or SMTP service + MX/SPF/DKIM); then SMTP in /opt/bodaerp/.env and sign-in codes back on.
+- Owner: Google Search Console property + sitemap submission.
 - Round 6 phases 1-8 in docs/ROUND6_PLAN.md.
 - Owner reviews round 4 (homepage, portals, controls); commit when asked (the vendor/ folder must go in with it).
 - Owner reviews round 2 and round 3 in the browser and sends feedback.

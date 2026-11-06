@@ -46,8 +46,9 @@ $_SESSION['contact_form_at'] = $_SESSION['contact_form_at'] ?? time();
 $phone = get_setting('contact_phone');
 $whatsapp = preg_replace('/\D/', '', get_setting('contact_whatsapp'));
 $mapUrl = get_setting('contact_map_url');
-$seo = ['title' => 'Contact the BodaERP team | ' . get_setting('site_name', 'BodaERP'),
-    'description' => 'Questions about rider accounts, permit payments or bringing BodaERP to your city council? Send us a message.'];
+$seo = ['title' => 'Contact ' . get_setting('site_name', 'BodaERP') . ' | Rider permits for your city council',
+    'description' => 'Ask about a rider account, a permit payment or setting up BodaERP for your city council and its boda-boda stages. Send a message and we reply by email.',
+    'type' => 'ContactPage', 'crumb' => 'Contact'];
 $currentPath = '/contact.php';
 $field = function (string $name, string $label, string $type = 'text', bool $required = true, string $hint = '') use ($values, $errors) {
     $err = $errors[$name] ?? null;

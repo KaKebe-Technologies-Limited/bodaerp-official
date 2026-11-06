@@ -50,7 +50,6 @@ $socials = array_filter(['facebook' => get_setting('social_facebook'), 'x-twitte
             </ul></nav>
             <?php endif; ?>
             <p class="copyright"><?= site_text('footer_copyright', '&copy; {year} ' . $siteName) ?></p>
-            <?php if ($credit = get_setting('footer_photo_credit')): ?><p class="photo-credit"><?= h($credit) ?> <a href="<?= BASE_URL ?>/p/photo-credits">Photo credits</a></p><?php endif; ?>
         </div>
     </div>
 </footer>
