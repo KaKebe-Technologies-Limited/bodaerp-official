@@ -28,6 +28,16 @@ if (!$tbTrail && ($active ?? '') === 'my-account') $tbTrail = ['My account'];
             <?php foreach ($tbTrail as $i => $crumb): ?><li<?= $i === count($tbTrail) - 1 ? ' aria-current="page"' : '' ?>><?= h($crumb) ?></li><?php endforeach; ?>
         </ol>
     </nav>
+    <?php if (in_array($_SESSION['role'] ?? '', ['super_admin', 'city_admin', 'chairperson', 'government'], true)): ?>
+    <form class="topbar-search" method="get" action="<?= BASE_URL ?>/pages/account/search.php" role="search" aria-label="Search everything" data-global-search="<?= BASE_URL ?>/pages/account/search.php">
+        <i class="fas fa-magnifying-glass" aria-hidden="true"></i>
+        <input type="search" name="q" value="<?= h(($active ?? '') === 'search' ? (string) ($_GET['q'] ?? '') : '') ?>" maxlength="80" autocomplete="off" spellcheck="false"
+               placeholder="Search riders, plates, receipts, stages, people" aria-label="Search riders, permit numbers, plates, receipts, stages, cities and people"
+               role="combobox" aria-expanded="false" aria-autocomplete="list" aria-controls="globalSearchResults">
+        <div class="topbar-search-results" id="globalSearchResults" role="listbox" aria-label="Search suggestions" hidden></div>
+    </form>
+    <?php endif; ?>
+    <div class="topbar-end">
     <a class="topbar-icon" href="<?= BASE_URL ?>/" target="_blank" rel="noopener" aria-label="Open the public website in a new tab" data-tip="Public website"><i class="fas fa-arrow-up-right-from-square" aria-hidden="true"></i></a>
     <div class="dropdown account-menu">
         <button class="account-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Account menu for <?= h($tbName) ?>">
@@ -47,6 +57,7 @@ if (!$tbTrail && ($active ?? '') === 'my-account') $tbTrail = ['My account'];
                 <button type="submit" class="dropdown-item text-danger">Sign out</button>
             </form>
         </div>
+    </div>
     </div>
 </header>
 <div class="page-head">

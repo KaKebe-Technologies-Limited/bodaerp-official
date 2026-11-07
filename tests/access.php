@@ -279,6 +279,35 @@ if ($payOther) {
     }
 }
 
+// 9. Top-bar search keeps to the same walls as the pages.
+$search = function (string $role, string $q) use ($base, $jars): array {
+    $r = http("$base/pages/account/search.php?format=json&q=" . rawurlencode($q), $jars[$role]);
+    return ['code' => $r['code'], 'body' => $r['body'], 'json' => json_decode($r['body'], true)];
+};
+$t->ok($search('rider', 'ab')['code'] === 302 || $search('rider', 'ab')['code'] === 403, 'rider has no search');
+if ($otherStageRider) {
+    $hit = $search('chairperson', $otherStageRider['id_number']);
+    $t->ok($hit['code'] === 200 && !str_contains($hit['body'], $otherStageRider['full_name']), 'chairperson search does not find riders of another stage');
+}
+if ($otherCityRider) {
+    $hit = $search('city_admin', $otherCityRider['id_number']);
+    $t->ok($hit['code'] === 200 && !str_contains($hit['body'], $otherCityRider['full_name']), 'city admin search does not find riders of another city');
+    $hit = $search('super_admin', $otherCityRider['id_number']);
+    $t->ok(str_contains($hit['body'], json_encode($otherCityRider['full_name'], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)), 'super admin search finds a rider in any city by permit number');
+    if (!empty($otherCityRider['nin'])) {
+        $hit = $search('government', $otherCityRider['nin']);
+        $t->ok(!str_contains($hit['body'], $otherCityRider['full_name']), 'government search does not match on NIN');
+    }
+    $plate = (string) $otherCityRider['bike_plate'];
+    if ($plate !== '') {
+        $hit = $search('super_admin', strtolower(str_replace(' ', '', $plate)));
+        $t->ok(str_contains($hit['body'], json_encode($otherCityRider['full_name'], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)), 'plate search ignores spaces and case');
+    }
+}
+$hit = $search('government', 'a');
+$t->ok($hit['code'] === 200 && ($hit['json']['groups'] ?? null) === [], 'one-letter search returns nothing');
+$t->ok(!str_contains($search('government', 'Lira')['body'], '"Payments"'), 'government search shows no payments');
+
 $t->ok($counts() == $before, 'no record counts changed during the whole run', json_encode(array_diff_assoc($counts(), $before)));
 
 // Put back anything a failed wall may have changed. The first snapshot of a row is the true original.

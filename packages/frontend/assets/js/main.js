@@ -353,6 +353,84 @@ function createToastContainer() {
             .catch(err => { console.warn('Duplicate check failed', err); note.textContent = ''; });
     });
 
+    // Top-bar search: suggestions while typing, arrow keys to move, Enter opens the highlighted record or all results.
+    document.querySelectorAll('form[data-global-search]').forEach(function (form) {
+        const input = form.querySelector('input[name="q"]');
+        const panel = form.querySelector('[role="listbox"]');
+        if (!input || !panel) return;
+        let timer = 0, seq = 0, links = [], current = -1;
+        const close = () => { panel.hidden = true; input.setAttribute('aria-expanded', 'false'); input.removeAttribute('aria-activedescendant'); current = -1; };
+        const highlight = (i) => {
+            links.forEach((a, n) => a.classList.toggle('is-active', n === i));
+            current = i;
+            if (i >= 0 && links[i]) { input.setAttribute('aria-activedescendant', links[i].id); links[i].scrollIntoView({ block: 'nearest' }); }
+            else input.removeAttribute('aria-activedescendant');
+        };
+        const render = (reply) => {
+            panel.textContent = '';
+            links = [];
+            (reply.groups || []).forEach(group => {
+                const head = document.createElement('div');
+                head.className = 'search-group';
+                head.textContent = group.label;
+                panel.appendChild(head);
+                group.results.forEach(result => {
+                    const a = document.createElement('a');
+                    a.href = result.href;
+                    a.id = 'gs-' + links.length;
+                    a.setAttribute('role', 'option');
+                    const title = document.createElement('strong');
+                    title.textContent = result.title;
+                    const detail = document.createElement('span');
+                    detail.textContent = result.detail;
+                    a.append(title, detail);
+                    panel.appendChild(a);
+                    links.push(a);
+                });
+            });
+            if (!links.length) {
+                const none = document.createElement('div');
+                none.className = 'search-none';
+                none.textContent = 'Nothing matches "' + reply.q + '".';
+                panel.appendChild(none);
+            } else {
+                const all = document.createElement('a');
+                all.href = reply.all + '&list=1';
+                all.className = 'search-all';
+                all.id = 'gs-' + links.length;
+                all.setAttribute('role', 'option');
+                all.textContent = 'See all results for "' + reply.q + '"';
+                panel.appendChild(all);
+                links.push(all);
+            }
+            panel.hidden = false;
+            input.setAttribute('aria-expanded', 'true');
+            current = -1;
+        };
+        const lookup = () => {
+            const q = input.value.trim();
+            if (q.length < 2) { close(); return; }
+            const mine = ++seq;
+            fetch(form.getAttribute('data-global-search') + '?format=json&q=' + encodeURIComponent(q), { credentials: 'same-origin', headers: { 'Accept': 'application/json' } })
+                .then(r => r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status)))
+                .then(reply => { if (mine === seq && document.activeElement === input) render(reply); })
+                .catch(err => { console.warn('Search suggestions failed', err); close(); });
+        };
+        input.addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(lookup, 220); });
+        input.addEventListener('focus', () => { if (input.value.trim().length >= 2 && panel.hidden) lookup(); });
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowDown' && links.length) { e.preventDefault(); if (panel.hidden) panel.hidden = false; highlight((current + 1) % links.length); }
+            else if (e.key === 'ArrowUp' && links.length) { e.preventDefault(); highlight(current <= 0 ? links.length - 1 : current - 1); }
+            else if (e.key === 'Enter' && !panel.hidden && current >= 0 && links[current]) { e.preventDefault(); window.location.href = links[current].href; }
+            else if (e.key === 'Escape') { close(); }
+        });
+        form.addEventListener('submit', (e) => { if (input.value.trim().length < 2) { e.preventDefault(); input.focus(); } });
+        document.addEventListener('pointerdown', (e) => { if (!form.contains(e.target)) close(); });
+        document.addEventListener('keydown', (e) => {
+            if (e.key === '/' && !e.ctrlKey && !e.metaKey && !e.altKey && !(e.target.closest && e.target.closest('input, textarea, select, [contenteditable="true"], .ck-editor'))) { e.preventDefault(); input.focus(); input.select(); }
+        });
+    });
+
     document.addEventListener('keydown', function (e) {
         const opener = e.target.closest && e.target.closest('[data-click-target]');
         if (opener && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); const input = document.getElementById(opener.getAttribute('data-click-target')); if (input) input.click(); }
