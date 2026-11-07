@@ -39,6 +39,11 @@ OVERALL: 79% complete. 21% remaining until public launch
    Google Search Console: TXT `google-site-verification=uAz1...` added to bodaerp.site DNS at the owner's request (2026-11-07);
    owner presses Verify and submits the sitemap.
    Round 6 phase 1 was started (read only, nothing written) and paused for this.
+1c. [x] (2026-11-07) Live email through Brevo: `SMTP_HOST=smtp-relay.brevo.com:587 tls`, login c1e579001@smtp-brevo.com,
+   `MAIL_FROM=noreply@bodaerp.site` (Brevo-verified senders: noreply@, service@, info@, admin@; DKIM + DMARC on bodaerp.site).
+   Key only in `/opt/bodaerp/.env` (backup of the old .env in /root). Test mail accepted. bodaerp.site still has NO MX, so
+   `support@bodaerp.site` (contact form inbox, support_email) and the staff `@bodaerp.site` accounts receive nothing;
+   sign-in codes stay off until staff have addresses that receive mail.
 2. Owner: email for bodaerp.site (a mailbox or SMTP service + MX/SPF/DKIM), then SMTP_* in `/opt/bodaerp/.env`,
    real addresses on staff accounts, sign-in codes back on. Google Search Console: add the property (DNS TXT can be
    added on request) and submit https://bodaerp.site/sitemap.xml.
@@ -60,7 +65,7 @@ OVERALL: 79% complete. 21% remaining until public launch
 0. Owner review of rounds 4 and 5 (2026-11-06, committed and pushed at the owner's request; visual sign-off still open): homepage slider and copy, portal redesign, own form controls (ROUND 4); ID cards, photo columns, phone portal accounts, 23 copy-promised features, upgrades (ROUND 5).
 0b. ApexCharts licence: kept on 4.7.0, the last MIT release. 5.x and later need a paid licence for a platform used by other organisations; upgrade only if the owner buys one.
 1. Owner review of round 2 (built and verified 2026-11-01, committed 2026-11-05 in 03a0cb8 at the owner's request): login, theme, portal shell, sidebars, government data fixes, home sections, AI-tell sweep. Still needs the owner's visual sign-off.
-2. SMTP not configured on the live server (Kakebe VPS): password reset, invites, receipts and sign-in codes need it; codes are switched off until then. bodaerp.site has no MX record, so the `@bodaerp.site` account addresses receive nothing (docs/DEPLOYMENT.md → Email).
+2. SMTP configured 2026-11-07 (Brevo, sending only). Still no mailbox: codes stay off until staff have receiving addresses. bodaerp.site has no MX record, so the `@bodaerp.site` account addresses receive nothing (docs/DEPLOYMENT.md → Email).
 3. Mobile-money (ioTec) never tested end to end, even in test mode. `IOTEC_MODE=test` until then; IPN callback URL must point at this site.
 4. Rotate the secrets that are in git history (old config/database.php DB password, ioTec IPN secret).
 5. Legal review of Privacy Policy, Terms, Cookie Policy (Super Admin → Pages & Content).
