@@ -31,6 +31,14 @@ OVERALL: 79% complete. 21% remaining until public launch
    titles/descriptions per page, schema.org JSON-LD (Organization, WebSite, WebPage/FAQPage/ContactPage/AboutPage,
    BreadcrumbList, Service), 1200x630 share card, footer photo-credit line removed, homepage light sections
    alternate (`$tone()` in index.php) so no two neighbours share a colour. Details: docs/DEPLOYMENT.md "Kakebe VPS".
+1b. [x] (2026-11-07, 153d1f1, deployed) Search box centred in the portal top bar for super admin, city admin, chairperson and
+   government (`global_search.php`, `pages/account/search.php`, suggestions in main.js, "/" focuses it): riders (name, permit,
+   NIN, phone, plate with or without spaces, make/model, email), payments (receipt, transaction ref, payer phone), ID card serials,
+   enforcement codes, handover references, stages, cities, staff by name/email/phone/role. Scoped like the pages (stage, city,
+   all; government only name/permit/plate/city). One match opens the record. tests/access.php section 9.
+   Google Search Console: TXT `google-site-verification=uAz1...` added to bodaerp.site DNS at the owner's request (2026-11-07);
+   owner presses Verify and submits the sitemap.
+   Round 6 phase 1 was started (read only, nothing written) and paused for this.
 2. Owner: email for bodaerp.site (a mailbox or SMTP service + MX/SPF/DKIM), then SMTP_* in `/opt/bodaerp/.env`,
    real addresses on staff accounts, sign-in codes back on. Google Search Console: add the property (DNS TXT can be
    added on request) and submit https://bodaerp.site/sitemap.xml.
